@@ -81,6 +81,12 @@ module.exports = function(grunt) {
           cwd: './src/tasks',
           src: ['**/*.njk'],
           dest: './tasks'
+        },
+        template2:{
+          expand: true,
+          cwd: './src/tasks',
+          src: ['**/*.njk'],
+          dest: './test/dist/src/tasks'
         }
       },
 
@@ -91,13 +97,13 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-copy');
-
+    
     grunt.registerTask("build", [
-      "clean:app", "ts:app", "ts:tasks", "tslint", "copy"
+      "clean:app", "ts:app", "ts:tasks", "tslint", "copy:template"
     ]);
 
     grunt.registerTask("test", [
-      "clean:test", "ts:test",  "mochaTest"
+      "clean:test","copy:template2", "ts:test",  "mochaTest"
     ]); 
 
   };

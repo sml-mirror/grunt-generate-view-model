@@ -1,4 +1,10 @@
 "use strict";
+import {createViewModels} from "../src/tasks/createViewModels";
+
+
+export function createViewModelsFunction(prop: any) {
+    createViewModels(prop);
+}
 
 export function GenerateView(modelName: string): any {
     return function(){
@@ -23,4 +29,6 @@ export function ViewModelType(type: string, filepath: string): any {
         var f;
     };
 }
+
+
 

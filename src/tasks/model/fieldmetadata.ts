@@ -1,4 +1,3 @@
-import "reflect-metadata";
 
 export class FieldMetadata {
     public name: string;

@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import {ClassMetadata} from "./classmetadata";
 
 export class FileMetadata {
