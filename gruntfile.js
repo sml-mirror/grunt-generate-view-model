@@ -7,7 +7,7 @@ module.exports = function(grunt) {
         app: {
           files: [{
             src: [
-              "./src/**/index.ts"
+              "./src/index.ts"
             ],
             dest: "./dist"
           },],
@@ -37,6 +37,7 @@ module.exports = function(grunt) {
           files: [{
             src: [
               "./test/**/*.ts", 
+              "!./test/src/expected/**" 
             ],
             dest: "./test/dist"
           },],
@@ -60,7 +61,7 @@ module.exports = function(grunt) {
           src: [
             "./src/\*\*/\*.ts",
             "./test/src/\*\*/\*.ts",
-            "!./test/src/\*\*/\*ViewModel.ts",
+            "!./test/src/expected/**",
           ]
         }
       },

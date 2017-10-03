@@ -27,13 +27,13 @@ export class Hero {
     @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail")
     public detail: HeroDetail;
 
-    @ViewModelType("HeroDetailViewModel", "./heroDetail")
+    @ViewModelType("HeroDetailViewModel", "")
     public detailVM: HeroDetail;
 
     @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail")
     public details: HeroDetail[];
 
-    @ViewModelType("HeroDetailViewModel", "./heroDetail")
+    @ViewModelType("HeroDetailViewModel", "")
     public detailsVM: HeroDetail[];
 
     public simpleArray: number[];
