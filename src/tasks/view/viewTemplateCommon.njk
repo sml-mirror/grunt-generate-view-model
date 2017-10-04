@@ -10,6 +10,7 @@
 export class {{class.name}} {
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
+
   public {{field.name}}: {{field.type}}{% if field.isArray %} []{% endif %};
 {% endif %}
 {% else %}
@@ -19,7 +20,6 @@ export class {{class.name}} {
   {% if  field.ignoredInView===false %}
   {% if field.isComplexObj %}
 {% if  field.type === field.baseModelType %}
-
     this.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
 {% else %}
     if ( model.{{field.baseModelName}} ) {
