@@ -3,7 +3,7 @@ import {createViewModels} from "../src/tasks/createViewModels";
 
 
 export function createViewModelsFunction(prop: any) {
-    createViewModels(prop);
+    return createViewModels(prop);
 }
 
 export function GenerateView(modelName: string): any {

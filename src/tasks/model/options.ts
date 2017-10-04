@@ -1,4 +1,9 @@
 export class Options {
-    public files: any;
-    public isOneFile: any;
+    public files: FileDescriptor[];
+    public isOneFile: boolean;
+}
+export class FileDescriptor {
+    public source: string;
+    public destination: string;
+    public baseDestination: string;
 }

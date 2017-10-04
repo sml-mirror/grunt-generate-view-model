@@ -61,6 +61,7 @@ module.exports = function(grunt) {
             "./src/\*\*/\*.ts",
             "./test/src/\*\*/\*.ts",
             "!./test/src/\*\*/\*ViewModel.ts",
+            "!./test/src/expected/hero/heroViewModel.ts"
           ]
         }
       },

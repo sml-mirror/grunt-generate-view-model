@@ -2,7 +2,7 @@
 import {ClassMetadata} from "./model/classmetadata";
 import {FieldMetadata} from "./model/fieldmetadata";
 import {FileMetadata} from "./model/filemetadata";
-import {Options} from "./model/options";
+import {Options, FileDescriptor} from "./model/options";
 import {parseStruct} from "ts-file-parser";
 import {ArrayType, BasicType} from "ts-file-parser";
 import {render, renderString, configure} from "nunjucks";
@@ -11,18 +11,27 @@ import * as path from "path";
 
 export function createViewModels(prop: any) {
    var  metadata = createMetadatas(prop);
-   CreateFiles(metadata);
+   var resultTemplate = CreateFiles(metadata);
+   return resultTemplate;
 }
 
 
-export function createOptionsOfObject(obj: any): any {
+export function createOptionsOfGrunt(obj: any): any {
     var options = new Options();
+    var files = new Array<FileDescriptor>();
+    for (var i = 0; i < obj.files.length; i++) {
+        var file = new FileDescriptor();
+        file.source = obj.files[i].src;
+        file.destination = obj.files[i].dest;
+        file.baseDestination = obj.files[i].orig.dest;
+        files.push(file);
+    }
     options.files = obj.files;
     options.isOneFile = obj.data.oneFile;
     return options;
 }
 
-export function createMetadatas(properties: any) {
+export function createMetadatas(properties: Options) {
       var fs = require("fs");
       let generationFiles: FileMetadata[];
       generationFiles = new Array<FileMetadata>();
@@ -35,18 +44,18 @@ export function createMetadatas(properties: any) {
               if (fileMet === undefined) {
               fileMet = new FileMetadata();
               }
-              fileMet.filename = file.orig.dest + "/common.ts";
+              fileMet.filename = file.baseDestination + "/common.ts";
               if (fileMet.classes === undefined) {
               fileMet.classes = new Array<ClassMetadata>();
               }
           }
           if (!isOneFile) {
               fileMet = new FileMetadata();
-              fileMet.filename = file.dest;
+              fileMet.filename = file.destination;
               fileMet.classes = new Array<ClassMetadata>();
           }
-          var stringFile = fs.readFileSync(file.src[0], "utf-8");
-          var jsonStructure = parseStruct(stringFile, {}, file.src);
+          var stringFile = fs.readFileSync(file.source, "utf-8");
+          var jsonStructure = parseStruct(stringFile, {}, file.source);
           jsonStructure.classes.forEach(cls => {
               let classMet = new ClassMetadata();
               classMet.name = cls.name;
@@ -130,4 +139,5 @@ export function createMetadatas(properties: any) {
             fs.writeFileSync(metadata[i].filename, c, "utf-8");
           }
       }
+      return c;
   }
