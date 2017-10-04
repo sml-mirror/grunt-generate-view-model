@@ -1,4 +1,4 @@
-import "reflect-metadata";
+
 import {FieldMetadata} from "./fieldmetadata";
 
 export class ClassMetadata {

@@ -9,22 +9,19 @@
 
 export class {{class.name}} {
 {% for field in class.fields %}
-  {% if  field.ignoredInView===false %}
+{% if  field.ignoredInView===false %}
 
   public {{field.name}}: {{field.type}}{% if field.isArray %} []{% endif %};
-  {% endif %}
+{% endif %}
 {% else %}
 {% endfor %}
-
   constructor(model: any) {
 {% for field in class.fields %}
   {% if  field.ignoredInView===false %}
   {% if field.isComplexObj %}
 {% if  field.type === field.baseModelType %}
-
     this.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
 {% else %}
-
     if ( model.{{field.baseModelName}} ) {
         this.{{field.name}} = new {{field.type}} ( model.{{field.baseModelName}} );
     }
