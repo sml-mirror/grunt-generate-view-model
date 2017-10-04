@@ -98,12 +98,14 @@ export function createMetadatas(properties: Options) {
                           fldMetadata.name = dec.arguments[0].toString();
                       }
                       if (dec.name === "ViewModelType") {
-                          fldMetadata.type = dec.arguments[0].toString();
-                          let filename = dec.arguments[1].toString();
-                          let insertedImport = "import { " + fldMetadata.type + "} from \"" + filename + "\";";
-                          if (fileMet.imports.indexOf(insertedImport) === -1) {
-                              fileMet.imports.push(insertedImport);
-                          }
+                            fldMetadata.type = dec.arguments[0].toString();
+                            let filename = dec.arguments[1].toString();
+                            if (filename) {
+                                let insertedImport = "import { " + fldMetadata.type + "} from \"" + filename + "\";";
+                                if (fileMet.imports.indexOf(insertedImport) === -1) {
+                                    fileMet.imports.push(insertedImport);
+                                }
+                            }
                       }
                   });
                   classMet.fields.push(fldMetadata);
