@@ -18,19 +18,22 @@ export function createViewModelsInternal(prop: Options): string [] {
 
 export function createOptionsOfGrunt(obj: any): Options {
     var options = new Options();
-
     var files = new Array<FileMapping>();
     for (var i = 0; i < obj.files.length; i++) {
         var file = new FileMapping();
-        file.source = obj.files[i].src;
+        if (obj.files[i].src.length === 1) {
+            file.source = obj.files[i].src[0];
+        } else {
+           file.source = obj.files[i].src[0];
+        }
         file.destination = obj.files[i].dest;
         files.push(file);
     }
 
-    options.files = obj.files;
+    options.files = files;
 
     if (obj.data.oneFile && obj.files.length) {
-        options.allInOneFile = `${obj.files[0].orig.dest}/common.ts`;
+            options.allInOneFile = `${obj.files[0].orig.dest}/common.ts`;
     }
     return options;
 }
