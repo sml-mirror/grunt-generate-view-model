@@ -1,9 +1,8 @@
 export class Options {
-    public files: FileDescriptor[];
-    public isOneFile: boolean;
+    public files: FileMapping[];
+    public allInOneFile: string;
 }
-export class FileDescriptor {
+export class FileMapping {
     public source: string;
     public destination: string;
-    public baseDestination: string;
 }

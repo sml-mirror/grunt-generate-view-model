@@ -1,9 +1,10 @@
 "use strict";
-import {createViewModels} from "../src/tasks/createViewModels";
+import {createViewModelsInternal} from "../src/tasks/createViewModels";
+import {Options} from "./tasks/model/options";
 
 
-export function createViewModelsFunction(prop: any) {
-    return createViewModels(prop);
+export function createViewModels(options: Options): string [] {
+    return createViewModelsInternal(options);
 }
 
 export function GenerateView(modelName: string): any {

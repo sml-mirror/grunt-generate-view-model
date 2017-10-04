@@ -2,32 +2,36 @@
 import {ClassMetadata} from "./model/classmetadata";
 import {FieldMetadata} from "./model/fieldmetadata";
 import {FileMetadata} from "./model/filemetadata";
-import {Options, FileDescriptor} from "./model/options";
+import {Options, FileMapping} from "./model/options";
 import {parseStruct} from "ts-file-parser";
 import {ArrayType, BasicType} from "ts-file-parser";
 import {render, renderString, configure} from "nunjucks";
 import * as path from "path";
 
 
-export function createViewModels(prop: any) {
+export function createViewModelsInternal(prop: Options): string [] {
    var  metadata = createMetadatas(prop);
    var resultTemplate = CreateFiles(metadata);
    return resultTemplate;
 }
 
 
-export function createOptionsOfGrunt(obj: any): any {
+export function createOptionsOfGrunt(obj: any): Options {
     var options = new Options();
-    var files = new Array<FileDescriptor>();
+
+    var files = new Array<FileMapping>();
     for (var i = 0; i < obj.files.length; i++) {
-        var file = new FileDescriptor();
+        var file = new FileMapping();
         file.source = obj.files[i].src;
         file.destination = obj.files[i].dest;
-        file.baseDestination = obj.files[i].orig.dest;
         files.push(file);
     }
+
     options.files = obj.files;
-    options.isOneFile = obj.data.oneFile;
+
+    if (obj.data.oneFile && obj.files.length) {
+        options.allInOneFile = `${obj.files[0].orig.dest}/common.ts`;
+    }
     return options;
 }
 
@@ -37,19 +41,18 @@ export function createMetadatas(properties: Options) {
       generationFiles = new Array<FileMetadata>();
       var wasFiled = 0;
       var fileMet;
-      var isOneFile = properties.isOneFile;
       var files = properties.files;
       for (var file of files){
-          if (isOneFile) {
+          if (properties.allInOneFile) {
               if (fileMet === undefined) {
-              fileMet = new FileMetadata();
+                  fileMet = new FileMetadata();
               }
-              fileMet.filename = file.baseDestination + "/common.ts";
+
+              fileMet.filename = properties.allInOneFile;
               if (fileMet.classes === undefined) {
-              fileMet.classes = new Array<ClassMetadata>();
+                  fileMet.classes = new Array<ClassMetadata>();
               }
-          }
-          if (!isOneFile) {
+          } else {
               fileMet = new FileMetadata();
               fileMet.filename = file.destination;
               fileMet.classes = new Array<ClassMetadata>();
@@ -115,31 +118,36 @@ export function createMetadatas(properties: Options) {
               }
               fileMet.classes.push(classMet);
           });
-          if (isOneFile && wasFiled === 0) {
+          if (properties.allInOneFile && wasFiled === 0) {
               generationFiles.push(fileMet);
               wasFiled++;
           }
-          if (!isOneFile) {
+          if (!properties.allInOneFile) {
               generationFiles.push(fileMet);
           }
       }
       return generationFiles;
   }
 
- export function  CreateFiles(metadata: FileMetadata[]) {
+ export function  CreateFiles(metadata: FileMetadata[]): string [] {
       let viewsFolder = path.resolve(__dirname, "view/");
       configure(viewsFolder, {autoescape: true, trimBlocks : true});
+
+      let res: string [] = [];
+
       for ( var i = 0; i < metadata.length; i++ ) {
           var mdata = metadata[i];
           mdata.classes = mdata.classes.filter((item) => item.generateView);
           var c = render("viewTemplateCommon.njk", {metafile: mdata});
           if (c && c.trim()) {
-            var fs = require("fs");
-           var mkdirp = require("mkdirp");
-            var getDirName = require("path").dirname;
-             mkdirp.sync(getDirName(metadata[i].filename));
-            fs.writeFileSync(metadata[i].filename, c, "utf-8");
+              var fs = require("fs");
+              var mkdirp = require("mkdirp");
+              var getDirName = require("path").dirname;
+              mkdirp.sync(getDirName(metadata[i].filename));
+              fs.writeFileSync(metadata[i].filename, c, "utf-8");
+              res.push(c);
           }
       }
+
       return c;
   }
