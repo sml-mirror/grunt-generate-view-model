@@ -1,6 +1,6 @@
 {
   "name": "grunt-generate-view-model",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Grunt task for code generation view models by models description",
   "private": false,
   "main": "dist/src/index.js",
@@ -8,7 +8,7 @@
     "build": "grunt build",
     "test": "grunt test"
   },
-  "dependencies": {   
+  "dependencies": {
     "typescript": "^2.5.3",
     "path": "^0.12.7",
     "nunjucks": "^3.0.1",
