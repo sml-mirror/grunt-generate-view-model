@@ -31,7 +31,6 @@ export function createOptionsOfGrunt(obj: IGrunt): Options {
     }
 
     options.files = files;
-    console.log(obj.task.current.target);
     if (obj.task.current.data.oneFile && obj.task.current.files.length) {
             options.allInOneFile = `${obj.task.current.target}/common.ts`;
     }
