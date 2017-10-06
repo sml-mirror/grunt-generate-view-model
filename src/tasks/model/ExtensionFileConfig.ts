@@ -1,4 +1,4 @@
-export interface IMyFilesConfig extends grunt.file.IFilesConfig {
+export interface IExtensionGruntFilesConfig extends grunt.file.IFilesConfig {
     orig: IOrigDest;
 }
 
