@@ -8,11 +8,12 @@
     "build": "grunt build",
     "test": "grunt test"
   },
-  "dependencies": {   
-    "typescript": "^2.5.3",
-    "path": "^0.12.7",
+  "dependencies": {
+    "@types/grunt": "^0.4.22",
     "nunjucks": "^3.0.1",
-    "ts-file-parser": "^0.0.1"
+    "path": "^0.12.7",
+    "ts-file-parser": "^0.0.1",
+    "typescript": "^2.5.3"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",

@@ -7,25 +7,25 @@ export function createViewModels(options: Options): string [] {
     return createViewModelsInternal(options);
 }
 
-export function GenerateView(modelName: string): any {
+export function GenerateView(modelName: string) {
     return function(){
         var f;
     };
 }
 
-export function IgnoreViewModel(): any {
+export function IgnoreViewModel() {
     return function(){
         var f;
     };
 }
 
-export function ViewModelName(name: string): any {
+export function ViewModelName(name: string) {
     return function(){
         var f;
     };
 }
 
-export function ViewModelType(type: string, filepath: string): any {
+export function ViewModelType(type: string, filepath: string) {
     return function(){
         var f;
     };
