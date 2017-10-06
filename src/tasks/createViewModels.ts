@@ -16,24 +16,24 @@ export function createViewModelsInternal(prop: Options): string [] {
 }
 
 
-export function createOptionsOfGrunt(obj: any): Options {
+export function createOptionsOfGrunt(obj: IGrunt): Options {
     var options = new Options();
     var files = new Array<FileMapping>();
-    for (var i = 0; i < obj.files.length; i++) {
+    for (var i = 0; i < obj.task.current.files.length; i++) {
         var file = new FileMapping();
-        if (obj.files[i].src.length === 1) {
-            file.source = obj.files[i].src[0];
+        if (obj.task.current.files[i].src.length === 1) {
+            file.source = obj.task.current.files[i].src[0];
         } else {
-           file.source = obj.files[i].src[0];
+           file.source = obj.task.current.files[i].src[0];
         }
-        file.destination = obj.files[i].dest;
+        file.destination = obj.task.current.files[i].dest;
         files.push(file);
     }
 
     options.files = files;
-
-    if (obj.data.oneFile && obj.files.length) {
-            options.allInOneFile = `${obj.files[0].orig.dest}/common.ts`;
+    console.log(obj.task.current.target);
+    if (obj.task.current.data.oneFile && obj.task.current.files.length) {
+            options.allInOneFile = `${obj.task.current.target}/common.ts`;
     }
     return options;
 }
