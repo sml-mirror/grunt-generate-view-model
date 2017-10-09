@@ -30,8 +30,7 @@
     "mocha": "^3.5.0",
     "ts-node": "^3.3.0",
     "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-clean": "^1.1.0",
-    "mkdirp": "^0.5.1"
+    "grunt-contrib-clean": "^1.1.0"
   },
   "repository": {
     "type": "git",
