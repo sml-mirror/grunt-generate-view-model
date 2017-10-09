@@ -13,7 +13,8 @@
     "nunjucks": "^3.0.1",
     "path": "^0.12.7",
     "ts-file-parser": "^0.0.1",
-    "typescript": "^2.5.3"
+    "typescript": "^2.5.3",
+    "mkdirp":"^0.5.1"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
@@ -29,7 +30,8 @@
     "mocha": "^3.5.0",
     "ts-node": "^3.3.0",
     "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-clean": "^1.1.0"
+    "grunt-contrib-clean": "^1.1.0",
+    "mkdirp":"^0.5.1"
   },
   "repository": {
     "type": "git",
