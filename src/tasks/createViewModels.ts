@@ -3,6 +3,7 @@ import {ClassMetadata} from "./model/classmetadata";
 import {FieldMetadata} from "./model/fieldmetadata";
 import {FileMetadata} from "./model/filemetadata";
 import {Options, FileMapping} from "./model/options";
+import {IExtensionGruntFilesConfig} from "./model/extensionFileConfig";
 import {parseStruct} from "ts-file-parser";
 import {ArrayType, BasicType} from "ts-file-parser";
 import {render, renderString, configure} from "nunjucks";
@@ -16,29 +17,29 @@ export function createViewModelsInternal(prop: Options): string [] {
 }
 
 
-export function createOptionsOfGrunt(obj: any): Options {
+export function createOptionsOfGrunt(obj: IGrunt): Options {
     var options = new Options();
     var files = new Array<FileMapping>();
-    for (var i = 0; i < obj.files.length; i++) {
+    for (var i = 0; i < obj.task.current.files.length; i++) {
         var file = new FileMapping();
-        if (obj.files[i].src.length === 1) {
-            file.source = obj.files[i].src[0];
+        if (obj.task.current.files[i].src.length === 1) {
+            file.source = obj.task.current.files[i].src[0];
         } else {
-           file.source = obj.files[i].src[0];
+           file.source = obj.task.current.files[i].src[0];
         }
-        file.destination = obj.files[i].dest;
+        file.destination = obj.task.current.files[i].dest;
         files.push(file);
     }
 
     options.files = files;
-
-    if (obj.data.oneFile && obj.files.length) {
-            options.allInOneFile = `${obj.files[0].orig.dest}/common.ts`;
+    if (obj.task.current.data.oneFile && obj.task.current.files.length) {
+        var fileConfig = obj.task.current.files[0] as IExtensionGruntFilesConfig;
+        options.allInOneFile = `${fileConfig.orig.dest}/common.ts`;
     }
     return options;
 }
 
-export function createMetadatas(properties: Options) {
+export function createMetadatas(properties: Options): FileMetadata[] {
       var fs = require("fs");
       let generationFiles: FileMetadata[];
       generationFiles = new Array<FileMetadata>();
