@@ -39,7 +39,7 @@ export function createOptionsOfGrunt(obj: IGrunt): Options {
     return options;
 }
 
-export function createMetadatas(properties: Options) {
+export function createMetadatas(properties: Options): FileMetadata[] {
       var fs = require("fs");
       let generationFiles: FileMetadata[];
       generationFiles = new Array<FileMetadata>();
