@@ -1,6 +1,6 @@
 {
   "name": "grunt-generate-view-model",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Grunt task for code generation view models by models description",
   "private": false,
   "main": "dist/src/index.js",
@@ -13,7 +13,7 @@
     "path": "^0.12.7",
     "ts-file-parser": "^0.0.1",
     "typescript": "^2.5.3",
-    "mkdirp":"^0.5.1"
+    "mkdirp": "^0.5.1"
   },
   "devDependencies": {
     "@types/grunt": "^0.4.22",
@@ -31,7 +31,7 @@
     "ts-node": "^3.3.0",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-clean": "^1.1.0",
-    "mkdirp":"^0.5.1"
+    "mkdirp": "^0.5.1"
   },
   "repository": {
     "type": "git",
