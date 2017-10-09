@@ -3,7 +3,7 @@ import {ClassMetadata} from "./model/classmetadata";
 import {FieldMetadata} from "./model/fieldmetadata";
 import {FileMetadata} from "./model/filemetadata";
 import {Options, FileMapping} from "./model/options";
-import {IExtensionGruntFilesConfig} from "./model/ExtensionFileConfig";
+import {IExtensionGruntFilesConfig} from "./model/extensionFileConfig";
 import {parseStruct} from "ts-file-parser";
 import {ArrayType, BasicType} from "ts-file-parser";
 import {render, renderString, configure} from "nunjucks";
