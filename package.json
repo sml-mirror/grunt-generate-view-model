@@ -9,7 +9,6 @@
     "test": "grunt test"
   },
   "dependencies": {
-    "@types/grunt": "^0.4.22",
     "nunjucks": "^3.0.1",
     "path": "^0.12.7",
     "ts-file-parser": "^0.0.1",
