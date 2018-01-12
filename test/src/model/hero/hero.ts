@@ -11,6 +11,7 @@ export class HeroDetail {
 }
 
 @GenerateView("HeroViewModel")
+@GenerateView("HeroViewModel1")
 export class Hero {
 
     @IgnoreViewModel()

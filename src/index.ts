@@ -13,19 +13,19 @@ export function GenerateView(modelName: string): Function {
     };
 }
 
-export function IgnoreViewModel(): Function  {
+export function IgnoreViewModel(modelName?: string): Function  {
     return function(){
         var f;
     };
 }
 
-export function ViewModelName(name: string): Function  {
+export function ViewModelName(name: string, modelName?: string): Function  {
     return function(){
         var f;
     };
 }
 
-export function ViewModelType(type: string, filepath: string): Function  {
+export function ViewModelType(type: string, filepath: string, modelName?: string): Function  {
     return function(){
         var f;
     };
