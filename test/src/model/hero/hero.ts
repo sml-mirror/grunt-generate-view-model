@@ -11,6 +11,7 @@ export class HeroDetail {
 }
 
 @GenerateView("HeroViewModel")
+@GenerateView("HeroViewModel1")
 export class Hero {
 
     @IgnoreViewModel()
@@ -18,19 +19,22 @@ export class Hero {
 
     public name: string;
 
-    @ViewModelName("information")
+    @ViewModelName("information", "HeroViewModel")
     public data: string;
 
     @IgnoreViewModel()
     public detailId?: number;
 
     @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail")
+    @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;
 
     @ViewModelType("HeroDetailViewModel", "")
+    @IgnoreViewModel("HeroViewModel1")
     public detailVM: HeroDetail;
 
     @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail")
+    @IgnoreViewModel("HeroViewModel1")
     public details: HeroDetail[];
 
     @ViewModelType("HeroDetailViewModel", "")
