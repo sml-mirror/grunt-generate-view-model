@@ -46,7 +46,7 @@ export function createMetadatas(properties: Options): FileMetadata[] {
     var wasFiled = 0;
     var fileMet;
     var files = properties.files;
-    for (var file of files){
+    for (var file of files) {
         if (properties.allInOneFile) {
             if (fileMet === undefined) {
                 fileMet = new FileMetadata();
@@ -106,7 +106,7 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                             curBase = (<ArrayType>curBase).base;
                             fldMetadata.baseModelType = (<BasicType>curBase).typeName;
                         }
-                    }else {
+                    } else {
                         fldMetadata.baseModelType = (<BasicType>fld.type).typeName;
                         var typeName = (<BasicType>fld.type).typeName;
                         if (typeName !== "string" && typeName !== "number" && typeName !== "boolean" && typeName !== "undefined"

@@ -8,25 +8,25 @@ export function createViewModels(options: Options): string [] {
 }
 
 export function GenerateView(modelName: string): Function {
-    return function(){
+    return function() {
         var f;
     };
 }
 
 export function IgnoreViewModel(modelName?: string): Function  {
-    return function(){
+    return function() {
         var f;
     };
 }
 
 export function ViewModelName(name: string, modelName?: string): Function  {
-    return function(){
+    return function() {
         var f;
     };
 }
 
 export function ViewModelType(type: string, filepath: string, modelName?: string): Function  {
-    return function(){
+    return function() {
         var f;
     };
 }
