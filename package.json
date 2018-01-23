@@ -11,7 +11,7 @@
   "dependencies": {
     "nunjucks": "^3.0.1",
     "path": "^0.12.7",
-    "ts-file-parser": "^0.0.1",
+    "ts-file-parser": "0.0.4",
     "typescript": "^2.5.3",
     "mkdirp": "^0.5.1"
   },
