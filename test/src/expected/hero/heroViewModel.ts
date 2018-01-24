@@ -5,10 +5,12 @@ import { HeroDetail} from "../../models/newHeroes/heroDetail";
 export class HeroDetailViewModel {
 
   public detail: string;
-  constructor(model: any) {
+  constructor(model?: any) {
+    if(model) {
       
     this.detail = model.data;
   }
+}
 }
 
 export class HeroViewModel {
@@ -26,7 +28,8 @@ export class HeroViewModel {
   public detailsVM: HeroDetailViewModel [];
 
   public simpleArray: number [];
-  constructor(model: any) {
+  constructor(model?: any) {
+    if(model) {
       
     this.name = model.name;
       
@@ -61,6 +64,7 @@ export class HeroViewModel {
 
   }
 }
+}
 
 export class HeroViewModel1 {
 
@@ -71,7 +75,8 @@ export class HeroViewModel1 {
   public detailsVM: HeroDetailViewModel [];
 
   public simpleArray: number [];
-  constructor(model: any) {
+  constructor(model?: any) {
+    if(model) {
       
     this.name = model.name;
       
@@ -94,4 +99,5 @@ export class HeroViewModel1 {
     }
 
   }
+}
 }

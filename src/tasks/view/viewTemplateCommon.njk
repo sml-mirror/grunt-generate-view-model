@@ -15,7 +15,8 @@ export class {{class.name}} {
 {% endif %}
 {% else %}
 {% endfor %}
-  constructor(model: any) {
+  constructor(model?: any) {
+    if(model) {
 {% for field in class.fields %}
   {% if  field.ignoredInView===false %}
   {% if field.isComplexObj %}
@@ -48,6 +49,7 @@ export class {{class.name}} {
 {% endif %}
 {% else %}
 {% endfor %}
+}
 }
 }
 {% else %}
