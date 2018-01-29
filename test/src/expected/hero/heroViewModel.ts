@@ -1,18 +1,15 @@
 /*Codegen*/
-import { HeroDetail} from "../../models/newHeroes/heroDetail";
-
-  
-export class HeroDetailViewModel {
+import { HeroDetail} from '../../models/newHeroes/heroDetail';
+  export class HeroDetailViewModel {
 
   public detail: string;
   constructor(model?: any) {
-    if(model) {
-      
-    this.detail = model.data;
-  }
-}
-}
+    if (model) {
 
+    this.detail = model.data;
+}
+}
+}
 export class HeroViewModel {
 
   public name: string;
@@ -29,43 +26,37 @@ export class HeroViewModel {
 
   public simpleArray: number [];
   constructor(model?: any) {
-    if(model) {
-      
+    if (model) {
+
     this.name = model.name;
-      
+
     this.information = model.data;
-            this.detail = JSON.parse(JSON.stringify(model.detail));
-          if ( model.detailVM ) {
-        this.detailVM = new HeroDetailViewModel ( model.detailVM );
-    }
-      
+
+    this.detail = JSON.parse(JSON.stringify(model.detail));
+  if ( model.detailVM ) {
+    this.detailVM = new HeroDetailViewModel ( model.detailVM ); ////generate 
+  }
     if ( model.details ) {
       this.details = model.details.map(function(item: any) {
-          return JSON.parse(JSON.stringify(item));
-        });
+        return JSON.parse(JSON.stringify(item));
+      });
     }
-
-      
     if ( model.detailsVM ) {
       this.detailsVM = model.detailsVM.map(function(item: any) {
-          if ( item ) {
+        if ( item ) {
             return new HeroDetailViewModel ( item );
           }
           return null;
-        });
+      });
     }
-
-      
     if ( model.simpleArray ) {
       this.simpleArray = model.simpleArray.map(function(item: any) {
-          return JSON.parse(JSON.stringify(item));
-        });
+        return JSON.parse(JSON.stringify(item));
+      });
     }
-
-  }
 }
 }
-
+}
 export class HeroViewModel1 {
 
   public name: string;
@@ -76,28 +67,24 @@ export class HeroViewModel1 {
 
   public simpleArray: number [];
   constructor(model?: any) {
-    if(model) {
-      
+    if (model) {
+
     this.name = model.name;
-      
+
     this.data = model.data;
-              
     if ( model.detailsVM ) {
       this.detailsVM = model.detailsVM.map(function(item: any) {
-          if ( item ) {
+        if ( item ) {
             return new HeroDetailViewModel ( item );
           }
           return null;
-        });
+      });
     }
-
-      
     if ( model.simpleArray ) {
       this.simpleArray = model.simpleArray.map(function(item: any) {
-          return JSON.parse(JSON.stringify(item));
-        });
+        return JSON.parse(JSON.stringify(item));
+      });
     }
-
-  }
+}
 }
 }

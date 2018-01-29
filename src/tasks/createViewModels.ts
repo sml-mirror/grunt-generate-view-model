@@ -138,7 +138,7 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                                 fldMetadata.type = dec.arguments[0].toString();
                                 let filename = dec.arguments[1].toString();
                                 if (filename) {
-                                    let insertedImport = "import { " + fldMetadata.type + "} from \"" + filename + "\";";
+                                    let insertedImport = "import { " + fldMetadata.type + "} from '" + filename + "';";
                                     if (fileMet.imports.indexOf(insertedImport) === -1) {
                                         fileMet.imports.push(insertedImport);
                                     }
@@ -147,7 +147,7 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                                 fldMetadata.type = dec.arguments[0].toString();
                                 let filename = dec.arguments[1].toString();
                                 if (filename) {
-                                    let insertedImport = "import { " + fldMetadata.type + "} from \"" + filename + "\";";
+                                    let insertedImport = "import { " + fldMetadata.type + "} from '" + filename + "';";
                                     if (fileMet.imports.indexOf(insertedImport) === -1) {
                                         fileMet.imports.push(insertedImport);
                                     }

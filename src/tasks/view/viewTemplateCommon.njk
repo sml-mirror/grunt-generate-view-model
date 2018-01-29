@@ -4,9 +4,7 @@
 {{import|safe}}
 {% else %}
 {% endfor %}
-
   {% for class in metafile.classes %}
-
 export class {{class.name}} {
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
@@ -16,36 +14,35 @@ export class {{class.name}} {
 {% else %}
 {% endfor %}
   constructor(model?: any) {
-    if(model) {
+    if (model) {
 {% for field in class.fields %}
-  {% if  field.ignoredInView===false %}
-  {% if field.isComplexObj %}
-{% if  field.type === field.baseModelType %}
+{% if field.ignoredInView === false %}
+{% if field.isComplexObj %}
+{% if field.type === field.baseModelType %}
+
     this.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
 {% else %}
-    if ( model.{{field.baseModelName}} ) {
-        this.{{field.name}} = new {{field.type}} ( model.{{field.baseModelName}} );
-    }
+  if ( model.{{field.baseModelName}} ) {
+    this.{{field.name}} = new {{field.type}} ( model.{{field.baseModelName}} ); ////generate 
+  }
 {% endif %}
-  {% elif field.isArray %}
-
+{% elif field.isArray %}
     if ( model.{{field.baseModelName}} ) {
       this.{{field.name}} = model.{{field.baseModelName}}.map(function(item: any) {
-  {% if  field.type === field.baseModelType %}
+{% if  field.type === field.baseModelType %}
         return JSON.parse(JSON.stringify(item));
-  {% else %}
+{% else %}
         if ( item ) {
             return new {{field.type}} ( item );
           }
           return null;
-  {% endif %}
+{% endif %}
       });
     }
-
-  {% else %}
+{% else %}
 
     this.{{field.name}} = model.{{field.baseModelName}};
-  {% endif %}
+{% endif %}
 {% endif %}
 {% else %}
 {% endfor %}
