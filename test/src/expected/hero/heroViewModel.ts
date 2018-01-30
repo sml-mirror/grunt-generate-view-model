@@ -34,7 +34,7 @@ export class HeroViewModel {
 
     this.detail = JSON.parse(JSON.stringify(model.detail));
   if ( model.detailVM ) {
-    this.detailVM = new HeroDetailViewModel ( model.detailVM ); ////generate 
+    this.detailVM = new HeroDetailViewModel ( model.detailVM );
   }
     if ( model.details ) {
       this.details = model.details.map(function(item: any) {
