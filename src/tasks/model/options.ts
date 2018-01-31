@@ -3,6 +3,7 @@ export class Options {
     public allInOneFile: string;
 }
 export class FileMapping {
+    public viewModelNames?: string[];
     public source: string;
     public destination: string;
 }

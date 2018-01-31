@@ -10,17 +10,11 @@ import { HeroDetail} from '../../models/newHeroes/heroDetail';
 }
 }
 }
-export class HeroViewModel {
+export class HeroViewModel1 {
 
   public name: string;
 
-  public information: string;
-
-  public detail: HeroDetail;
-
-  public detailVM: HeroDetailViewModel;
-
-  public details: HeroDetail [];
+  public data: string;
 
   public detailsVM: HeroDetailViewModel [];
 
@@ -30,17 +24,7 @@ export class HeroViewModel {
 
     this.name = model.name;
 
-    this.information = model.data;
-
-    this.detail = JSON.parse(JSON.stringify(model.detail));
-  if ( model.detailVM ) {
-    this.detailVM = new HeroDetailViewModel ( model.detailVM );
-  }
-    if ( model.details ) {
-      this.details = model.details.map(function(item: any) {
-        return JSON.parse(JSON.stringify(item));
-      });
-    }
+    this.data = model.data;
     if ( model.detailsVM ) {
       this.detailsVM = model.detailsVM.map(function(item: any) {
         if ( item ) {

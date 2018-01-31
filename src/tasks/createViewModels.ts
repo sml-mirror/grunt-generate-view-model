@@ -44,11 +44,11 @@ export function createMetadatas(properties: Options): FileMetadata[] {
     let generationFiles: FileMetadata[];
     generationFiles = new Array<FileMetadata>();
     var wasFiled = 0;
-    var fileMet;
+    let fileMet : FileMetadata;
     var files = properties.files;
     for (var file of files) {
         if (properties.allInOneFile) {
-            if (fileMet === undefined) {
+            if (!fileMet) {
                 fileMet = new FileMetadata();
             }
 
@@ -165,6 +165,9 @@ export function createMetadatas(properties: Options): FileMetadata[] {
             classMets.forEach( cm => {
                 fileMet.classes.push(cm);
             });
+        });
+        fileMet.classes = fileMet.classes.filter(function(cls: ClassMetadata) {
+                return file.viewModelNames.indexOf(cls.name) > -1;
         });
         if (properties.allInOneFile && wasFiled === 0) {
             generationFiles.push(fileMet);
