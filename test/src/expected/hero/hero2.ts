@@ -1,5 +1,4 @@
 /*Codegen*/
-import { HeroDetail} from '../../models/newHeroes/heroDetail';
   export class HeroDetailViewModel {
 
   public detail: string;
@@ -16,6 +15,8 @@ export class HeroViewModel1 {
 
   public data: string;
 
+  public details: HeroDetailViewModel [];
+
   public detailsVM: HeroDetailViewModel [];
 
   public simpleArray: number [];
@@ -25,6 +26,14 @@ export class HeroViewModel1 {
     this.name = model.name;
 
     this.data = model.data;
+    if ( model.details ) {
+      this.details = model.details.map(function(item: any) {
+        if ( item ) {
+            return new HeroDetailViewModel ( item );
+          }
+          return null;
+      });
+    }
     if ( model.detailsVM ) {
       this.detailsVM = model.detailsVM.map(function(item: any) {
         if ( item ) {

@@ -25,7 +25,7 @@ export class Hero {
     @IgnoreViewModel()
     public detailId?: number;
 
-    @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail")
+    @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail", "HeroViewModel")
     @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;
 
@@ -33,8 +33,9 @@ export class Hero {
     @IgnoreViewModel("HeroViewModel1")
     public detailVM: HeroDetail;
 
-    @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail")
-    @IgnoreViewModel("HeroViewModel1")
+    @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail", "HeroViewModel")
+    @ViewModelType("HeroDetailViewModel", "", "HeroViewModel1")
+    //@IgnoreViewModel("HeroViewModel1")
     public details: HeroDetail[];
 
     @ViewModelType("HeroDetailViewModel", "")

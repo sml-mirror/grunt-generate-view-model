@@ -1,4 +1,4 @@
-
+import { Import } from "./model/import";
 import {ClassMetadata} from "./model/classmetadata";
 import {FieldMetadata} from "./model/fieldmetadata";
 import {FileMetadata} from "./model/filemetadata";
@@ -131,44 +131,34 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                             } else if (!dec.arguments[1]) {
                                 fldMetadata.name = dec.arguments[0].toString();
                             }
-                            //fldMetadata.name = dec.arguments[0].toString();
                         }
                         if (dec.name === "ViewModelType") {
-                            if (dec.arguments[2] && dec.arguments[2].toString() === cm.name) {
+                            if ((dec.arguments[2] && dec.arguments[2].toString() === cm.name) || (!dec.arguments[2])) {
                                 fldMetadata.type = dec.arguments[0].toString();
                                 let filename = dec.arguments[1].toString();
-                                if (filename) {
-                                    let insertedImport = "import { " + fldMetadata.type + "} from '" + filename + "';";
-                                    if (fileMet.imports.indexOf(insertedImport) === -1) {
-                                        fileMet.imports.push(insertedImport);
-                                    }
+                                let acceptTypeForImport: string = "*";
+                                if (dec.arguments[2]) {
+                                    acceptTypeForImport = dec.arguments[2].toString();
                                 }
-                            } else if (!dec.arguments[2]) {
-                                fldMetadata.type = dec.arguments[0].toString();
-                                let filename = dec.arguments[1].toString();
                                 if (filename) {
-                                    let insertedImport = "import { " + fldMetadata.type + "} from '" + filename + "';";
-                                    if (fileMet.imports.indexOf(insertedImport) === -1) {
-                                        fileMet.imports.push(insertedImport);
-                                    }
+                                    fileMet.addImport(fldMetadata.type, filename);
                                 }
                             }
                         }
                     });
                     cm.fields.push(fldMetadata);
-                    //classMet.fields.push(fldMetadata);
                 });
             });
             if (fileMet.classes === null) {
                 fileMet.classes = [];
             }
             classMets.forEach( cm => {
-                fileMet.classes.push(cm);
+                if (file.viewModelNames.indexOf(cm.name) > -1) {
+                    fileMet.classes.push(cm);
+                }
             });
         });
-        fileMet.classes = fileMet.classes.filter(function(cls: ClassMetadata) {
-                return file.viewModelNames.indexOf(cls.name) > -1;
-        });
+        fileMet.filterImport();
         if (properties.allInOneFile && wasFiled === 0) {
             generationFiles.push(fileMet);
             wasFiled++;
