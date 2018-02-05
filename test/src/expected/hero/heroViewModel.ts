@@ -1,5 +1,5 @@
 /*Codegen*/
-import { HeroDetail } from '../../models/newHeroes/heroDetail'
+import { HeroDetail } from '../../models/newHeroes/heroDetail';
   export class HeroDetailViewModel {
 
   public detail: string;
