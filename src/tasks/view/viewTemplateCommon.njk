@@ -1,7 +1,7 @@
 {% if metafile.classes.length > 0  %}
 /*Codegen*/
 {% for import in metafile.imports %}
-import { {{import.classType}} } from '{{import.path}}'
+import { {{import.classType}} } from '{{import.path}}';
 {% else %}
 {% endfor %}
   {% for class in metafile.classes %}
