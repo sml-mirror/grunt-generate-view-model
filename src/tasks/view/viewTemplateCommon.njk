@@ -1,7 +1,9 @@
 {% if metafile.classes.length > 0  %}
 /*Codegen*/
 {% for import in metafile.imports %}
+{%if import.isTransformer === false %}
 import { {{import.classType}} } from '{{import.path}}';
+{% endif %}
 {% else %}
 {% endfor %}
   {% for class in metafile.classes %}
@@ -9,45 +11,10 @@ export class {{class.name}} {
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
 
-  public {{field.name}}: {{field.type}}{% if field.isArray %} []{% endif %};
+  public {{field.name}}{% if field.isNullable %}?{% endif %}: {{field.type}}{% if field.isArray %} []{% endif %};
 {% endif %}
 {% else %}
 {% endfor %}
-  constructor(model?: any) {
-    if (model) {
-{% for field in class.fields %}
-{% if field.ignoredInView === false %}
-{% if field.isComplexObj %}
-{% if field.type === field.baseModelType %}
-
-    this.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
-{% else %}
-  if ( model.{{field.baseModelName}} ) {
-    this.{{field.name}} = new {{field.type}} ( model.{{field.baseModelName}} );
-  }
-{% endif %}
-{% elif field.isArray %}
-    if ( model.{{field.baseModelName}} ) {
-      this.{{field.name}} = model.{{field.baseModelName}}.map(function(item: any) {
-{% if  field.type === field.baseModelType %}
-        return JSON.parse(JSON.stringify(item));
-{% else %}
-        if ( item ) {
-            return new {{field.type}} ( item );
-          }
-          return null;
-{% endif %}
-      });
-    }
-{% else %}
-
-    this.{{field.name}} = model.{{field.baseModelName}};
-{% endif %}
-{% endif %}
-{% else %}
-{% endfor %}
-}
-}
 }
 {% else %}
 {% endfor %}

@@ -1,21 +1,17 @@
-import {GenerateView, IgnoreViewModel, ViewModelName, ViewModelType} from "../../../../src/index";
+import {GenerateView, IgnoreViewModel, ViewModelName, ViewModelType, NeedMapper} from "../../../../src/index";
+import {HeroDetail} from "./heroDetail";
 
-@GenerateView("HeroDetailViewModel")
-export class HeroDetail {
 
-    @IgnoreViewModel()
-    public id?: number;
-
-    @ViewModelName("detail")
-    public data: string;
-}
 
 @GenerateView("HeroViewModel")
 @GenerateView("HeroViewModel1")
+@NeedMapper()
 export class Hero {
 
-    @IgnoreViewModel()
+    @ViewModelType("string", "")
+    @IgnoreViewModel("HeroViewModel1")
     public id?: number;
+
 
     public name: string;
 
@@ -25,20 +21,19 @@ export class Hero {
     @IgnoreViewModel()
     public detailId?: number;
 
-    @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail", "HeroViewModel")
+    @ViewModelType("HeroDetail", "../../test/src/model/hero/heroDetail", "HeroViewModel")
     @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;
 
-    @ViewModelType("HeroDetailViewModel", "")
+    @ViewModelType("HeroDetailViewModel", "./heroDetailViewModel")
     @IgnoreViewModel("HeroViewModel1")
     public detailVM: HeroDetail;
 
-    @ViewModelType("HeroDetail", "../../models/newHeroes/heroDetail", "HeroViewModel")
-    @ViewModelType("HeroDetailViewModel", "", "HeroViewModel1")
-    //@IgnoreViewModel("HeroViewModel1")
+    @ViewModelType("HeroDetail", "../../test/src/model/hero/heroDetail", "HeroViewModel", {"func" : "GenerateView", "funcPath": "../../../../src/index"})
+    @ViewModelType("HeroDetailViewModel", "./heroDetailViewModel", "HeroViewModel1")
     public details: HeroDetail[];
 
-    @ViewModelType("HeroDetailViewModel", "")
+    @ViewModelType("HeroDetailViewModel", "./heroDetailViewModel")
     public detailsVM: HeroDetail[];
 
     public simpleArray: number[];

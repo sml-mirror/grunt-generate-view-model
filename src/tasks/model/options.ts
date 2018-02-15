@@ -4,6 +4,7 @@ export class Options {
 }
 export class FileMapping {
     public viewModelNames?: string[];
+    public baseName?: string;
     public source: string;
     public destination: string;
 }

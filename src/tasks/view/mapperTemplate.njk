@@ -1,0 +1,69 @@
+{% for import in metafile.imports %}
+import { {{import.classType}} } from '{{import.path}}';
+{% if import.isTransformer === false %}
+{% for class in metafile.classes %}
+{% if class.needMapper === true %}
+import { {{import.classType}}Mapper } from '{{import.path}}Mapper';
+{% endif %}
+{%endfor%}
+{% endif %}
+{% else %}
+{% endfor %}
+
+{% for class in metafile.classes %}
+import { {{class.name}} } from './{{class.name}}';
+{% endfor%}
+
+{% for class in metafile.classes %}
+export class {{class.name}}Mapper {
+    public async to{{class.name}}(model: any /*{{class.baseName}}*/): Promise<{{class.name}}> {
+      let result = new {{class.name}}();
+      if (model) {
+{% for field in class.fields %}
+{% if  field.ignoredInView===false %}
+{% if field.ignoredInView === false %}
+{% if field.fieldConvertFunction %}
+      let {{field.name}}Init;
+      if (model.{{field.name}}) {
+      {{field.name}}Init = await {{field.fieldConvertFunction}}(model.{{field.name}});
+      }
+{% endif %}
+{% if field.isComplexObj %}
+{% if field.type === field.baseModelType %}
+      result.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
+{% else %}
+
+      if ( model.{{field.baseModelName}} ) {
+        result.{{field.name}} = await (new {{field.type}}Mapper()).to{{field.type}}(model.{{field.baseModelName}});
+
+
+      }
+{% endif %}
+{% elif field.isArray %}
+      if ( model.{{field.baseModelName}} ) {
+        result.{{field.name}} = model.{{field.baseModelName}}.map(async function(item: any) {
+{% if  field.type === field.baseModelType %}
+        return JSON.parse(JSON.stringify(item));
+{% else %}
+        if ( item ) {
+            return await (new {{field.type}}Mapper()).to{{field.type}}( item );
+          }
+          return null;
+{% endif %}
+      });
+    }
+{% else %}
+    result.{{field.name}} = model.{{field.baseModelName}}{% if field.toStringWanted %}.toString(){% endif%};
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+      }
+      return result;
+    }
+  }
+
+
+
+

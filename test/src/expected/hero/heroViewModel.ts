@@ -1,9 +1,15 @@
 /*Codegen*/
 import { HeroDetail } from '../../models/newHeroes/heroDetail';
+import { GenerateView } from '../../../../src/index';
   export class HeroDetailViewModel {
 
   public detail: string;
-  constructor(model?: any) {
+constructor(model?: any) {
+  if (model) {
+    this.init(model);
+  }
+}
+async init(model?: any) {
     if (model) {
 
     this.detail = model.data;
@@ -25,7 +31,12 @@ export class HeroViewModel {
   public detailsVM: HeroDetailViewModel [];
 
   public simpleArray: number [];
-  constructor(model?: any) {
+constructor(model?: any) {
+  if (model) {
+    this.init(model);
+  }
+}
+async init(model?: any) {
     if (model) {
 
     this.name = model.name;
@@ -36,6 +47,10 @@ export class HeroViewModel {
   if ( model.detailVM ) {
     this.detailVM = new HeroDetailViewModel ( model.detailVM );
   }
+let detailsInit;
+if (model.details) {
+  detailsInit = await GenerateView(model.details);
+}
     if ( model.details ) {
       this.details = model.details.map(function(item: any) {
         return JSON.parse(JSON.stringify(item));

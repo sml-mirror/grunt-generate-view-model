@@ -1,6 +1,7 @@
 "use strict";
 import {createViewModelsInternal} from "../src/tasks/createViewModels";
 import {Options} from "./tasks/model/options";
+import { Transformer } from "./tasks/model/transformer";
 
 
 export function createViewModels(options: Options): string [] {
@@ -25,8 +26,15 @@ export function ViewModelName(name: string, modelName?: string): Function  {
     };
 }
 
-export function ViewModelType(type: string, filepath: string, modelName?: string): Function  {
+export function ViewModelType(type: string, filepath: string, modelName?: string, transformer?: Transformer): Function  {
     return function() {
+        var f;
+    };
+}
+
+export function NeedMapper(): Function  {
+    return function() {
+        console.log();
         var f;
     };
 }

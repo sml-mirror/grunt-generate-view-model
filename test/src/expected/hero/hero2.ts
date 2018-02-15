@@ -2,7 +2,12 @@
   export class HeroDetailViewModel {
 
   public detail: string;
-  constructor(model?: any) {
+constructor(model?: any) {
+  if (model) {
+    this.init(model);
+  }
+}
+async init(model?: any) {
     if (model) {
 
     this.detail = model.data;
@@ -20,7 +25,12 @@ export class HeroViewModel1 {
   public detailsVM: HeroDetailViewModel [];
 
   public simpleArray: number [];
-  constructor(model?: any) {
+constructor(model?: any) {
+  if (model) {
+    this.init(model);
+  }
+}
+async init(model?: any) {
     if (model) {
 
     this.name = model.name;

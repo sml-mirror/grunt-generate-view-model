@@ -8,6 +8,7 @@ import {parseStruct} from "ts-file-parser";
 import {ArrayType, BasicType} from "ts-file-parser";
 import {render, renderString, configure} from "nunjucks";
 import * as path from "path";
+import { Transformer } from "./model/transformer";
 
 
 export function createViewModelsInternal(prop: Options): string [] {
@@ -64,7 +65,6 @@ export function createMetadatas(properties: Options): FileMetadata[] {
         var stringFile = fs.readFileSync(file.source, "utf-8");
         var jsonStructure = parseStruct(stringFile, {}, file.source);
         jsonStructure.classes.forEach(cls => {
-
             let classMet = new ClassMetadata();
             let classMets = new Array<ClassMetadata>();
 
@@ -86,18 +86,24 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                         classMets.push(otherClassMet);
                     }
                 }
+                if (dec.name === "NeedMapper") {
+                    classMets.forEach(clMet => {
+                        clMet.needMapper = true;
+                    });
+                }
 
             });
             if (classMet.generateView === false) {
                 return;
             }
-
-            //here we have several viewClassTemplates by one class
-
             classMets.forEach(cm => {
+                cm.baseName = cls.name;
+                cm.baseNamePath =  file.source;
                 cls.fields.forEach(fld => {
                     let fldMetadata = new FieldMetadata();
+                    fldMetadata.isNullable = fld.optional;
                     fldMetadata.baseModelName = fld.name;
+
                     if ((<ArrayType>fld.type).base !== undefined) {
                         fldMetadata.isArray = true;
                         fldMetadata.baseModelType = (<BasicType>(<ArrayType>fld.type).base).typeName;
@@ -117,7 +123,6 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                     fldMetadata.name = fld.name;
                     fldMetadata.type = fldMetadata.baseModelType;
                     fld.decorators.forEach(dec => {
-
                         if (dec.name === "IgnoreViewModel") {
                             if (dec.arguments[0] && dec.arguments[0].toString() === cm.name) {
                                 fldMetadata.ignoredInView = true;
@@ -136,12 +141,18 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                             if ((dec.arguments[2] && dec.arguments[2].toString() === cm.name) || (!dec.arguments[2])) {
                                 fldMetadata.type = dec.arguments[0].toString();
                                 let filename = dec.arguments[1].toString();
-                                let acceptTypeForImport: string = "*";
-                                if (dec.arguments[2]) {
-                                    acceptTypeForImport = dec.arguments[2].toString();
+                                if ( fldMetadata.type === "string" && fldMetadata.type !== fldMetadata.baseModelType ) {
+                                    fldMetadata.toStringWanted = true;
                                 }
+
                                 if (filename) {
-                                    fileMet.addImport(fldMetadata.type, filename);
+                                    fileMet.addImport(fldMetadata.type, filename, false);
+                                }
+                                if (dec.arguments[3]) {
+                                    let func = (<Transformer>dec.arguments[3]).func;
+                                    let functionPath = (<Transformer>dec.arguments[3]).funcPath;
+                                    fileMet.addImport(func, functionPath, true);
+                                    fldMetadata.fieldConvertFunction = func;
                                 }
                             }
                         }
@@ -175,18 +186,37 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     configure(viewsFolder, {autoescape: true, trimBlocks : true});
 
     let res: string [] = [];
-
     for ( var i = 0; i < metadata.length; i++ ) {
         var mdata = metadata[i];
+        console.log(mdata.classes);
+        console.log(mdata.imports);
         mdata.classes = mdata.classes.filter((item) => item.generateView);
         var c = render("viewTemplateCommon.njk", {metafile: mdata});
+        var mapperc = render("mapperTemplate.njk", {metafile: mdata});
         if (c && c.trim()) {
             var fs = require("fs");
             var mkdirp = require("mkdirp");
             var getDirName = require("path").dirname;
-            mkdirp.sync(getDirName(metadata[i].filename));
-            fs.writeFileSync(metadata[i].filename, c, "utf-8");
+            mkdirp.sync(getDirName(mdata.filename));
+            fs.writeFileSync(mdata.filename, c, "utf-8");
             res.push(c);
+
+            let needMapper = true;
+            mdata.classes.forEach(cls => {
+                if (cls.needMapper === false) {
+                    needMapper = false;
+                }
+            });
+            console.log(needMapper);
+
+            if (needMapper) {
+                var fs1 = require("fs");
+                var mkdirp1 = require("mkdirp");
+                var getDirName1 = require("path").dirname;
+                mkdirp.sync(getDirName(mdata.filename.split(".ts").join("Mapper.ts")));
+                fs.writeFileSync(mdata.filename.split(".ts").join("Mapper.ts"), mapperc, "utf-8");
+                res.push(mapperc);
+            }
         }
     }
 
