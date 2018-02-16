@@ -9,6 +9,7 @@ import {ArrayType, BasicType} from "ts-file-parser";
 import {render, renderString, configure} from "nunjucks";
 import * as path from "path";
 import { Transformer } from "./model/transformer";
+import {ViewModelTypeOptions} from "./model/viewModelTypeOptions";
 
 
 export function createViewModelsInternal(prop: Options): string [] {
@@ -138,21 +139,29 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                             }
                         }
                         if (dec.name === "ViewModelType") {
-                            if ((dec.arguments[2] && dec.arguments[2].toString() === cm.name) || (!dec.arguments[2])) {
-                                fldMetadata.type = dec.arguments[0].toString();
-                                let filename = dec.arguments[1].toString();
+                            let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
+                            if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
+                                fldMetadata.type = fieldTypeOptions.type;
+                                let filename = fieldTypeOptions.filepath;
                                 if ( fldMetadata.type === "string" && fldMetadata.type !== fldMetadata.baseModelType ) {
                                     fldMetadata.toStringWanted = true;
                                 }
-
                                 if (filename) {
-                                    fileMet.addImport(fldMetadata.type, filename, false);
+                                    fileMet.addImport(fldMetadata.type, filename, false, fieldTypeOptions.isView);
                                 }
-                                if (dec.arguments[3]) {
-                                    let func = (<Transformer>dec.arguments[3]).func;
-                                    let functionPath = (<Transformer>dec.arguments[3]).funcPath;
-                                    fileMet.addImport(func, functionPath, true);
-                                    fldMetadata.fieldConvertFunction = func;
+                                if (fieldTypeOptions.transformer) {
+                                    let transformer = fieldTypeOptions.transformer;
+                                    let targetImportType: string;
+                                    if (transformer.className !== "") {
+                                        targetImportType = transformer.className;
+                                        fldMetadata.fieldConvertFunction = transformer.className +'.'+ transformer.func;
+                                    } else {
+                                        targetImportType = transformer.func;
+                                        fldMetadata.fieldConvertFunction = transformer.func;
+                                    }
+                                    let functionPath = fieldTypeOptions.transformer.funcPath;
+                                    fileMet.addImport(targetImportType, functionPath, true, fieldTypeOptions.isView);
+
                                 }
                             }
                         }
@@ -188,8 +197,6 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     let res: string [] = [];
     for ( var i = 0; i < metadata.length; i++ ) {
         var mdata = metadata[i];
-        console.log(mdata.classes);
-        console.log(mdata.imports);
         mdata.classes = mdata.classes.filter((item) => item.generateView);
         var c = render("viewTemplateCommon.njk", {metafile: mdata});
         var mapperc = render("mapperTemplate.njk", {metafile: mdata});
@@ -207,8 +214,6 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
                     needMapper = false;
                 }
             });
-            console.log(needMapper);
-
             if (needMapper) {
                 var fs1 = require("fs");
                 var mkdirp1 = require("mkdirp");

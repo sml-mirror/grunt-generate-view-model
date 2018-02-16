@@ -11,7 +11,7 @@ export class FileMetadata {
         public imports: Import[] = []) {
     }
 
-    public addImport( tartgetImportType: string, tartgetImportPath: string, isTransform: boolean): boolean {
+    public addImport( tartgetImportType: string, tartgetImportPath: string, isTransform: boolean, isView: boolean): boolean {
         let include: boolean = false;
         let acceptable: boolean = false;
         let _import: Import;
@@ -19,6 +19,7 @@ export class FileMetadata {
         _import.classType = tartgetImportType;
         _import.path = tartgetImportPath;
         _import.isTransformer = isTransform;
+        _import.isViewClass = isView;
         for (let i = 0; i < this.imports.length; i++) {
             if (this.imports[i].classType === _import.classType && this.imports[i].path === _import.path) {
                 include = true;

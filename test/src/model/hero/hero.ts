@@ -8,7 +8,7 @@ import {HeroDetail} from "./heroDetail";
 @NeedMapper()
 export class Hero {
 
-    @ViewModelType("string", "")
+    @ViewModelType({"type": "string", "filepath": ""})
     @IgnoreViewModel("HeroViewModel1")
     public id?: number;
 
@@ -21,19 +21,20 @@ export class Hero {
     @IgnoreViewModel()
     public detailId?: number;
 
-    @ViewModelType("HeroDetail", "../../test/src/model/hero/heroDetail", "HeroViewModel")
+    @ViewModelType({"type": "HeroDetail", "filepath": "../../test/src/model/hero/heroDetail", "modelName": "HeroViewModel"})
     @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;
 
-    @ViewModelType("HeroDetailViewModel", "./heroDetailViewModel")
+    @ViewModelType({"type": "HeroDetailViewModel", "filepath": "./heroDetailViewModel", "isView": true})
     @IgnoreViewModel("HeroViewModel1")
     public detailVM: HeroDetail;
 
-    @ViewModelType("HeroDetail", "../../test/src/model/hero/heroDetail", "HeroViewModel", {"func" : "GenerateView", "funcPath": "../../../../src/index"})
-    @ViewModelType("HeroDetailViewModel", "./heroDetailViewModel", "HeroViewModel1")
+    @ViewModelType({"type": "HeroDetail", "filepath": "../../test/src/model/hero/heroDetail",
+    "modelName": "HeroViewModel", "transformer": {"func" : "GenerateView", "funcPath": "../../../../src/index"}, "isView": true})
+    @ViewModelType({"type": "HeroDetailViewModel", "filepath": "./heroDetailViewModel", "modelName": "HeroViewModel1"})
     public details: HeroDetail[];
 
-    @ViewModelType("HeroDetailViewModel", "./heroDetailViewModel")
+    @ViewModelType({"type": "HeroDetailViewModel",  "filepath": "./heroDetailViewModel"})
     public detailsVM: HeroDetail[];
 
     public simpleArray: number[];

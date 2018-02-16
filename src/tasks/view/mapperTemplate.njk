@@ -3,7 +3,9 @@ import { {{import.classType}} } from '{{import.path}}';
 {% if import.isTransformer === false %}
 {% for class in metafile.classes %}
 {% if class.needMapper === true %}
+{% if import.isViewClass === true%}
 import { {{import.classType}}Mapper } from '{{import.path}}Mapper';
+{% endif %}
 {% endif %}
 {%endfor%}
 {% endif %}
@@ -13,10 +15,9 @@ import { {{import.classType}}Mapper } from '{{import.path}}Mapper';
 {% for class in metafile.classes %}
 import { {{class.name}} } from './{{class.name}}';
 {% endfor%}
-
 {% for class in metafile.classes %}
 export class {{class.name}}Mapper {
-    public async to{{class.name}}(model: any /*{{class.baseName}}*/): Promise<{{class.name}}> {
+    public static async to{{class.name}}(model: any /*{{class.baseName}}*/): Promise<{{class.name}}> {
       let result = new {{class.name}}();
       if (model) {
 {% for field in class.fields %}
@@ -35,8 +36,6 @@ export class {{class.name}}Mapper {
 
       if ( model.{{field.baseModelName}} ) {
         result.{{field.name}} = await (new {{field.type}}Mapper()).to{{field.type}}(model.{{field.baseModelName}});
-
-
       }
 {% endif %}
 {% elif field.isArray %}
