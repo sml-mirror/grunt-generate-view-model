@@ -29,8 +29,8 @@ export class Hero {
     @IgnoreViewModel("HeroViewModel1")
     public detailVM: HeroDetail;
 
-    @ViewModelType({"type": "HeroDetail", "filepath": "../../test/src/model/hero/heroDetail",
-    "modelName": "HeroViewModel", "transformer": {"func" : "GenerateView", "funcPath": "../../../../src/index"}, "isView": true})
+    @ViewModelType({"type": "HeroDetailViewModel", "filepath": "./heroDetailViewModel",
+    "modelName": "HeroViewModel", "inputNames": ["details"], "isView": true})
     @ViewModelType({"type": "HeroDetailViewModel", "filepath": "./heroDetailViewModel", "modelName": "HeroViewModel1"})
     public details: HeroDetail[];
 

@@ -8,4 +8,5 @@ export class ClassMetadata {
     public needMapper: boolean = false;
     public baseName: string = null;
     public baseNamePath: string = null;
+    public mapperotherClasses?: string[] = [];
 }

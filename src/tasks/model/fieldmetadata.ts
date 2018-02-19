@@ -10,4 +10,5 @@ export class FieldMetadata {
     public isComplexObj: boolean = false;
     public fieldConvertFunction: string;
     public toStringWanted: boolean = false;
+    public nameOfMapEntity: string[];
 }

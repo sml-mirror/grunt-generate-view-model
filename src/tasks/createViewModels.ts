@@ -141,6 +141,12 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                         if (dec.name === "ViewModelType") {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
+                                if (fieldTypeOptions.inputNames) {
+                                    fieldTypeOptions.inputNames.forEach(n => {
+                                        cm.mapperotherClasses.push(n);
+                                    });
+                                    fldMetadata.nameOfMapEntity = fieldTypeOptions.inputNames;
+                                }
                                 fldMetadata.type = fieldTypeOptions.type;
                                 let filename = fieldTypeOptions.filepath;
                                 if ( fldMetadata.type === "string" && fldMetadata.type !== fldMetadata.baseModelType ) {
@@ -151,17 +157,10 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                                 }
                                 if (fieldTypeOptions.transformer) {
                                     let transformer = fieldTypeOptions.transformer;
-                                    let targetImportType: string;
-                                    if (transformer.className !== "") {
-                                        targetImportType = transformer.className;
-                                        fldMetadata.fieldConvertFunction = transformer.className +'.'+ transformer.func;
-                                    } else {
-                                        targetImportType = transformer.func;
-                                        fldMetadata.fieldConvertFunction = transformer.func;
-                                    }
-                                    let functionPath = fieldTypeOptions.transformer.funcPath;
-                                    fileMet.addImport(targetImportType, functionPath, true, fieldTypeOptions.isView);
-
+                                    let func = transformer.func;
+                                    let functionPath = transformer.funcPath;
+                                    fileMet.addImport(func, functionPath, true, fieldTypeOptions.isView);
+                                    fldMetadata.fieldConvertFunction = func;
                                 }
                             }
                         }

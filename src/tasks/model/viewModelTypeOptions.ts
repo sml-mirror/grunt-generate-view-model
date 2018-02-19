@@ -6,4 +6,5 @@ export class ViewModelTypeOptions {
     modelName?: string;
     isView?: boolean = false;
     transformer?: Transformer;
+    inputNames?: string[];
 }
