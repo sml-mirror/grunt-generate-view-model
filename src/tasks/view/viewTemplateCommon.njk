@@ -2,10 +2,11 @@
 /*Codegen*/
 {% for import in metafile.imports %}
 {%if import.isTransformer === false %}
-import { {{import.classType}} } from '{{import.path}}';
+import { {{import.classType}} } from '{{import.viewPath}}';
 {% endif %}
 {% else %}
 {% endfor %}
+
   {% for class in metafile.classes %}
 export class {{class.name}} {
 {% for field in class.fields %}

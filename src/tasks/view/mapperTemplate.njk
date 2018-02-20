@@ -1,18 +1,19 @@
 {% for import in metafile.imports %}
-import { {{import.classType}} } from '{{import.path}}';
+import { {{import.classType}} } from '{{ import.mapperPath }}';
 {% if import.isTransformer === false %}
 {% for class in metafile.classes %}
 {% if class.needMapper === true %}
 {% if import.isViewClass === true%}
-import { {{import.classType}}Mapper } from '{{import.path}}Mapper';
+import { {{import.classType}}Mapper } from './{{import.classType}}Mapper';
 {% endif %}
 {% endif %}
 {%endfor%}
 {% endif %}
 {% else %}
 {% endfor %}
+
 {% for class in metafile.classes %}
-import { {{class.name}} } from './{{class.name}}';
+import { {{class.name}} } from '{{class.viewModelFromMapper}}';
 {% endfor%}
 
 {% for class in metafile.classes %}

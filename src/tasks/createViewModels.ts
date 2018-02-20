@@ -61,6 +61,8 @@ export function createMetadatas(properties: Options): FileMetadata[] {
         } else {
             fileMet = new FileMetadata();
             fileMet.filename = file.destination;
+            fileMet.mapperPath = properties.mapperDestination;
+            fileMet.basePath = file.source;
             fileMet.classes = new Array<ClassMetadata>();
         }
         var stringFile = fs.readFileSync(file.source, "utf-8");
@@ -140,6 +142,8 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                         }
                         if (dec.name === "ViewModelType") {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
+                            console.log(fieldTypeOptions.modelName);
+                            console.log(cm.name);
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
                                 if (fieldTypeOptions.inputNames) {
                                     fieldTypeOptions.inputNames.forEach(n => {
@@ -148,12 +152,13 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                                     fldMetadata.nameOfMapEntity = fieldTypeOptions.inputNames;
                                 }
                                 fldMetadata.type = fieldTypeOptions.type;
-                                let filename = fieldTypeOptions.filepath;
+                                let filenameFromView = fieldTypeOptions.pathNote.baseClassPath;
+
                                 if ( fldMetadata.type === "string" && fldMetadata.type !== fldMetadata.baseModelType ) {
                                     fldMetadata.toStringWanted = true;
                                 }
-                                if (filename) {
-                                    fileMet.addImport(fldMetadata.type, filename, false, fieldTypeOptions.isView);
+                                if (fieldTypeOptions.pathNote && (fieldTypeOptions.pathNote.baseClassPath !== (null || ""))) {
+                                    fileMet.addImport(fldMetadata.type, fieldTypeOptions.pathNote, false, fieldTypeOptions.isView);
                                 }
                                 if (fieldTypeOptions.transformer) {
                                     let transformer = fieldTypeOptions.transformer;
@@ -197,6 +202,9 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     for ( var i = 0; i < metadata.length; i++ ) {
         var mdata = metadata[i];
         mdata.classes = mdata.classes.filter((item) => item.generateView);
+        mdata.classes.forEach(cl => {
+            cl.viewModelFromMapper = require("path").relative(mdata.mapperPath, mdata.filename).split("\\").join("/").split(".ts").join("");
+        });
         var c = render("viewTemplateCommon.njk", {metafile: mdata});
         var mapperc = render("mapperTemplate.njk", {metafile: mdata});
         if (c && c.trim()) {
@@ -214,11 +222,10 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
                 }
             });
             if (needMapper) {
-                var fs1 = require("fs");
-                var mkdirp1 = require("mkdirp");
-                var getDirName1 = require("path").dirname;
-                mkdirp.sync(getDirName(mdata.filename.split(".ts").join("Mapper.ts")));
-                fs.writeFileSync(mdata.filename.split(".ts").join("Mapper.ts"), mapperc, "utf-8");
+                let pathArray = mdata.filename.split(".ts").join("").split("/");
+                let mapperfilename = mdata.mapperPath + "/" + pathArray[pathArray.length - 1] + "Mapper.ts";
+                mkdirp.sync(mdata.mapperPath);
+                fs.writeFileSync( mapperfilename, mapperc, "utf-8");
                 res.push(mapperc);
             }
         }

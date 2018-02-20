@@ -8,7 +8,8 @@ import {HeroDetail} from "./heroDetail";
 @NeedMapper()
 export class Hero {
 
-    @ViewModelType({"type": "string", "filepath": ""})
+    @ViewModelType({"type": "string"
+    , "pathNote": {"baseClassPath": ""}})
     @IgnoreViewModel("HeroViewModel1")
     public id?: number;
 
@@ -21,20 +22,27 @@ export class Hero {
     @IgnoreViewModel()
     public detailId?: number;
 
-    @ViewModelType({"type": "HeroDetail", "filepath": "../../test/src/model/hero/heroDetail", "modelName": "HeroViewModel"})
+    @ViewModelType({"type": "HeroDetail",
+    "pathNote": { "baseClassPath": "../../../src/model/hero/heroDetail", "mapperClassPath": "../../../../src/model/hero/heroDetail"},
+    "modelName": "HeroViewModel"})
     @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;
 
-    @ViewModelType({"type": "HeroDetailViewModel", "filepath": "./heroDetailViewModel", "isView": true})
+    @ViewModelType({"type": "HeroDetailViewModel",
+    "pathNote": { "baseClassPath": "./heroDetailViewModel", "mapperClassPath": "../heroDetailViewModel"}, "isView": true})
     @IgnoreViewModel("HeroViewModel1")
     public detailVM: HeroDetail;
 
-    @ViewModelType({"type": "HeroDetailViewModel", "filepath": "./heroDetailViewModel",
+    @ViewModelType({"type": "HeroDetailViewModel",
+    "pathNote": { "baseClassPath": "./heroDetailViewModel", "mapperClassPath": "../heroDetailViewModel"},
     "modelName": "HeroViewModel", "inputNames": ["details"], "isView": true})
-    @ViewModelType({"type": "HeroDetailViewModel", "filepath": "./heroDetailViewModel", "modelName": "HeroViewModel1"})
+    @ViewModelType({"type": "HeroDetailViewModel",
+    "pathNote": { "baseClassPath": "./heroDetailViewModel", "mapperClassPath": "../heroDetailViewModel"}
+    , "modelName": "HeroViewModel1"})
     public details: HeroDetail[];
 
-    @ViewModelType({"type": "HeroDetailViewModel",  "filepath": "./heroDetailViewModel"})
+    @ViewModelType({"type": "HeroDetailViewModel",
+    "pathNote": { "baseClassPath": "./heroDetailViewModel", "mapperClassPath": "../heroDetailViewModel"}})
     public detailsVM: HeroDetail[];
 
     public simpleArray: number[];

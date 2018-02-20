@@ -1,4 +1,5 @@
 export class Options {
+    public mapperDestination: string;
     public files: FileMapping[];
     public allInOneFile: string;
 }
