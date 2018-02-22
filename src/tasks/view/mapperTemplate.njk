@@ -1,15 +1,5 @@
 {% for import in metafile.imports %}
 import { {{import.classType}} } from '{{ import.mapperPath }}';
-{% if import.isTransformer === false %}
-{% for class in metafile.classes %}
-{% if class.needMapper === true %}
-{% if import.isViewClass === true%}
-import { {{import.classType}}Mapper } from './{{import.classType}}Mapper';
-{% endif %}
-{% endif %}
-{%endfor%}
-{% endif %}
-{% else %}
 {% endfor %}
 
 {% for class in metafile.classes %}
@@ -18,64 +8,24 @@ import { {{class.name}} } from '{{class.viewModelFromMapper}}';
 
 {% for class in metafile.classes %}
 export class {{class.name}}Mapper {
-    public {%if field.fieldConvertFunction%}async{%endif%} static to{{class.name}}(model: any /*{{class.baseName}}*/{%if class.mapperotherClasses%}{%for classname in class.mapperotherClasses%}, {{classname}}: any{%endfor%}{%endif%}): {{class.name}} {
-      let result = new {{class.name}}();
+      public static async to{{class.name}}(model: any /*{{class.baseName}}*/): Promise<{{class.name}}> {
+            let result = new {{class.name}}();
 {% for field in class.fields %}
-{% if  field.ignoredInView===false %}
-{% if field.isComplexObj %}
-      {% if field.type === field.baseModelType %}
-            result.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
-      {% else %}
-            if ( model.{{field.baseModelName}} ) {
-            {% if field.fieldConvertFunction %}
-            if (model.{{field.name}}) {
-            result.{{field.name}} = await {{field.fieldConvertFunction}}(model.{{field.name}});
-            }
-            {%elif field.nameOfMapEntity %}
-            result.{{field.name}} = {{field.type}}Mapper.to{{field.type}}({%for name in field.nameOfMapEntity%}, {{name}}: any{%endfor%});
-            {%else%}
-            result.{{field.name}} = {{field.type}}Mapper.to{{field.type}}(model.{{field.baseModelName}});
-            {% endif %}
-            }
-      {% endif %}
+{% if field.ignoredInView===false %}
+{%if field.fieldConvertFunction%}
+            result.{{field.name}}  = {% if field.fieldConvertFunction.isAsync%}await {% endif%} {{field.fieldConvertFunction.func}}(model);
 {% elif field.isArray %}
-      {%if field.nameOfMapEntity%}
-      if ( model.{{field.baseModelName}} ) {
-            result.{{field.name}} = {%for name in field.nameOfMapEntity%}{{name}}{%endfor%}.map({%if field.fieldConvertFunction %}async {%endif%} function(item: any) {
-      {%else%}
-      if ( model.{{field.baseModelName}} ) {
-            result.{{field.name}} = model.{{field.baseModelName}}.map({%if field.fieldConvertFunction %}async {%endif%}function(item: any) {
-      {%endif%}
-      {% if  field.type === field.baseModelType %}
-            return JSON.parse(JSON.stringify(item));
-      {% else %}
-            {%if field.fieldConvertFunction %}
-                  return  await {{field.fieldConvertFunction}}(item);
-            {%elif field.nameOfMapEntity %}
-            return {{field.type}}Mapper.to{{field.type}}(item);
-            {%else %}
-            if ( item ) {
-                  return {{field.type}}Mapper.to{{field.type}}( item );
-                  }
-            return null;
-            {%endif%}
-      {% endif %}
-                  });
-            }
+            result.{{field.name}} =  model.{{field.baseModelName}}.map(function(item: any ) { return JSON.parse(JSON.stringify(model.{{field.baseModelName}})); });
 {% else %}
-      {%if field.fieldConvertFunction%}
-      result.{{field.name}} = await {{field.fieldConvertFunction}}(result.{{field.name}})
-      {%else %}
-      result.{{field.name}} = model.{{field.baseModelName}}{% if field.toStringWanted %}.toString(){% endif%};
-      {%endif%}
+{% if field.isComplexType %}
+            result.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
+{% else %}
+            result.{{field.name}} = model.{{field.baseModelName}}{% if field.toStringWanted %}.toString(){% endif%};
 {% endif %}
 {% endif %}
-{% endfor %}
-{% endfor %}
-      return result;
-    }
-  }
-
-
-
-
+{% endif %}
+{%endfor%}
+            return result;
+      }
+}
+{%endfor%}

@@ -24,6 +24,7 @@ export class Hero {
 
     @ViewModelType({"type": "HeroDetail",
     "pathNote": { "baseClassPath": "../../../src/model/hero/heroDetail", "mapperClassPath": "../../../../src/model/hero/heroDetail"},
+    "transformer": { "func" : "Func", "funcPath" : "Path", "isAsync": true},
     "modelName": "HeroViewModel"})
     @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;

@@ -44,7 +44,8 @@ export class FileMetadata {
             let impInclude : boolean = false;
             this.classes.forEach(cls => {
                 cls.fields.forEach(fld => {
-                    if ((imp.classType === fld.type && !fld.ignoredInView) || (imp.classType === fld.fieldConvertFunction)) {
+                    if ((imp.classType === fld.type && !fld.ignoredInView) ||
+                    (!fld.ignoredInView && fld.fieldConvertFunction && (imp.classType === fld.fieldConvertFunction.func))) {
                         impInclude = true;
                     }
                 });

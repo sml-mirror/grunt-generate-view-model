@@ -106,9 +106,10 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                     let fldMetadata = new FieldMetadata();
                     fldMetadata.isNullable = fld.optional;
                     fldMetadata.baseModelName = fld.name;
-
-                    if ((<ArrayType>fld.type).base !== undefined) {
+                    if (fld.type.typeKind === 1) {
                         fldMetadata.isArray = true;
+                    }
+                    if ((<ArrayType>fld.type).base !== undefined) {
                         fldMetadata.baseModelType = (<BasicType>(<ArrayType>fld.type).base).typeName;
                         var curBase = (<ArrayType>fld.type).base;
                         while ((<ArrayType>curBase).base !== undefined) {
@@ -117,14 +118,15 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                         }
                     } else {
                         fldMetadata.baseModelType = (<BasicType>fld.type).typeName;
-                        var typeName = (<BasicType>fld.type).typeName;
-                        if (typeName !== "string" && typeName !== "number" && typeName !== "boolean" && typeName !== "undefined"
-                        && typeName !== "null") {
-                            fldMetadata.isComplexObj = true;
-                        }
+                    }
+                    let typeName = fldMetadata.baseModelType;
+                    if (typeName !== "string" && typeName !== "number" && typeName !== "boolean" && typeName !== "undefined"
+                    && typeName !== "null") {
+                        fldMetadata.isComplexType = true;
                     }
                     fldMetadata.name = fld.name;
                     fldMetadata.type = fldMetadata.baseModelType;
+
                     fld.decorators.forEach(dec => {
                         if (dec.name === "IgnoreViewModel") {
                             if (dec.arguments[0] && dec.arguments[0].toString() === cm.name) {
@@ -142,14 +144,11 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                         }
                         if (dec.name === "ViewModelType") {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
-                            console.log(fieldTypeOptions.modelName);
-                            console.log(cm.name);
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
                                 if (fieldTypeOptions.inputNames) {
                                     fieldTypeOptions.inputNames.forEach(n => {
                                         cm.mapperotherClasses.push(n);
                                     });
-                                    fldMetadata.nameOfMapEntity = fieldTypeOptions.inputNames;
                                 }
                                 fldMetadata.type = fieldTypeOptions.type;
                                 let filenameFromView = fieldTypeOptions.pathNote.baseClassPath;
@@ -165,7 +164,7 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                                     let func = transformer.func;
                                     let functionPath = transformer.funcPath;
                                     fileMet.addImport(func, functionPath, true, fieldTypeOptions.isView);
-                                    fldMetadata.fieldConvertFunction = func;
+                                    fldMetadata.fieldConvertFunction = transformer;
                                 }
                             }
                         }
@@ -191,6 +190,7 @@ export function createMetadatas(properties: Options): FileMetadata[] {
             generationFiles.push(fileMet);
         }
     }
+
     return generationFiles;
 }
 

@@ -1,3 +1,4 @@
+import { Transformer } from "./transformer";
 
 export class FieldMetadata {
     public name: string;
@@ -7,8 +8,7 @@ export class FieldMetadata {
     public baseModelType: string;
     public ignoredInView: boolean = false;
     public isArray: boolean = false;
-    public isComplexObj: boolean = false;
-    public fieldConvertFunction: string;
+    public isComplexType: boolean = false;
+    public fieldConvertFunction: Transformer = null;
     public toStringWanted: boolean = false;
-    public nameOfMapEntity: string[];
 }
