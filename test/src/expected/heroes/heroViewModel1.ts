@@ -1,5 +1,6 @@
 /*Codegen*/
 import { HeroDetailViewModel } from './heroDetailViewModel';
+
   export class HeroViewModel1 {
 
   public name: string;

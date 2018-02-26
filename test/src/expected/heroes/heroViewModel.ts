@@ -1,6 +1,7 @@
 /*Codegen*/
-import { HeroDetail } from '../../test/src/model/hero/heroDetail';
+import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { HeroDetailViewModel } from './heroDetailViewModel';
+
   export class HeroViewModel {
 
   public id?: string;

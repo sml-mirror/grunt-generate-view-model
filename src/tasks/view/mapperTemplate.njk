@@ -15,10 +15,14 @@ export class {{class.name}}Mapper {
 {%if field.fieldConvertFunction%}
             result.{{field.name}}  = {% if field.fieldConvertFunction.isAsync%}await {% endif%} {{field.fieldConvertFunction.func}}(model);
 {% elif field.isArray %}
-            result.{{field.name}} =  model.{{field.baseModelName}}.map(function(item: any ) { return JSON.parse(JSON.stringify(model.{{field.baseModelName}})); });
+            if (model.{{field.baseModelName}}) {
+                  result.{{field.name}} =  model.{{field.baseModelName}}.map(function(item: any ) { return JSON.parse(JSON.stringify(model.{{field.baseModelName}})); });
+            }
 {% else %}
 {% if field.isComplexType %}
-            result.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
+            if (model.{{field.baseModelName}}) {
+                  result.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
+            }
 {% else %}
             result.{{field.name}} = model.{{field.baseModelName}}{% if field.toStringWanted %}.toString(){% endif%};
 {% endif %}

@@ -1,6 +1,7 @@
 import {GenerateView, IgnoreViewModel, ViewModelName, ViewModelType, NeedMapper} from "../../../../src/index";
 import {HeroDetail} from "./heroDetail";
-
+/*import {HeroDetailViewModel} from "./heroDetailViewModel";
+import {todo} from "../mapper/mapper";*/
 
 
 @GenerateView("HeroViewModel")
@@ -26,6 +27,9 @@ export class Hero {
     "pathNote": { "baseClassPath": "../../../src/model/hero/heroDetail", "mapperClassPath": "../../../../src/model/hero/heroDetail"},
     "transformer": { "func" : "Func", "funcPath" : "Path", "isAsync": true},
     "modelName": "HeroViewModel"})
+    /*@ViewModelType({"type": typeof(HeroDetailViewModel),
+    "transformer": { "func" : todo.todofunc(), "isAsync": true},
+    "modelName": "HeroViewModel"})*/
     @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;
 
@@ -34,7 +38,7 @@ export class Hero {
     @IgnoreViewModel("HeroViewModel1")
     public detailVM: HeroDetail;
 
-    @ViewModelType({"type": "HeroDetailViewModel",
+    @ViewModelType({"type": 'HeroDetailViewModel',
     "pathNote": { "baseClassPath": "./heroDetailViewModel", "mapperClassPath": "../heroDetailViewModel"},
     "modelName": "HeroViewModel", "inputNames": ["details"], "isView": true})
     @ViewModelType({"type": "HeroDetailViewModel",
