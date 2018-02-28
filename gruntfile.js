@@ -37,7 +37,8 @@ module.exports = function(grunt) {
           files: [{
             src: [
               "./test/**/*.ts", 
-              "!./test/src/expected/**" 
+              "!./test/src/expected/**",
+              "!./test/src/model/**"  
             ],
             dest: "./test/dist"
           },],

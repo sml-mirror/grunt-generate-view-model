@@ -1,4 +1,3 @@
-
 import { HeroDetailViewModel } from '../heroDetailViewModel';
 
 export class HeroDetailViewModelMapper {

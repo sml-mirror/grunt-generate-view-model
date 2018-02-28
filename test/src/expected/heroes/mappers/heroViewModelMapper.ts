@@ -1,8 +1,5 @@
-import { HeroDetail } from '../../../../src/model/hero/heroDetail';
-import { Func } from 'Path';
-import { HeroDetailViewModel } from '../heroDetailViewModel';
-
 import { HeroViewModel } from '../heroViewModel';
+import { Class } from '../../../src/model/Path/path';
 
 export class HeroViewModelMapper {
       public static async toHeroViewModel(model: any /*Hero*/): Promise<HeroViewModel> {
@@ -10,7 +7,7 @@ export class HeroViewModelMapper {
             result.id = model.id.toString();
             result.name = model.name;
             result.information = model.data;
-            result.detail  = await  Func(model);
+            result.detail  = await  Class.func(model);
             if (model.detailVM) {
                   result.detailVM = JSON.parse(JSON.stringify(model.detailVM));
             }

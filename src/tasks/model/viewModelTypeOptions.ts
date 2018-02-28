@@ -1,11 +1,8 @@
 import { Transformer } from "./transformer";
-import { PathNote } from "./pathNote";
+import { Type } from "typescript";
 
 export class ViewModelTypeOptions {
     type: string;
-    pathNote?: PathNote;
     modelName?: string;
-    isView?: boolean = false;
     transformer?: Transformer;
-    inputNames?: string[];
 }

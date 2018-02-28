@@ -1,10 +1,11 @@
-{% for import in metafile.imports %}
-import { {{import.classType}} } from '{{ import.mapperPath }}';
-{% endfor %}
-
 {% for class in metafile.classes %}
 import { {{class.name}} } from '{{class.viewModelFromMapper}}';
 {% endfor%}
+{% for import in metafile.imports %}
+{%if import.isTransformer ===true%}
+import { {{import.type }} } from '{{import.path}}';
+{%endif%}
+{% endfor %}
 
 {% for class in metafile.classes %}
 export class {{class.name}}Mapper {
@@ -13,7 +14,7 @@ export class {{class.name}}Mapper {
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
 {%if field.fieldConvertFunction%}
-            result.{{field.name}}  = {% if field.fieldConvertFunction.isAsync%}await {% endif%} {{field.fieldConvertFunction.func}}(model);
+            result.{{field.name}}  = {% if field.fieldConvertFunction.isAsync%}await {% endif%} {{field.fieldConvertFunction.function}}(model);
 {% elif field.isArray %}
             if (model.{{field.baseModelName}}) {
                   result.{{field.name}} =  model.{{field.baseModelName}}.map(function(item: any ) { return JSON.parse(JSON.stringify(model.{{field.baseModelName}})); });

@@ -67,6 +67,8 @@ export function createMetadatas(properties: Options): FileMetadata[] {
         }
         var stringFile = fs.readFileSync(file.source, "utf-8");
         var jsonStructure = parseStruct(stringFile, {}, file.source);
+        //console.log(jsonStructure);
+
         jsonStructure.classes.forEach(cls => {
             let classMet = new ClassMetadata();
             let classMets = new Array<ClassMetadata>();
@@ -145,27 +147,40 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                         if (dec.name === "ViewModelType") {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
-                                if (fieldTypeOptions.inputNames) {
-                                    fieldTypeOptions.inputNames.forEach(n => {
-                                        cm.mapperotherClasses.push(n);
-                                    });
-                                }
                                 fldMetadata.type = fieldTypeOptions.type;
-                                let filenameFromView = fieldTypeOptions.pathNote.baseClassPath;
-
                                 if ( fldMetadata.type === "string" && fldMetadata.type !== fldMetadata.baseModelType ) {
                                     fldMetadata.toStringWanted = true;
                                 }
-                                if (fieldTypeOptions.pathNote && (fieldTypeOptions.pathNote.baseClassPath !== (null || ""))) {
-                                    fileMet.addImport(fldMetadata.type, fieldTypeOptions.pathNote, false, fieldTypeOptions.isView);
-                                }
-                                if (fieldTypeOptions.transformer) {
-                                    let transformer = fieldTypeOptions.transformer;
-                                    let func = transformer.func;
-                                    let functionPath = transformer.funcPath;
-                                    fileMet.addImport(func, functionPath, true, fieldTypeOptions.isView);
-                                    fldMetadata.fieldConvertFunction = transformer;
-                                }
+                            }
+                            if (fieldTypeOptions.transformer) {
+                                let transformer = fieldTypeOptions.transformer;
+                                let isBreak = false;
+                                jsonStructure._imports.forEach(imp => {
+                                    if (isBreak === false) {
+                                        imp.clauses.forEach(clause => {
+                                            if (clause === path.parse(transformer.function).name) {
+                                                let _import = new Import();
+                                                let clauses = clause;
+                                                let toPath = imp.absPathNode.join("/");
+                                                let fromPath = fileMet.mapperPath.split(".ts").join("");
+                                                let _path: string = toPath;
+                                                if (!imp.isNodeModule) {
+                                                    _path = path.relative(path.dirname(fromPath), toPath).split("\\").join("/");
+                                                    if ( _path.indexOf("./") < 0 ) {
+                                                    _path = "./" + _path;
+                                                    }
+                                                }
+                                                fldMetadata.fieldConvertFunction = transformer;
+                                                _import.type = clauses;
+                                                _import.path = _path;
+                                                _import.isTransformer = true;
+                                                fileMet.imports.push(JSON.parse(JSON.stringify(_import)));
+                                                isBreak = true;
+                                                return;
+                                            }
+                                        });
+                                    }
+                                });
                             }
                         }
                     });
@@ -181,7 +196,60 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                 }
             });
         });
-        fileMet.filterImport();
+
+        jsonStructure._imports = jsonStructure._imports.filter(i => {
+                if (i.clauses.indexOf("GenerateView")) {
+                    return true;
+                }
+                return false;
+        });
+        jsonStructure._imports.forEach(imp => {
+            let _import = new Import();
+            let clauses = imp.clauses.join(",");
+            let toPath = imp.absPathNode.join("/");
+            let fromPath = file.destination.split(".ts").join("");
+            let _path: string = toPath;
+            if (!imp.isNodeModule) {
+                _path = path.relative(path.dirname(fromPath), toPath).split("\\").join("/");
+                if ( _path.indexOf("./") < 0 ) {
+                    _path = "./" + _path;
+                }
+            }
+            _import.type = clauses;
+            _import.path = _path;
+            fileMet.imports.push(JSON.parse(JSON.stringify(_import)));
+        });
+        let filterImports = [];
+        let i = 0;
+
+
+        fileMet.imports = fileMet.imports.filter(item => {
+            let isFilter: boolean = false;
+            fileMet.imports.forEach(innerItem => {
+                if (item.type === innerItem.type && innerItem.isTransformer !== item.isTransformer) {
+                    if ( item.isTransformer === true) {
+                        let index = fileMet.imports.lastIndexOf(innerItem);
+                        fileMet.imports[index] = new Import();
+                        fileMet.imports[index].type = "toDelete";
+                        isFilter = false;
+                    } else {
+                        item.isTransformer = true;
+                        isFilter = true;
+                    }
+                } else if (item.type === innerItem.type && innerItem.isTransformer === item.isTransformer) {
+                    isFilter = true;
+                }
+                return;
+            });
+            return isFilter;
+        });
+        fileMet.imports = fileMet.imports.filter(imp => {
+            if (imp.type === "toDelete") {
+                return false;
+            } else {
+                return true;
+            }
+        } );
         if (properties.allInOneFile && wasFiled === 0) {
             generationFiles.push(fileMet);
             wasFiled++;

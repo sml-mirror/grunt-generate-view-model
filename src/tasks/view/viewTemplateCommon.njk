@@ -1,10 +1,9 @@
 {% if metafile.classes.length > 0  %}
 /*Codegen*/
 {% for import in metafile.imports %}
-{%if import.isTransformer === false %}
-import { {{import.classType}} } from '{{import.viewPath}}';
-{% endif %}
-{% else %}
+{%if import.isTransformer ===false%}
+import { {{import.type}} } from '{{import.path}}';
+{%endif%}
 {% endfor %}
 
   {% for class in metafile.classes %}

@@ -1,7 +1,5 @@
 export class Import {
-    public classType: string;
-    public viewPath: string;
-    public mapperPath: string;
+    public type: string;
+    public path: string;
     public isTransformer: boolean = false;
-    public isViewClass: boolean = false;
 }
