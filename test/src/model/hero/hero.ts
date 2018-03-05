@@ -7,7 +7,7 @@ import {Class} from "../Path/path";
 @GenerateView("HeroViewModel1")
 @NeedMapper()
 export class Hero {
-    @ViewModelType({"type": "string"})
+    @ViewModelType({"type": String})
     @IgnoreViewModel("HeroViewModel1")
     public id?: number;
 
@@ -21,25 +21,25 @@ export class Hero {
     public detailId?: number;
 
     @ViewModelType({
-    "type": "HeroDetail",
+    "type": HeroDetail,
     "transformer": { "function" : "Class.func", "isAsync": true},
     "modelName": "HeroViewModel"})
     @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;
 
-    @ViewModelType({"type": "HeroDetailViewModel"})
+    @ViewModelType({"type": HeroDetailViewModel})
     @IgnoreViewModel("HeroViewModel1")
     public detailVM: HeroDetail;
 
     @ViewModelType({
-        "type": "HeroDetailViewModel",
+        "type": HeroDetailViewModel,
     "modelName": "HeroViewModel"})
     @ViewModelType({
-      "type": "HeroDetailViewModel"
-    , "modelName": "HeroViewModel1"})
+      "type": HeroDetailViewModel,
+    "modelName": "HeroViewModel1"})
     public details: HeroDetail[];
 
-    @ViewModelType({"type": "HeroDetailViewModel"})
+    @ViewModelType({"type": HeroDetailViewModel})
     public detailsVM: HeroDetail[];
 
     public simpleArray: number[];

@@ -2,7 +2,7 @@ import { Transformer } from "./transformer";
 import { Type } from "typescript";
 
 export class ViewModelTypeOptions {
-    type: string;
+    type: Object;
     modelName?: string;
     transformer?: Transformer;
 }

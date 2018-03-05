@@ -2,8 +2,8 @@
 import { {{class.name}} } from '{{class.viewModelFromMapper}}';
 {% endfor%}
 {% for import in metafile.imports %}
-{%if import.isTransformer ===true%}
-import { {{import.type }} } from '{{import.path}}';
+{%if import.forMapper ===true%}
+import {{import.type }} from '{{import.path}}';
 {%endif%}
 {% endfor %}
 

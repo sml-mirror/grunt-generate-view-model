@@ -4,7 +4,7 @@ import {FieldMetadata} from "./model/fieldmetadata";
 import {FileMetadata} from "./model/filemetadata";
 import {Options, FileMapping} from "./model/options";
 import {IExtensionGruntFilesConfig} from "./model/extensionFileConfig";
-import {parseStruct} from "ts-file-parser";
+import {parseStruct, ImportNode} from "ts-file-parser";
 import {ArrayType, BasicType} from "ts-file-parser";
 import {render, renderString, configure} from "nunjucks";
 import * as path from "path";
@@ -66,9 +66,9 @@ export function createMetadatas(properties: Options): FileMetadata[] {
             fileMet.classes = new Array<ClassMetadata>();
         }
         var stringFile = fs.readFileSync(file.source, "utf-8");
-        var jsonStructure = parseStruct(stringFile, {}, file.source);
-        //console.log(jsonStructure);
-
+        let correctStringFile = toWorkingWithJsonString(stringFile, "\"type\"");
+        var jsonStructure = parseStruct(correctStringFile, {}, file.source);
+        let possibleImports = jsonStructure._imports;
         jsonStructure.classes.forEach(cls => {
             let classMet = new ClassMetadata();
             let classMets = new Array<ClassMetadata>();
@@ -147,40 +147,16 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                         if (dec.name === "ViewModelType") {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
-                                fldMetadata.type = fieldTypeOptions.type;
-                                if ( fldMetadata.type === "string" && fldMetadata.type !== fldMetadata.baseModelType ) {
+                                fldMetadata.type = fieldTypeOptions.type.toString();
+                                if ( fldMetadata.type.toLowerCase() === "string" && fldMetadata.type !== fldMetadata.baseModelType ) {
+                                    fldMetadata.type = "string";
                                     fldMetadata.toStringWanted = true;
                                 }
                             }
                             if (fieldTypeOptions.transformer) {
-                                let transformer = fieldTypeOptions.transformer;
+                                fldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
                                 let isBreak = false;
-                                jsonStructure._imports.forEach(imp => {
-                                    if (isBreak === false) {
-                                        imp.clauses.forEach(clause => {
-                                            if (clause === path.parse(transformer.function).name) {
-                                                let _import = new Import();
-                                                let clauses = clause;
-                                                let toPath = imp.absPathNode.join("/");
-                                                let fromPath = fileMet.mapperPath.split(".ts").join("");
-                                                let _path: string = toPath;
-                                                if (!imp.isNodeModule) {
-                                                    _path = path.relative(path.dirname(fromPath), toPath).split("\\").join("/");
-                                                    if ( _path.indexOf("./") < 0 ) {
-                                                    _path = "./" + _path;
-                                                    }
-                                                }
-                                                fldMetadata.fieldConvertFunction = transformer;
-                                                _import.type = clauses;
-                                                _import.path = _path;
-                                                _import.isTransformer = true;
-                                                fileMet.imports.push(JSON.parse(JSON.stringify(_import)));
-                                                isBreak = true;
-                                                return;
-                                            }
-                                        });
-                                    }
-                                });
+
                             }
                         }
                     });
@@ -196,60 +172,7 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                 }
             });
         });
-
-        jsonStructure._imports = jsonStructure._imports.filter(i => {
-                if (i.clauses.indexOf("GenerateView")) {
-                    return true;
-                }
-                return false;
-        });
-        jsonStructure._imports.forEach(imp => {
-            let _import = new Import();
-            let clauses = imp.clauses.join(",");
-            let toPath = imp.absPathNode.join("/");
-            let fromPath = file.destination.split(".ts").join("");
-            let _path: string = toPath;
-            if (!imp.isNodeModule) {
-                _path = path.relative(path.dirname(fromPath), toPath).split("\\").join("/");
-                if ( _path.indexOf("./") < 0 ) {
-                    _path = "./" + _path;
-                }
-            }
-            _import.type = clauses;
-            _import.path = _path;
-            fileMet.imports.push(JSON.parse(JSON.stringify(_import)));
-        });
-        let filterImports = [];
-        let i = 0;
-
-
-        fileMet.imports = fileMet.imports.filter(item => {
-            let isFilter: boolean = false;
-            fileMet.imports.forEach(innerItem => {
-                if (item.type === innerItem.type && innerItem.isTransformer !== item.isTransformer) {
-                    if ( item.isTransformer === true) {
-                        let index = fileMet.imports.lastIndexOf(innerItem);
-                        fileMet.imports[index] = new Import();
-                        fileMet.imports[index].type = "toDelete";
-                        isFilter = false;
-                    } else {
-                        item.isTransformer = true;
-                        isFilter = true;
-                    }
-                } else if (item.type === innerItem.type && innerItem.isTransformer === item.isTransformer) {
-                    isFilter = true;
-                }
-                return;
-            });
-            return isFilter;
-        });
-        fileMet.imports = fileMet.imports.filter(imp => {
-            if (imp.type === "toDelete") {
-                return false;
-            } else {
-                return true;
-            }
-        } );
+        makeCorrectImports(fileMet, possibleImports);
         if (properties.allInOneFile && wasFiled === 0) {
             generationFiles.push(fileMet);
             wasFiled++;
@@ -300,4 +223,88 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     }
 
     return c;
+}
+
+function toWorkingWithJsonString(input: string, splitWord: string) : string {
+    let tmpStringArray = input.split( splitWord );
+    tmpStringArray = tmpStringArray.map(str => {
+        let tmpStr: string;
+        tmpStr = str.trimLeft();
+        let regExp = /:\s?\w+/;
+        let matches = regExp.exec(tmpStr);
+        let matchZero: string = "";
+        if ( matches !== null) {
+            if ( tmpStr[0] === matches[0][0]) {
+                matchZero = matches[0].replace(":", "");
+                matchZero = ": \"" + matchZero.trimLeft() + "\"";
+                tmpStr = tmpStr.replace(matches[0] , matchZero);
+                //return tmpStr;
+            }
+        }
+
+        return tmpStr;
+    });
+    let result = tmpStringArray.join(splitWord);
+    return result;
+}
+
+function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) {
+    fileMetadata.classes.forEach(cls => {
+        let usingTypesInClass = cls.fields.filter(fld => {
+            if (fld.ignoredInView) {
+                return false;
+            }
+            return true;
+        }).map(fld => {
+            return fld.type;
+        });
+        let indexesOfCorrectImoprts = [];
+        let imoprtsForMapper = [];
+        usingTypesInClass = unique(usingTypesInClass);
+        cls.fields.forEach(f => {
+            if ( f.fieldConvertFunction && !f.ignoredInView) {
+                usingTypesInClass.push(f.fieldConvertFunction.function.split(".")[0]);
+                imoprtsForMapper .push(f.fieldConvertFunction.function.split(".")[0]);
+            }
+        });
+        usingTypesInClass.forEach(type => {
+            for ( let ind = 0; ind < imports.length; ind++) {
+                if ( imports[ind].clauses.indexOf(type) > -1) {
+                    indexesOfCorrectImoprts.push(ind);
+                }
+            }
+        });
+        indexesOfCorrectImoprts.forEach(ind => {
+            let imp = new Import();
+            imp.type = "{ " + imports[ind].clauses.join(",") + " }";
+            let toPath = imports[ind].absPathNode.join("/");
+            let fromPath = fileMetadata.filename.split(".ts").join("");
+            let _path: string = toPath;
+            if (!imports[ind].isNodeModule) {
+                _path = path.relative(path.dirname(fromPath), toPath).split("\\").join("/");
+                if ( _path.indexOf("./") < 0 ) {
+                _path = "./" + _path;
+                }
+            }
+            imp.path = _path;
+            imoprtsForMapper.forEach( impForMapper => {
+                if (imports[ind].clauses.indexOf(impForMapper) > -1) {
+                    fromPath = fileMetadata.mapperPath.split(".ts").join("");
+                    imp.path = path.relative(fromPath, toPath).split("\\").join("/");
+                    imp.forMapper = true;
+                }
+            });
+            fileMetadata.imports.push(imp);
+        });
+    });
+}
+
+function unique(arr: string[]): string[] {
+    let obj = {};
+
+    for (var i = 0; i < arr.length; i++) {
+      var str = arr[i];
+      obj[str] = true;
+    }
+    return Object.keys(obj);
 }
