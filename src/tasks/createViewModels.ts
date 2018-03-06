@@ -66,8 +66,11 @@ export function createMetadatas(properties: Options): FileMetadata[] {
             fileMet.classes = new Array<ClassMetadata>();
         }
         var stringFile = fs.readFileSync(file.source, "utf-8");
-        let correctStringFile = toWorkingWithJsonString(stringFile, "\"type\"");
-        var jsonStructure = parseStruct(correctStringFile, {}, file.source);
+        let correctStringFile  = ViewModelTypeCorrecting(stringFile);
+        let tmpFileSource = file.source.split(".ts").join("tmp.ts");
+        fs.writeFileSync(tmpFileSource,correctStringFile,"utf-8");
+        var jsonStructure = parseStruct(correctStringFile, {}, tmpFileSource);
+        fs.unlinkSync(tmpFileSource);
         let possibleImports = jsonStructure._imports;
         jsonStructure.classes.forEach(cls => {
             let classMet = new ClassMetadata();
@@ -225,26 +228,20 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     return c;
 }
 
-function toWorkingWithJsonString(input: string, splitWord: string) : string {
-    let tmpStringArray = input.split( splitWord );
-    tmpStringArray = tmpStringArray.map(str => {
-        let tmpStr: string;
-        tmpStr = str.trimLeft();
-        let regExp = /:\s?\w+/;
-        let matches = regExp.exec(tmpStr);
-        let matchZero: string = "";
-        if ( matches !== null) {
-            if ( tmpStr[0] === matches[0][0]) {
-                matchZero = matches[0].replace(":", "");
-                matchZero = ": \"" + matchZero.trimLeft() + "\"";
-                tmpStr = tmpStr.replace(matches[0] , matchZero);
-                //return tmpStr;
-            }
+function ViewModelTypeCorrecting(input:string): string {
+    let firstViewModelTypeInArray = input.split("@ViewModelType");
+    let result = firstViewModelTypeInArray.map( str => {
+        let tmpStr =  str.trim();
+        let viewModelTypeDecoratorRegExp = /\(\s?{\s*?["']type["']\s?:\s?\w+/;
+        let matches = viewModelTypeDecoratorRegExp.exec(tmpStr);
+        if(matches) {
+            let need = matches[0]
+            let matchRegExp = /[A-Z]\w+/;
+            let innerMatches = matchRegExp.exec(need);
+            return str.replace(innerMatches[0],`"${innerMatches[0]}"`);   
         }
-
-        return tmpStr;
-    });
-    let result = tmpStringArray.join(splitWord);
+        return str;
+    }).join("@ViewModelType");
     return result;
 }
 
