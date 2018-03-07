@@ -7,7 +7,7 @@ import {Class} from "../Path/path";
 @GenerateView("HeroViewModel1")
 @NeedMapper()
 export class Hero {
-    @ViewModelType({"type": String})
+    @ViewModelType({"type": "string"})
     @IgnoreViewModel("HeroViewModel1")
     public id?: number;
 
@@ -22,7 +22,7 @@ export class Hero {
 
     @ViewModelType({
     "type": HeroDetail,
-    "transformer": { "function" : "Class.func", "isAsync": true},
+    "transformer": { "function" : Class.func, "isAsync": true},
     "modelName": "HeroViewModel"})
     @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;

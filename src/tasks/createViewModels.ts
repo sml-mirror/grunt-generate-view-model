@@ -9,7 +9,8 @@ import {ArrayType, BasicType} from "ts-file-parser";
 import {render, renderString, configure} from "nunjucks";
 import * as path from "path";
 import { Transformer } from "./model/transformer";
-import {ViewModelTypeOptions} from "./model/viewModelTypeOptions";
+import { ViewModelTypeOptions } from "./model/viewModelTypeOptions";
+import { GenerateViewOptions } from "./model/generateViewOptions";
 
 
 export function createViewModelsInternal(prop: Options): string [] {
@@ -82,6 +83,7 @@ export function createMetadatas(properties: Options): FileMetadata[] {
 
             cls.decorators.forEach(dec => {
                 if (dec.name === "GenerateView") {
+                        let genViewOpt = <GenerateViewOptions>dec.arguments[0].valueOf();
                     if (classMet.generateView === false) {
                         classMet.generateView = true;
                         classMet.name = dec.arguments[0].toString();
@@ -238,9 +240,18 @@ function ViewModelTypeCorrecting(input: string): string {
             let need = matches[0];
             let matchRegExp = /[A-Z]\w+/;
             let innerMatches = matchRegExp.exec(need);
-            return str.replace(innerMatches[0], `"${innerMatches[0]}"`);
+            tmpStr = tmpStr.replace(innerMatches[0], `"${innerMatches[0]}"`);
         }
-        return str;
+        let viewModelTypeDecoratorForTransformer = /["']function["']\s?:\s?\w+(\.)?(\w+)?/;
+        let secMatches = viewModelTypeDecoratorForTransformer.exec(tmpStr);
+        if (secMatches) {
+            let need = secMatches[0];
+            let matchRegExp = /:\s?\w+(\.)?(\w+)?/;
+            let innerMatches = matchRegExp.exec(need);
+            let variant = `: "${innerMatches[0].substring(1).trim()}"`;
+            tmpStr =  tmpStr.replace(innerMatches[0], variant);
+        }
+        return tmpStr;
     }).join("@ViewModelType");
     return result;
 }

@@ -3,6 +3,7 @@ import {createViewModelsInternal} from "../src/tasks/createViewModels";
 import {Options} from "./tasks/model/options";
 import { Transformer } from "./tasks/model/transformer";
 import { ViewModelTypeOptions } from "./tasks/model/viewModelTypeOptions";
+import { GenerateViewOptions } from "./tasks/model/generateViewOptions";
 
 
 export function createViewModels(options: Options): string [] {
