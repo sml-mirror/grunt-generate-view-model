@@ -11,14 +11,16 @@ import * as path from "path";
 import { Transformer } from "./model/transformer";
 import { ViewModelTypeOptions } from "./model/viewModelTypeOptions";
 import { GenerateViewOptions } from "./model/generateViewOptions";
+import * as fs from "fs";
 
 
-export function createViewModelsInternal(prop: Options): string [] {
-    var  metadata = createMetadatas(prop);
+export function createViewModelsInternal(): string [] {
+    let possibleFiles: string[] = [];
+    getAllfiles("./", possibleFiles);
+    var  metadata = createMetadatas(possibleFiles);
     var resultTemplate = CreateFiles(metadata);
     return resultTemplate;
 }
-
 
 export function createOptionsOfGrunt(obj: IGrunt): Options {
     var options = new Options();
@@ -37,42 +39,23 @@ export function createOptionsOfGrunt(obj: IGrunt): Options {
     options.files = files;
     if (obj.task.current.data.oneFile && obj.task.current.files.length) {
         var fileConfig = obj.task.current.files[0] as IExtensionGruntFilesConfig;
-        options.allInOneFile = `${fileConfig.orig.dest}/common.ts`;
     }
     return options;
 }
 
-export function createMetadatas(properties: Options): FileMetadata[] {
+export function createMetadatas(files: string[]): FileMetadata[] {
     var fs = require("fs");
     let generationFiles: FileMetadata[];
     generationFiles = new Array<FileMetadata>();
-    var wasFiled = 0;
-    let fileMet : FileMetadata;
-    var files = properties.files;
     for (var file of files) {
-        if (properties.allInOneFile) {
-            if (!fileMet) {
-                fileMet = new FileMetadata();
-            }
-
-            fileMet.filename = properties.allInOneFile;
-            if (fileMet.classes === undefined) {
-                fileMet.classes = new Array<ClassMetadata>();
-            }
-        } else {
-            fileMet = new FileMetadata();
-            fileMet.filename = file.destination;
-            fileMet.mapperPath = properties.mapperDestination;
-            fileMet.basePath = file.source;
-            fileMet.classes = new Array<ClassMetadata>();
-        }
-        var stringFile = fs.readFileSync(file.source, "utf-8");
+        var stringFile = fs.readFileSync(file, "utf-8");
         let correctStringFile  = ViewModelTypeCorrecting(stringFile);
-        let tmpFileSource = file.source.split(".ts").join("tmp.ts");
+        let tmpFileSource = file.split(".ts").join("tmp.ts");
         fs.writeFileSync(tmpFileSource, correctStringFile, "utf-8");
         var jsonStructure = parseStruct(correctStringFile, {}, tmpFileSource);
         fs.unlinkSync(tmpFileSource);
         let possibleImports = jsonStructure._imports;
+
         jsonStructure.classes.forEach(cls => {
             let classMet = new ClassMetadata();
             let classMets = new Array<ClassMetadata>();
@@ -83,17 +66,25 @@ export function createMetadatas(properties: Options): FileMetadata[] {
 
             cls.decorators.forEach(dec => {
                 if (dec.name === "GenerateView") {
-                        let genViewOpt = <GenerateViewOptions>dec.arguments[0].valueOf();
+                    let genViewOpt = <GenerateViewOptions>dec.arguments[0].valueOf();
                     if (classMet.generateView === false) {
                         classMet.generateView = true;
-                        classMet.name = dec.arguments[0].toString();
+                        let tmpArray = genViewOpt.modelName.split("/");
+                        classMet.name = tmpArray[tmpArray.length - 1 ].split(".ts")[0];
+                        classMet.name = classMet.name[0].toUpperCase() + classMet.name.substring(1);
                         classMets.push(classMet);
+
+                        FillFileMetadataArray(generationFiles, genViewOpt, file);
                     } else {
                         let otherClassMet = new ClassMetadata();
                         otherClassMet.generateView = true;
-                        otherClassMet.name = dec.arguments[0].toString();
+                        let tmpArray = genViewOpt.modelName.split("/");
+                        otherClassMet.name = tmpArray[tmpArray.length - 1 ].split(".ts")[0];
+                        otherClassMet.name = otherClassMet.name[0].toUpperCase() + otherClassMet.name.substring(1);
                         otherClassMet.fields = new Array<FieldMetadata>();
-                        classMets.push(otherClassMet);
+                        classMets.push( otherClassMet);
+
+                        FillFileMetadataArray(generationFiles, genViewOpt, file);
                     }
                 }
                 if (dec.name === "NeedMapper") {
@@ -101,14 +92,13 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                         clMet.needMapper = true;
                     });
                 }
-
             });
             if (classMet.generateView === false) {
                 return;
             }
             classMets.forEach(cm => {
                 cm.baseName = cls.name;
-                cm.baseNamePath =  file.source;
+                cm.baseNamePath =  file;
                 cls.fields.forEach(fld => {
                     let fldMetadata = new FieldMetadata();
                     fldMetadata.isNullable = fld.optional;
@@ -168,26 +158,19 @@ export function createMetadatas(properties: Options): FileMetadata[] {
                     cm.fields.push(fldMetadata);
                 });
             });
-            if (fileMet.classes === null) {
-                fileMet.classes = [];
-            }
-            classMets.forEach( cm => {
-                if (file.viewModelNames.indexOf(cm.name) > -1) {
-                    fileMet.classes.push(cm);
-                }
+            generationFiles.forEach(genFile => {
+                classMets.forEach( cm => {
+                    if (genFile.filename.indexOf(cm.name[0].toLowerCase() + cm.name.substring( 1 ) + ".ts") > -1) {
+                        genFile.classes.push(cm);
+                    }
+                });
+                makeCorrectImports(genFile, possibleImports);
             });
         });
-        makeCorrectImports(fileMet, possibleImports);
-        if (properties.allInOneFile && wasFiled === 0) {
-            generationFiles.push(fileMet);
-            wasFiled++;
-        }
-        if (!properties.allInOneFile) {
-            generationFiles.push(fileMet);
-        }
     }
-
-    return generationFiles;
+    return generationFiles.filter(file => {
+         return file.filename;
+    });
 }
 
 export function  CreateFiles(metadata: FileMetadata[]): string [] {
@@ -229,7 +212,15 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
 
     return c;
 }
-
+function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: GenerateViewOptions, file: string) {
+    let fileMet : FileMetadata;
+    fileMet = new FileMetadata();
+    fileMet.basePath = file;
+    fileMet.classes = new Array<ClassMetadata>();
+    fileMet.filename = genViewOpt.modelName;
+    fileMet.mapperPath = genViewOpt.mapperPath;
+    generationFiles.push( fileMet);
+}
 function ViewModelTypeCorrecting(input: string): string {
     let firstViewModelTypeInArray = input.split("@ViewModelType");
     let result = firstViewModelTypeInArray.map( str => {
@@ -255,7 +246,6 @@ function ViewModelTypeCorrecting(input: string): string {
     }).join("@ViewModelType");
     return result;
 }
-
 function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) {
     fileMetadata.classes.forEach(cls => {
         let usingTypesInClass = cls.fields.filter(fld => {
@@ -306,7 +296,6 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
         });
     });
 }
-
 function unique(arr: string[]): string[] {
     let obj = {};
 
@@ -316,3 +305,21 @@ function unique(arr: string[]): string[] {
     }
     return Object.keys(obj);
 }
+function getAllfiles(path: string, resultPathes: string[]) {
+    fs.readdirSync(path).forEach(f => {
+        if (f === "node_modules" || f === ".git" ) {
+            console.log();
+        } else {
+            if (fs.statSync(path + `/${f}`).isDirectory()) {
+            getAllfiles(path + `/${f}` , resultPathes);
+            } else {
+                let tsRegExp = /.+\.ts$/;
+                let p = path + `/${f}`;
+                let matches = tsRegExp.exec(p);
+                if ( matches && matches.length > 0) {
+                    resultPathes.push( matches[0]);
+                }
+            }
+        }
+    });
+  }

@@ -4,6 +4,9 @@
   "description": "Grunt task for code generation view models by models description",
   "private": false,
   "main": "dist/src/index.js",
+  "bin": {
+    "generateView": "./dist/src/bin.js"
+  },
   "scripts": {
     "build": "grunt build",
     "test": "grunt test"

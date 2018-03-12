@@ -6,11 +6,11 @@ import { ViewModelTypeOptions } from "./tasks/model/viewModelTypeOptions";
 import { GenerateViewOptions } from "./tasks/model/generateViewOptions";
 
 
-export function createViewModels(options: Options): string [] {
-    return createViewModelsInternal(options);
+export function createViewModels(): string [] {
+    return createViewModelsInternal();
 }
 
-export function GenerateView(modelName: string): Function {
+export function GenerateView( options: GenerateViewOptions): Function {
     return function() {
         var f;
     };
