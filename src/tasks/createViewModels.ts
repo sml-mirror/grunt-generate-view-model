@@ -307,9 +307,7 @@ function unique(arr: string[]): string[] {
 }
 function getAllfiles(path: string, resultPathes: string[]) {
     fs.readdirSync(path).forEach(f => {
-        if (f === "node_modules" || f === ".git" ) {
-            console.log();
-        } else {
+        if (!(f === "node_modules" || f === ".git" )) {
             if (fs.statSync(path + `/${f}`).isDirectory()) {
             getAllfiles(path + `/${f}` , resultPathes);
             } else {

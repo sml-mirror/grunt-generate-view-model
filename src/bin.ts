@@ -1,4 +1,4 @@
-/*import { createViewModels } from "./index";
-
-createViewModels();*/
-console.log("wat");
+#!/usr/bin/env node
+"use strict";
+import { createViewModels } from "./index";
+createViewModels();
