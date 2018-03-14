@@ -18,7 +18,7 @@ import { Config } from "./model/config";
 export function createViewModelsInternal(): string [] {
     let possibleFiles: string[] = [];
     let config = <Config>JSON.parse(fs.readFileSync("generateViewConfig.json", "utf8"));
-    getAllfiles("./", possibleFiles, config.ignore.folders);
+    getAllfiles(".", possibleFiles, config.check.folders);
     var  metadata = createMetadatas(possibleFiles);
     var resultTemplate = CreateFiles(metadata);
     return resultTemplate;
@@ -310,19 +310,21 @@ function unique(arr: string[]): string[] {
     }
     return Object.keys(obj);
 }
-function getAllfiles(path: string, resultPathes: string[], igoringFolders: string[]) {
+function getAllfiles(path: string, resultPathes: string[], checkingFolders: string[]) {
     fs.readdirSync(path).forEach(f => {
-        if (!(igoringFolders.map(folder => { return ".//" + folder; }).indexOf( path + `/${f}`) > -1)) {
-            if (fs.statSync(path + `/${f}`).isDirectory()) {
-            getAllfiles(path + `/${f}` , resultPathes, igoringFolders);
+        let pth =  path + `/${f}`;
+        checkingFolders.forEach(_folder => {
+            if (fs.statSync(pth).isDirectory()) {
+                if(_folder.includes(pth)) {
+                    getAllfiles(pth , resultPathes, checkingFolders);
+                }
             } else {
                 let tsRegExp = /.+\.ts$/;
-                let p = path + `/${f}`;
-                let matches = tsRegExp.exec(p);
+                let matches = tsRegExp.exec(pth);
                 if ( matches && matches.length > 0) {
                     resultPathes.push( matches[0]);
                 }
             }
-        }
+        });
     });
   }

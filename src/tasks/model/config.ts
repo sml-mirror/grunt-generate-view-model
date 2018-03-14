@@ -1,7 +1,7 @@
 export class Config {
-    public ignore: Ignore;
+    public check: Check;
 }
 
-export class Ignore {
+export class Check {
     public folders: string[];
 }
