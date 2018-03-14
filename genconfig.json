@@ -2,7 +2,7 @@
     "check":
         {
             "folders":[
-                "./test/src/model/hero"
+                "./test/src/model"
             ]
         }
 }
