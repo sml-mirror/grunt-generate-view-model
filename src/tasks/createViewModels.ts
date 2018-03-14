@@ -195,7 +195,7 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
             var fs = require("fs");
             var mkdirp = require("mkdirp");
             var getDirName = require("path").dirname;
-            mkdirp.sync(mdata.filename);
+            mkdirp.sync(getDirName(mdata.filename));
             fs.writeFileSync(mdata.filename, c, "utf-8");
             res.push(c);
 
