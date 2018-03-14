@@ -17,7 +17,7 @@ import { Config } from "./model/config";
 
 export function createViewModelsInternal(): string [] {
     let possibleFiles: string[] = [];
-    let config = <Config>JSON.parse(fs.readFileSync("generateViewConfig.json", "utf8"));
+    let config = <Config>JSON.parse(fs.readFileSync("genconfig.json", "utf8"));
     getAllfiles(".", possibleFiles, config.check.folders);
     var  metadata = createMetadatas(possibleFiles);
     var resultTemplate = CreateFiles(metadata);
