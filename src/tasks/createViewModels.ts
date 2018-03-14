@@ -17,7 +17,7 @@ import { Config } from "./model/config";
 
 export function createViewModelsInternal(): string [] {
     let possibleFiles: string[] = [];
-    let config = <Config>JSON.parse(fs.readFileSync("generateViewConfig.json","utf8"));
+    let config = <Config>JSON.parse(fs.readFileSync("generateViewConfig.json", "utf8"));
     getAllfiles("./", possibleFiles, config.ignore.folders);
     var  metadata = createMetadatas(possibleFiles);
     var resultTemplate = CreateFiles(metadata);
@@ -50,8 +50,8 @@ export function createMetadatas(files: string[]): FileMetadata[] {
     let generationFiles: FileMetadata[];
     generationFiles = new Array<FileMetadata>();
     for (var file of files) {
-        if(/\w+tmp.ts$/.exec(file)) {
-            console.log('tmp');
+        if (/\w+tmp.ts$/.exec(file)) {
+            console.log( "tmp" );
             break;
         }
         console.log(file);
@@ -188,7 +188,7 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     for ( var i = 0; i < metadata.length; i++ ) {
         var mdata = metadata[i];
         mdata.classes = mdata.classes.filter((item) => item.generateView);
-        if(mdata.mapperPath) {
+        if (mdata.mapperPath) {
             mdata.classes.forEach(cl => {
                 cl.viewModelFromMapper = require("path").relative(mdata.mapperPath, mdata.filename).split("\\").join("/").split(".ts").join("");
             });
@@ -316,7 +316,7 @@ function unique(arr: string[]): string[] {
 }
 function getAllfiles(path: string, resultPathes: string[], igoringFolders: string[]) {
     fs.readdirSync(path).forEach(f => {
-        if (!(igoringFolders.map(folder => { return ".//"+folder }).indexOf(path+`/${f}`) > -1)) {
+        if (!(igoringFolders.map(folder => { return ".//" + folder; }).indexOf( path + `/${f}`) > -1)) {
             if (fs.statSync(path + `/${f}`).isDirectory()) {
             getAllfiles(path + `/${f}` , resultPathes, igoringFolders);
             } else {
