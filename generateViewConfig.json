@@ -1,0 +1,10 @@
+{
+    "ignore":
+        {
+            "folders":[
+                "node_modules",
+                ".git",
+                ".tscache"
+            ]
+        }
+}

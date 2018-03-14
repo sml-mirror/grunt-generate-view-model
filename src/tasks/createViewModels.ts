@@ -12,11 +12,13 @@ import { Transformer } from "./model/transformer";
 import { ViewModelTypeOptions } from "./model/viewModelTypeOptions";
 import { GenerateViewOptions } from "./model/generateViewOptions";
 import * as fs from "fs";
+import { Config } from "./model/config";
 
 
 export function createViewModelsInternal(): string [] {
     let possibleFiles: string[] = [];
-    getAllfiles("./", possibleFiles);
+    let config = <Config>JSON.parse(fs.readFileSync("generateViewConfig.json","utf8"));
+    getAllfiles("./", possibleFiles, config.ignore.folders);
     var  metadata = createMetadatas(possibleFiles);
     var resultTemplate = CreateFiles(metadata);
     return resultTemplate;
@@ -181,9 +183,11 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     for ( var i = 0; i < metadata.length; i++ ) {
         var mdata = metadata[i];
         mdata.classes = mdata.classes.filter((item) => item.generateView);
-        mdata.classes.forEach(cl => {
-            cl.viewModelFromMapper = require("path").relative(mdata.mapperPath, mdata.filename).split("\\").join("/").split(".ts").join("");
-        });
+        if(mdata.mapperPath) {
+            mdata.classes.forEach(cl => {
+                cl.viewModelFromMapper = require("path").relative(mdata.mapperPath, mdata.filename).split("\\").join("/").split(".ts").join("");
+            });
+        }
         var c = render("viewTemplateCommon.njk", {metafile: mdata});
         var mapperc = render("mapperTemplate.njk", {metafile: mdata});
         if (c && c.trim()) {
@@ -305,11 +309,11 @@ function unique(arr: string[]): string[] {
     }
     return Object.keys(obj);
 }
-function getAllfiles(path: string, resultPathes: string[]) {
+function getAllfiles(path: string, resultPathes: string[], igoringFolders: string[]) {
     fs.readdirSync(path).forEach(f => {
-        if (!(f === "node_modules" || f === ".git" )) {
+        if (!(igoringFolders.map(folder => { return ".//"+folder }).indexOf(path+`/${f}`) > -1)) {
             if (fs.statSync(path + `/${f}`).isDirectory()) {
-            getAllfiles(path + `/${f}` , resultPathes);
+            getAllfiles(path + `/${f}` , resultPathes, igoringFolders);
             } else {
                 let tsRegExp = /.+\.ts$/;
                 let p = path + `/${f}`;
