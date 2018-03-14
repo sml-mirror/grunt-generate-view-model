@@ -51,10 +51,8 @@ export function createMetadatas(files: string[]): FileMetadata[] {
     generationFiles = new Array<FileMetadata>();
     for (var file of files) {
         if (/\w+tmp.ts$/.exec(file)) {
-            console.log( "tmp" );
             break;
         }
-        console.log(file);
         var stringFile = fs.readFileSync(file, "utf-8");
         let correctStringFile  = ViewModelTypeCorrecting(stringFile);
         let tmpFileSource = file.split(".ts").join("tmp.ts");
