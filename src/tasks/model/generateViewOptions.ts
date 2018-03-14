@@ -1,4 +1,5 @@
 export class GenerateViewOptions {
-    modelName: string;
+    model: string;
+    filePath: string;
     mapperPath?: string;
 }

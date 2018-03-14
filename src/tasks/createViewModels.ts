@@ -74,8 +74,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     let genViewOpt = <GenerateViewOptions>dec.arguments[0].valueOf();
                     if (classMet.generateView === false) {
                         classMet.generateView = true;
-                        let tmpArray = genViewOpt.modelName.split("/");
-                        classMet.name = tmpArray[tmpArray.length - 1 ].split(".ts")[0];
+                        classMet.name = genViewOpt.model;
                         classMet.name = classMet.name[0].toUpperCase() + classMet.name.substring(1);
                         classMets.push(classMet);
 
@@ -83,8 +82,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     } else {
                         let otherClassMet = new ClassMetadata();
                         otherClassMet.generateView = true;
-                        let tmpArray = genViewOpt.modelName.split("/");
-                        otherClassMet.name = tmpArray[tmpArray.length - 1 ].split(".ts")[0];
+                        otherClassMet.name = genViewOpt.model;
                         otherClassMet.name = otherClassMet.name[0].toUpperCase() + otherClassMet.name.substring(1);
                         otherClassMet.fields = new Array<FieldMetadata>();
                         classMets.push( otherClassMet);
@@ -197,7 +195,7 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
             var fs = require("fs");
             var mkdirp = require("mkdirp");
             var getDirName = require("path").dirname;
-            mkdirp.sync(getDirName(mdata.filename));
+            mkdirp.sync(mdata.filename);
             fs.writeFileSync(mdata.filename, c, "utf-8");
             res.push(c);
 
@@ -224,7 +222,7 @@ function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: Gene
     fileMet = new FileMetadata();
     fileMet.basePath = file;
     fileMet.classes = new Array<ClassMetadata>();
-    fileMet.filename = genViewOpt.modelName;
+    fileMet.filename = genViewOpt.filePath + "/" + genViewOpt.model[0].toLowerCase() + genViewOpt.model.substring(1) +  ".ts" ;
     fileMet.mapperPath = genViewOpt.mapperPath;
     generationFiles.push( fileMet);
 }
