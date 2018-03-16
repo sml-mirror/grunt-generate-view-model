@@ -1,6 +1,6 @@
 export class Transformer {
     public toView?: ToViewTransformer;
-    public fromView?: FromViewTransformer; 
+    public fromView?: FromViewTransformer;
 }
 
 export class ToViewTransformer {

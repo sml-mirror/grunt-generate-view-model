@@ -272,7 +272,7 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             fileMetadata.imports.push(imp);
         });
     });
-    let tmpImports : Import[] = [];// = JSON.parse(JSON.stringify(fileMetadata.imports));
+    let tmpImports : Import[] = [];
     fileMetadata.imports.forEach( i => {
         let isExist = false;
         tmpImports.forEach(tI => {
@@ -280,11 +280,10 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
                 isExist = true;
             }
         });
-        if(!isExist) {
+        if (!isExist) {
             tmpImports.push(i);
         }
     });
-    console.log(tmpImports);
     fileMetadata.imports = JSON.parse(JSON.stringify(tmpImports));
 }
 
