@@ -9,4 +9,5 @@ export class ClassMetadata {
     public viewModelFromMapper : string = null;
     public baseName: string = null;
     public baseNamePath: string = null;
+    public baseModelFromMapper: string = null;
 }

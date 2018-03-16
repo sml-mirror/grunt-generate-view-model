@@ -28,7 +28,8 @@ export class Hero {
 
     @ViewModelType({
     "type": HeroDetail,
-    "transformer": { "function" : Class.func, "isAsync": true},
+    "transformer": { "toView" : { "function" : Class.func , "isAsync": true},
+                    "fromView": { "function":Class, "isAsync": true}},
     "modelName": "HeroViewModel"})
     @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;
@@ -38,10 +39,10 @@ export class Hero {
     public detailVM: HeroDetail;
 
     @ViewModelType({
-        "type": HeroDetailViewModel,
+    "type": HeroDetailViewModel,
     "modelName": "HeroViewModel"})
     @ViewModelType({
-      "type": HeroDetailViewModel,
+    "type": HeroDetailViewModel,
     "modelName": "HeroViewModel1"})
     public details: HeroDetail[];
 

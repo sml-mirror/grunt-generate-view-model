@@ -1,5 +1,6 @@
 {% for class in metafile.classes %}
 import { {{class.name}} } from '{{class.viewModelFromMapper}}';
+import { {{class.baseName}} } from '{{class.baseModelFromMapper}}';
 {% endfor%}
 {% for import in metafile.imports %}
 {%if import.forMapper ===true%}
@@ -9,12 +10,12 @@ import {{import.type }} from '{{import.path}}';
 
 {% for class in metafile.classes %}
 export class {{class.name}}Mapper {
-      public static async to{{class.name}}(model: any /*{{class.baseName}}*/): Promise<{{class.name}}> {
+      public static async to{{class.name}}(model: {{class.baseName}}): Promise<{{class.name}}> {
             let result = new {{class.name}}();
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
 {%if field.fieldConvertFunction%}
-            result.{{field.name}}  = {% if field.fieldConvertFunction.isAsync%}await {% endif%} {{field.fieldConvertFunction.function}}(model);
+            result.{{field.name}}  = {% if field.fieldConvertFunction.toView.isAsync %}await{% endif%} {{field.fieldConvertFunction.toView.function}}(model);
 {% elif field.isArray %}
             if (model.{{field.baseModelName}}) {
                   result.{{field.name}} =  model.{{field.baseModelName}}.map(function(item: any ) { return JSON.parse(JSON.stringify(model.{{field.baseModelName}})); });
@@ -26,6 +27,30 @@ export class {{class.name}}Mapper {
             }
 {% else %}
             result.{{field.name}} = model.{{field.baseModelName}}{% if field.toStringWanted %}.toString(){% endif%};
+{% endif %}
+{% endif %}
+{% endif %}
+{%endfor%}
+            return result;
+      }
+
+      public static async from{{class.name}}(viewModel: {{class.name}}): Promise<{{class.baseName}}> {
+            let result = new {{class.baseName}}();
+{% for field in class.fields %}
+{% if field.ignoredInView===false %}
+{%if field.fieldConvertFunction%}
+            result.{{field.baseModelName}}  = {% if field.fieldConvertFunction.fromView.isAsync %}await{% endif%} {{field.fieldConvertFunction.fromView.function}}(viewModel);
+{% elif field.isArray %}
+            if (viewModel.{{field.name}}) {
+                  result.{{field.baseModelName}} =  viewModel.{{field.name}}.map(function(item: any ) { return JSON.parse(JSON.stringify(viewModel.{{field.name}})); });
+            }
+{% else %}
+{% if field.isComplexType %}
+            if (viewModel.{{field.name}}) {
+                  result.{{field.baseModelName}} = JSON.parse(JSON.stringify(viewModel.{{field.name}}));
+            }
+{% else %}
+            result.{{field.baseModelName}} = viewModel.{{field.name}};
 {% endif %}
 {% endif %}
 {% endif %}

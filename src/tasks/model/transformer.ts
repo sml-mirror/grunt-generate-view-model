@@ -1,4 +1,14 @@
 export class Transformer {
-    public function?: string;
+    public toView?: ToViewTransformer;
+    public fromView?: FromViewTransformer; 
+}
+
+export class ToViewTransformer {
+    public function: any;
+    public isAsync?: boolean = false;
+}
+
+export class FromViewTransformer {
+    public function: any;
     public isAsync?: boolean = false;
 }

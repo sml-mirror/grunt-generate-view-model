@@ -50,15 +50,8 @@ export function createMetadatas(files: string[]): FileMetadata[] {
     let generationFiles: FileMetadata[];
     generationFiles = new Array<FileMetadata>();
     for (var file of files) {
-        if (/\w+tmp.ts$/.exec(file)) {
-            break;
-        }
         var stringFile = fs.readFileSync(file, "utf-8");
-        let correctStringFile  = ViewModelTypeCorrecting(stringFile);
-        let tmpFileSource = file.split(".ts").join("tmp.ts");
-        fs.writeFileSync(tmpFileSource, correctStringFile, "utf-8");
-        var jsonStructure = parseStruct(correctStringFile, {}, tmpFileSource);
-        fs.unlinkSync(tmpFileSource);
+        var jsonStructure = parseStruct(stringFile, {}, file);
         let possibleImports = jsonStructure._imports;
 
         jsonStructure.classes.forEach(cls => {
@@ -187,6 +180,7 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
         if (mdata.mapperPath) {
             mdata.classes.forEach(cl => {
                 cl.viewModelFromMapper = require("path").relative(mdata.mapperPath, mdata.filename).split("\\").join("/").split(".ts").join("");
+                cl.baseModelFromMapper = require("path").relative(mdata.mapperPath, mdata.basePath).split("\\").join("/").split(".ts").join("");
             });
         }
         var c = render("viewTemplateCommon.njk", {metafile: mdata});
@@ -226,31 +220,7 @@ function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: Gene
     fileMet.mapperPath = genViewOpt.mapperPath;
     generationFiles.push( fileMet);
 }
-function ViewModelTypeCorrecting(input: string): string {
-    let firstViewModelTypeInArray = input.split("@ViewModelType");
-    let result = firstViewModelTypeInArray.map( str => {
-        let tmpStr =  str.trim();
-        let viewModelTypeDecoratorRegExp = /\(\s?{\s*?["']type["']\s?:\s?\w+/;
-        let matches = viewModelTypeDecoratorRegExp.exec(tmpStr);
-        if (matches) {
-            let need = matches[0];
-            let matchRegExp = /[A-Z]\w+/;
-            let innerMatches = matchRegExp.exec(need);
-            tmpStr = tmpStr.replace(innerMatches[0], `"${innerMatches[0]}"`);
-        }
-        let viewModelTypeDecoratorForTransformer = /["']function["']\s?:\s?\w+(\.)?(\w+)?/;
-        let secMatches = viewModelTypeDecoratorForTransformer.exec(tmpStr);
-        if (secMatches) {
-            let need = secMatches[0];
-            let matchRegExp = /:\s?\w+(\.)?(\w+)?/;
-            let innerMatches = matchRegExp.exec(need);
-            let variant = `: "${innerMatches[0].substring(1).trim()}"`;
-            tmpStr =  tmpStr.replace(innerMatches[0], variant);
-        }
-        return tmpStr;
-    }).join("@ViewModelType");
-    return result;
-}
+
 function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) {
     fileMetadata.classes.forEach(cls => {
         let usingTypesInClass = cls.fields.filter(fld => {
@@ -266,8 +236,10 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
         usingTypesInClass = unique(usingTypesInClass);
         cls.fields.forEach(f => {
             if ( f.fieldConvertFunction && !f.ignoredInView) {
-                usingTypesInClass.push(f.fieldConvertFunction.function.split(".")[0]);
-                imoprtsForMapper .push(f.fieldConvertFunction.function.split(".")[0]);
+                usingTypesInClass.push(f.fieldConvertFunction.toView.function.split(".")[0]);
+                imoprtsForMapper .push(f.fieldConvertFunction.toView.function.split(".")[0]);
+                usingTypesInClass.push(f.fieldConvertFunction.fromView.function.split(".")[0]);
+                imoprtsForMapper .push(f.fieldConvertFunction.fromView.function.split(".")[0]);
             }
         });
         usingTypesInClass.forEach(type => {
@@ -300,7 +272,22 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             fileMetadata.imports.push(imp);
         });
     });
+    let tmpImports : Import[] = [];// = JSON.parse(JSON.stringify(fileMetadata.imports));
+    fileMetadata.imports.forEach( i => {
+        let isExist = false;
+        tmpImports.forEach(tI => {
+            if (tI.type === i.type) {
+                isExist = true;
+            }
+        });
+        if(!isExist) {
+            tmpImports.push(i);
+        }
+    });
+    console.log(tmpImports);
+    fileMetadata.imports = JSON.parse(JSON.stringify(tmpImports));
 }
+
 function unique(arr: string[]): string[] {
     let obj = {};
 
@@ -310,6 +297,7 @@ function unique(arr: string[]): string[] {
     }
     return Object.keys(obj);
 }
+
 function getAllfiles(path: string, resultPathes: string[], checkingFolders: string[]) {
     fs.readdirSync(path).forEach(f => {
         let pth =  path + `/${f}`;
