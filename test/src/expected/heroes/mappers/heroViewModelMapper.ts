@@ -29,7 +29,7 @@ export class HeroViewModelMapper {
             result.id = parseInt(viewModel.id,10);
             result.name = viewModel.name;
             result.data = viewModel.information;
-            result.detail  = await Class(viewModel);
+            result.detail  =  Class(viewModel);
             if (viewModel.detailVM) {
                   result.detailVM = JSON.parse(JSON.stringify(viewModel.detailVM));
             }
