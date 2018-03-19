@@ -26,7 +26,7 @@ export class HeroViewModelMapper {
 
       public static async fromHeroViewModel(viewModel: HeroViewModel): Promise<Hero> {
             let result = new Hero();
-            result.id = viewModel.id;
+            result.id = parseInt(viewModel.id,10);
             result.name = viewModel.name;
             result.data = viewModel.information;
             result.detail  = await Class(viewModel);
