@@ -8,7 +8,7 @@ export class HeroViewModelMapper {
             result.id = model.id.toString();
             result.name = model.name;
             result.information = model.data;
-            result.detail  = await Class.func(model);
+            result.detail  = await Class(model);
             if (model.detailVM) {
                   result.detailVM = JSON.parse(JSON.stringify(model.detailVM));
             }
