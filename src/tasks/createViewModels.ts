@@ -169,7 +169,6 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                                                                     impNode.clauses.push(fileName);
                                                                     impNode.absPathNode.push(generateOptions.mapperPath + "/" + fileName);
                                                                     fldMetadata.needGeneratedMapper = true;
-
                                                                     possibleImports.push(impNode);
                                                                 }
                                                             }
@@ -317,6 +316,7 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
         });
     });
     let tmpImports : Import[] = [];
+
     fileMetadata.imports.forEach( i => {
         let isExist = false;
         tmpImports.forEach(tI => {
@@ -329,8 +329,24 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
         }
     });
     fileMetadata.imports = JSON.parse(JSON.stringify(tmpImports));
+    FilterImportingMappers(fileMetadata);
 }
-
+function FilterImportingMappers(meta: FileMetadata) {
+    meta.imports.forEach( imp => {
+        let mapperMatch = imp.type.match(/[a-zA-Z]+Mapper/);
+        if (mapperMatch) {
+            let mapperName = mapperMatch[0];
+            meta.classes.forEach(cls => {
+                cls.fields.forEach(field => {
+                    if (mapperName.includes(field.type) && field.needGeneratedMapper && !field.ignoredInView) {
+                        imp.dependencyMappers.push(cls.name);
+                    }
+                });
+            });
+        }
+        imp.dependencyMappers = unique(imp.dependencyMappers);
+    });
+}
 function unique(arr: string[]): string[] {
     let obj = {};
 
