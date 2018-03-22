@@ -7,7 +7,6 @@ export class HeroDetailViewModelMapper {
             result.detail = model.data;
             return result;
       }
-
       public static async fromHeroDetailViewModel(viewModel: HeroDetailViewModel): Promise<HeroDetail> {
             let result = new HeroDetail();
             result.data = viewModel.detail;

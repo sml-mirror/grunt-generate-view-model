@@ -143,11 +143,47 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                                     fldMetadata.type = "string";
                                     fldMetadata.toStringWanted = true;
                                 }
+                                if (!fieldTypeOptions.transformer) {
+                                    jsonStructure._imports.forEach(i => {
+                                        i.clauses.forEach(clause => {
+                                            if (clause === fldMetadata.baseModelType) {
+                                                let path: string = "";
+                                                i.absPathNode.forEach(node => {
+                                                    path += `${node}/`;
+                                                });
+                                                path = path.substring(0, path.length - 1) + ".ts";
+                                                let content = fs.readFileSync(path, "utf-8");
+
+                                                let innerJsonStructure = parseStruct(content, {}, "");
+                                                innerJsonStructure.classes.forEach(c => {
+                                                    if (c.name === fldMetadata.baseModelType) {
+                                                        c.decorators.forEach(d => {
+                                                            if (d.name === "GenerateView") {
+                                                                let generateOptions = <GenerateViewOptions>d.arguments[0].valueOf();
+                                                                if (generateOptions.model.toLowerCase() ===
+                                                                fieldTypeOptions.type.toString().toLowerCase()) {
+                                                                    let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
+                                                                    impNode.isNodeModule = false;
+                                                                    let fileName = generateOptions.model[0].toUpperCase() +
+                                                                    generateOptions.model.substring(1) + "Mapper";
+                                                                    impNode.clauses.push(fileName);
+                                                                    impNode.absPathNode.push(generateOptions.mapperPath + "/" + fileName);
+                                                                    fldMetadata.needGeneratedMapper = true;
+
+                                                                    possibleImports.push(impNode);
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    });
+                                }
                             }
-                            if (fieldTypeOptions.transformer) {
+                            if (fieldTypeOptions.transformer && !fldMetadata.needGeneratedMapper) {
                                 fldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
                                 let isBreak = false;
-
                             }
                         }
                     });
@@ -222,6 +258,7 @@ function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: Gene
 }
 
 function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) {
+
     fileMetadata.classes.forEach(cls => {
         let usingTypesInClass = cls.fields.filter(fld => {
             if (fld.ignoredInView) {
@@ -240,6 +277,10 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
                 imoprtsForMapper .push(f.fieldConvertFunction.toView.function.split(".")[0]);
                 usingTypesInClass.push(f.fieldConvertFunction.fromView.function.split(".")[0]);
                 imoprtsForMapper .push(f.fieldConvertFunction.fromView.function.split(".")[0]);
+            }
+            if (f.needGeneratedMapper) {
+                usingTypesInClass.push(f.type + "Mapper");
+                imoprtsForMapper .push(f.type + "Mapper");
             }
         });
         usingTypesInClass.forEach(type => {
@@ -264,8 +305,11 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             imp.path = _path;
             imoprtsForMapper.forEach( impForMapper => {
                 if (imports[ind].clauses.indexOf(impForMapper) > -1) {
-                    fromPath = fileMetadata.mapperPath.split(".ts").join("");
+                    fromPath = fileMetadata.mapperPath;
                     imp.path = path.relative(fromPath, toPath).split("\\").join("/");
+                    if ( imp.path.indexOf("./") < 0 && !imports[ind].isNodeModule ) {
+                        imp.path = "./" + imp.path;
+                    }
                     imp.forMapper = true;
                 }
             });

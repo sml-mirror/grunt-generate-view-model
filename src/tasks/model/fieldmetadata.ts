@@ -11,4 +11,5 @@ export class FieldMetadata {
     public isComplexType: boolean = false;
     public fieldConvertFunction: Transformer = null;
     public toStringWanted: boolean = false;
+    public needGeneratedMapper: boolean = false;
 }

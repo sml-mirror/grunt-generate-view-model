@@ -1,6 +1,7 @@
 import { HeroViewModel } from '../heroViewModel';
 import { Hero } from '../../../../src/model/hero/hero';
 import { Class } from '../../../../src/model/Path/path';
+import { HeroDetailViewModelMapper } from './HeroDetailViewModelMapper';
 
 export class HeroViewModelMapper {
       public static async toHeroViewModel(model: Hero): Promise<HeroViewModel> {
@@ -10,20 +11,25 @@ export class HeroViewModelMapper {
             result.information = model.data;
             result.detail  = await Class(model);
             if (model.detailVM) {
-                  result.detailVM = JSON.parse(JSON.stringify(model.detailVM));
+                  result.detailVM =  await HeroDetailViewModelMapper.toHeroDetailViewModel(model.detailVM);
             }
             if (model.details) {
-                  result.details =  model.details.map(function(item: any ) { return JSON.parse(JSON.stringify(model.details)); });
+                  let tmp = await model.details.map(async function(item: any ) {return await HeroDetailViewModelMapper.toHeroDetailViewModel(item) });
+                  tmp.forEach(async mp => { 
+                       let p =await mp;
+                       result.details.push(p)});                  
             }
             if (model.detailsVM) {
-                  result.detailsVM =  model.detailsVM.map(function(item: any ) { return JSON.parse(JSON.stringify(model.detailsVM)); });
+                  let tmp = await model.detailsVM.map(async function(item: any ) {return await HeroDetailViewModelMapper.toHeroDetailViewModel(item) });
+                  tmp.forEach(async mp => { 
+                       let p =await mp;
+                       result.detailsVM.push(p)});                  
             }
             if (model.simpleArray) {
-                  result.simpleArray =  model.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify(model.simpleArray)); });
+                  result.simpleArray =  model.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
             }
             return result;
       }
-
       public static async fromHeroViewModel(viewModel: HeroViewModel): Promise<Hero> {
             let result = new Hero();
             result.id = parseInt(viewModel.id,10);
@@ -31,16 +37,22 @@ export class HeroViewModelMapper {
             result.data = viewModel.information;
             result.detail  =  Class(viewModel);
             if (viewModel.detailVM) {
-                  result.detailVM = JSON.parse(JSON.stringify(viewModel.detailVM));
+                  result.detailVM =  await HeroDetailViewModelMapper.fromHeroDetailViewModel(viewModel.detailVM);
             }
             if (viewModel.details) {
-                  result.details =  viewModel.details.map(function(item: any ) { return JSON.parse(JSON.stringify(viewModel.details)); });
+                  let tmp = await viewModel.details.map(async function(item: any ) {return await HeroDetailViewModelMapper.fromHeroDetailViewModel(item) });
+                  tmp.forEach(async mp => { 
+                       let p =await mp;
+                       result.details.push(p)});                  
             }
             if (viewModel.detailsVM) {
-                  result.detailsVM =  viewModel.detailsVM.map(function(item: any ) { return JSON.parse(JSON.stringify(viewModel.detailsVM)); });
+                  let tmp = await viewModel.detailsVM.map(async function(item: any ) {return await HeroDetailViewModelMapper.fromHeroDetailViewModel(item) });
+                  tmp.forEach(async mp => { 
+                       let p =await mp;
+                       result.detailsVM.push(p)});                  
             }
             if (viewModel.simpleArray) {
-                  result.simpleArray =  viewModel.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify(viewModel.simpleArray)); });
+                  result.simpleArray =  viewModel.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
             }
             return result;
       }
