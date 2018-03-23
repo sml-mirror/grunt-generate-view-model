@@ -168,7 +168,7 @@ Decorator which used to rename property in view model
 |                        @ViewModelName                                              |
 +------------------------------------------------------------------------------------+
 |   property             |  isOptional  |                      definition            |
-+-------------+--------------+----------+--------------------------------------------+
++------------------------+--------------+--------------------------------------------+
 | 1st param(name)        | false        | name of field in view model                |
 | 2nd param(using models)| true         | view model using this name of field        |
 +------------------------+--------------+--------------------------------------------+
