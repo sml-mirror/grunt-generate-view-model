@@ -10,7 +10,7 @@ This repository provides a grunt plugin for code generation view models by model
   
 # Begin to use
 After install plugin you need to make first steps:
-* create gencofig.json
+* create gencofig.json in root folder
 ```json
 {
     "check":
