@@ -173,7 +173,7 @@ Decorator which used to rename property in view model
 | 2nd param(using models)| true         | view model using this name of field        |
 +-------------+--------------+-------------------------------------------------------+
 ```
-if 2nd param is null - property will be rename in all view models
+* If 2nd param is null - property will be rename in all view models
 ```typescript
 @ViewModelName("information")
 
@@ -199,17 +199,41 @@ Decorator which used to delete property from view model
 @IgnoreViewModel("HeroViewModel")
 ```
 ### ViewModelTypes
-* @ViewModelType -if type of this property chanes in view models,you need to use this decorator. Has one object parameter which contains 3 properties:
-  * type - type which will be use in view model
-  * modelName - name of view model which will be have this modernize property//optional. If is is null - it will be works for all  view models of this class.
-  * transformer - complex property ,using if you need to create mapper and transform field by special rules  //optional.
-  Include 2 property:
-     * toView - property which used to transform base field to view field. field "function" - show what function will be transform it.  This function is not codegeneration and need to input one parameter - base model;
-     * isAsync - property which show is the function is async//optional
+Decorator  which used to change type of property in view model
+```shell
++-------------+--------------+--------------------------------------------------------------+
+|                        @GenerateView                                                      |
++-------------------------------------------------------------------------------------------+
+|   property  |  isOptional  |                      definition                              | 
++-------------+--------------+--------------------------------------------------------------+
+| type        | false        | property type in view model                                  |
+| transformer | true         | function used to transform to view model and back im mappers | - complex object
+| modelName   | true         | name of view model which will be have property               |
++-------------+--------------+--------------------------------------------------------------+
 
-if there is no "transformer" property, use 2 pathes of transform:
-* if type is complex ,but not generated or generated without mapper - deep copying
-* if type is complex and codegen and has mapper - use mapper
++-------------+--------------+--------------------------------------------------------------+
+|                        transforner Type                                                   |
++-------------------------------------------------------------------------------------------+
+|   property  |  isOptional  |                      definition                              | 
++-------------+--------------+--------------------------------------------------------------+
+| toView      | false        | transform object which used to transform base model to view  | - complex object
+| fromView    | false        | transform object which used to transform view model to base  | - complex object
++-------------+--------------+--------------------------------------------------------------+
+
+
++-------------+--------------+--------------------------------------------------------------+
+|                        toView/fromView objects                                            |
++-------------------------------------------------------------------------------------------+
+|   property  |  isOptional  |                      definition                              | 
++-------------+--------------+--------------------------------------------------------------+
+| function    | false        | function which transformate model                            | 
+| isAsync     | true         | is function async                                            | 
++-------------+--------------+--------------------------------------------------------------+
+```
+* if there is no "transformer" property, use 2 pathes of transform:
+  * if type is complex ,but not generated or generated without mapper - deep copying
+  * if type is complex and codegen and has mapper - use mapper
+* if there is no "modelName" property type using for all view models for this base model
 ```typescript
     @ViewModelType({
     "modelName": "HeroViewModel",
