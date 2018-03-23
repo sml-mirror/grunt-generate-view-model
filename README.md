@@ -161,20 +161,44 @@ You can create several views from one base model
 ```
 
 ## Attributes for properties
-* @IgnoreViewModel - if you don't need some property in view model or models. It has one optional parameter,which show what view model will be ignored by this property.If parametrs is not define - this property ignored in all view models. If you need to ignore several models,but not all - it need to write several same decorators with different name parameter
-```typescript
-@IgnoreViewModel()
-
-@IgnoreViewModel("HeroViewModel")
+### ViewModelName
+Decorator which used to rename property in view model
+```shell
++-------------+--------------+-------------------------------------------------------+
+|                        @ViewModelName                                              |
++------------------------------------------------------------------------------------+
+|   property             |  isOptional  |                      definition            |
++-------------+--------------+-------------------------------------------------------+
+| 1st param(name)        | false        | name of field in view model                |
+| 2nd param(using models)| true         | view model using this name of field        |
++-------------+--------------+-------------------------------------------------------+
 ```
-* @ViewModelName - if you want to rename name of property in view model,you need to use this decorator.it contains 2 parameters.
-First of this is name of field in view model.Second parameter is optional and contains view model name.if it is null - property will be rename in all view models
+if 2nd param is null - property will be rename in all view models
 ```typescript
 @ViewModelName("information")
 
 @ViewModelName("information", "HeroViewModel")
 public data: string;
 ```
+### IgnoreViewModel
+Decorator which used to delete property from view model
+```shell
++-------------+--------------+---------------------------------------------------------+
+|                              @IgnoreViewModel                                        |
++--------------------------------------------------------------------------------------+
+|   property                   |  isOptional  |               definition               |
++-------------+----------------+-------------------------------------------------------+
+| 1st param(name of view model)|     true     |       is field ignored in view model   |
++-------------+----------------+-------------------------------------------------------+
+```
+* If parametr is not define - this property ignored in all view models.
+* If you need to ignore several models,but not all - it need to write several same decorators with different name parameter
+```typescript
+@IgnoreViewModel()
+
+@IgnoreViewModel("HeroViewModel")
+```
+### ViewModelTypes
 * @ViewModelType -if type of this property chanes in view models,you need to use this decorator. Has one object parameter which contains 3 properties:
   * type - type which will be use in view model
   * modelName - name of view model which will be have this modernize property//optional. If is is null - it will be works for all  view models of this class.
