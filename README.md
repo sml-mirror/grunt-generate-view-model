@@ -168,10 +168,10 @@ Decorator which used to rename property in view model
 |                        @ViewModelName                                              |
 +------------------------------------------------------------------------------------+
 |   property             |  isOptional  |                      definition            |
-+-------------+--------------+-------------------------------------------------------+
++-------------+--------------+----------+--------------------------------------------+
 | 1st param(name)        | false        | name of field in view model                |
 | 2nd param(using models)| true         | view model using this name of field        |
-+-------------+--------------+-------------------------------------------------------+
++------------------------+--------------+--------------------------------------------+
 ```
 * If 2nd param is null - property will be rename in all view models
 ```typescript
@@ -187,9 +187,9 @@ Decorator which used to delete property from view model
 |                              @IgnoreViewModel                                        |
 +--------------------------------------------------------------------------------------+
 |   property                   |  isOptional  |               definition               |
-+-------------+----------------+-------------------------------------------------------+
++-------------+----------------+--------------+----------------------------------------+
 | 1st param(name of view model)|     true     |       is field ignored in view model   |
-+-------------+----------------+-------------------------------------------------------+
++------------------------------+--------------+----------------------------------------+
 ```
 * If parametr is not define - this property ignored in all view models.
 * If you need to ignore several models,but not all - it need to write several same decorators with different name parameter
