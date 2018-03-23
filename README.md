@@ -115,4 +115,74 @@ export class Class {
   ```
   where "generateView" is string which launch plugin
   
-  * npm run \<your name of script\>
+* npm run \<your name of script\>
+
+* go to path ,whic define in GenerateView decorator and see something like this:
+
+view model
+```typescript
+import { InnerClassView } from './innerClassView';
+import { InnerClass } from '../../models/innerClass';
+
+  export class ClassView {
+
+  public property1: number;
+
+  public property2: Object;
+
+  public property3: string [];
+
+  public property4: InnerClassView;
+
+  public property5: InnerClassView;
+
+  public property6: InnerClass [];
+}
+```
+ mapper
+```typescript
+  import { ClassView } from '../viewmodels/classView';
+import { Class } from '../../models/class';
+import { fromModelToView,fromViewtoModel } from '../../function/transformFunction';
+import { InnerClassViewMapper } from './InnerClassViewMapper';
+
+export class ClassViewMapper {
+      public static async toClassView(model: Class): Promise<ClassView> {
+            let result = new ClassView();
+            result.property1 = model.property1;
+            if (model.property2) {
+                  result.property2 = JSON.parse(JSON.stringify(model.property2));
+            }
+            if (model.property3) {
+                  result.property3 =  model.property3.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
+            }
+            result.property4  = await fromModelToView(model);
+            if (model.property5) {
+                  result.property5 =  await InnerClassViewMapper.toInnerClassView(model.property5);
+            }
+            if (model.property6) {
+                  result.property6 =  model.property6.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
+            }
+            return result;
+      }
+      public static async fromClassView(viewModel: ClassView): Promise<Class> {
+            let result = new Class();
+            result.property1 = viewModel.property1;
+            if (viewModel.property2) {
+                  result.property2 = JSON.parse(JSON.stringify(viewModel.property2));
+            }
+            if (viewModel.property3) {
+                  result.property3 =  viewModel.property3.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
+            }
+            result.property4  =  fromViewtoModel(viewModel);
+            if (viewModel.property5) {
+                  result.property5 =  await InnerClassViewMapper.fromInnerClassView(viewModel.property5);
+            }
+            if (viewModel.property6) {
+                  result.property6 =  viewModel.property6.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
+            }
+            return result;
+      }
+}
+
+```
