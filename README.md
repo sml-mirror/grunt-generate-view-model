@@ -50,18 +50,21 @@ export class Class {
     public property5: InnerClass;
 
     public property6: InnerClass[];
+    
+    @IgnoreViewModel()
+    public property7: number[]
 
 }
 ```
 * In package.json make script like:
 ```json
   "scripts": {
-    "<your name of script>": "generateView"
+    "generation": "generateView"
   }
   ```
   where "generateView" is string which launch plugin
   
-* npm run \<your name of script\>
+* npm run generation
 
 * go to path ,whic define in GenerateView decorator and see something like this:
 
