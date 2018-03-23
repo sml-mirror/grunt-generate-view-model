@@ -136,12 +136,22 @@ export class ClassViewMapper {
 
 # Attributes
 
-There are 5 decorators used in this plugin:2 for classes and 3 for properties
+There are 4 decorators used in this plugin: 1 for classes and 3 for properties
+
 ## Attributes for classes
-* @GenerateView - main decorator of plugin.It contains one parameter (Object) with 3 properties:
-  * model - name of view model
-  * filePath - path to view model relative to the root of the folder
-  * mapperPath - path yo mapper(if it need) // optional
+### GenerateView
+Main decorator for creating view model
+```shell
++-------------+--------------+-------------------------------------------------------+
+|                        @GenerateView                                               |
++------------------------------------------------------------------------------------+
+|   property  |  isOptional  |                      definition                       |
++-------------+--------------+-------------------------------------------------------+
+| model       | false        | name of view model                                    |
+| filePath    | false        | path to view model relative to the root of the folder |
+| mapperpath  | true         | path to mapper                                        |
++-------------+--------------+-------------------------------------------------------+
+```
 You can create several views from one base model
 ```typescript
 @GenerateView({
@@ -149,11 +159,7 @@ You can create several views from one base model
     'filePath':'./generated/viewmodels',
     'mapperPath':'./generated/mappers'})
 ```
-* @NeedMapper - decorator which show to plugin that view model of base model need mapper.
-  There is no parameters inside of this decorator.
-```typescript
-@NeedMapper()
-```
+
 ## Attributes for properties
 * @IgnoreViewModel - if you don't need some property in view model or models. It has one optional parameter,which show what view model will be ignored by this property.If parametrs is not define - this property ignored in all view models. If you need to ignore several models,but not all - it need to write several same decorators with different name parameter
 ```typescript
