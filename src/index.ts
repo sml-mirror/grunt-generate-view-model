@@ -34,11 +34,4 @@ export function ViewModelType(viewModelTypeOptions: ViewModelTypeOptions): Funct
     };
 }
 
-export function NeedMapper(): Function  {
-    return function() {
-        var f;
-    };
-}
-
-
 

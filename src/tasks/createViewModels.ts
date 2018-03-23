@@ -69,6 +69,9 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         classMet.generateView = true;
                         classMet.name = genViewOpt.model;
                         classMet.name = classMet.name[0].toUpperCase() + classMet.name.substring(1);
+                        if (genViewOpt.mapperPath) {
+                            classMet.needMapper = true;
+                        }
                         classMets.push(classMet);
 
                         FillFileMetadataArray(generationFiles, genViewOpt, file);
@@ -78,15 +81,13 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         otherClassMet.name = genViewOpt.model;
                         otherClassMet.name = otherClassMet.name[0].toUpperCase() + otherClassMet.name.substring(1);
                         otherClassMet.fields = new Array<FieldMetadata>();
+                        if (genViewOpt.mapperPath) {
+                            otherClassMet.needMapper = true;
+                        }
                         classMets.push( otherClassMet);
 
                         FillFileMetadataArray(generationFiles, genViewOpt, file);
                     }
-                }
-                if (dec.name === "NeedMapper") {
-                    classMets.forEach(clMet => {
-                        clMet.needMapper = true;
-                    });
                 }
             });
             if (classMet.generateView === false) {
