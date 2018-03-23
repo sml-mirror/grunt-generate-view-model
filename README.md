@@ -143,7 +143,6 @@ There are 5 decorators used in this plugin:2 for classes and 3 for properties
   * filePath - path to view model relative to the root of the folder
   * mapperPath - path yo mapper(if it need) // optional
 You can create several views from one base model
-It is decorator for class
 ```typescript
 @GenerateView({
     'model':'ClassView',
@@ -152,13 +151,11 @@ It is decorator for class
 ```
 * @NeedMapper - decorator which show to plugin that view model of base model need mapper.
   There is no parameters inside of this decorator.
-It is decorator for class
 ```typescript
 @NeedMapper()
 ```
 ## Attributes for properties
 * @IgnoreViewModel - if you don't need some property in view model or models. It has one optional parameter,which show what view model will be ignored by this property.If parametrs is not define - this property ignored in all view models. If you need to ignore several models,but not all - it need to write several same decorators with different name parameter
-It is decorator for property
 ```typescript
 @IgnoreViewModel()
 
@@ -166,7 +163,6 @@ It is decorator for property
 ```
 * @ViewModelName - if you want to rename name of property in view model,you need to use this decorator.it contains 2 parameters.
 First of this is name of field in view model.Second parameter is optional and contains view model name.if it is null - property will be rename in all view models
-It is decorator for property
 ```typescript
 @ViewModelName("information")
 
