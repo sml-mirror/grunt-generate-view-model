@@ -15,7 +15,7 @@ This repository provides a grunt plugin for code generation view models by model
     "check":
         {
             "folders":[
-                "./server/models"
+                "./models"
             ]
         }
 }
