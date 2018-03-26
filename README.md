@@ -66,7 +66,7 @@ export class Class {
   
 * npm run generation
 
-* go to path ,whic define in GenerateView decorator and see something like this:
+* go to path ,which define in GenerateView decorator and see something like this:
 
 view model
 ```typescript
