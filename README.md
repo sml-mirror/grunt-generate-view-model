@@ -9,8 +9,7 @@ This repository provides a grunt plugin for code generation view models by model
   npm install grunt-generate-view-model
   
 # Begin to use
-After install plugin you need to make first steps:
-* create gencofig.json in root folder
+* Create gencofig.json in root folder
 ```json
 {
     "check":
@@ -21,11 +20,11 @@ After install plugin you need to make first steps:
         }
 }
 ```
-Array folders show what folders need to explore to find models,which need view models
-* Set decorators to models
+Property "folders" show what folders need to explore to find models,which need view models
+* Set decorators to model
 ```typescripts
 import { InnerClass } from "./innerClass";
-import {GenerateView,ViewModelType} from "grunt-generate-view-model";
+import {GenerateView, ViewModelType} from "grunt-generate-view-model";
 import {InnerClassView } from "../generated/viewmodels/innerClassView";
 import {fromModelToView, fromViewtoModel} from '../function/transformFunction';
 
@@ -65,7 +64,7 @@ export class Class {
   
 * npm run generation
 
-* go to path ,which define in GenerateView decorator and see something like this:
+* go to path, which define in GenerateView decorator and see something like this:
 
 view model
 ```typescript
@@ -135,7 +134,6 @@ export class ClassViewMapper {
 
 ```
 
-
 # Attributes
 
 There are 4 decorators used in this plugin: 1 for classes and 3 for properties
@@ -147,11 +145,11 @@ Main decorator for creating view model
 +-------------+--------------+-------------------------------------------------------+
 |                        @GenerateView                                               |
 +------------------------------------------------------------------------------------+
-|   property  |  isOptional  |                      definition                       |
+|   property  |  Mandatory   |                      definition                       |
 +-------------+--------------+-------------------------------------------------------+
-| model       | false        | name of view model                                    |
-| filePath    | false        | path to view model relative to the root of the folder |
-| mapperpath  | true         | path to mapper                                        |
+| model       | true         | name of view model                                    |
+| filePath    | true         | path to view model relative to the root of the folder |
+| mapperpath  | false        | path to mapper                                        |
 +-------------+--------------+-------------------------------------------------------+
 ```
 You can create several views from one base model
@@ -164,15 +162,15 @@ You can create several views from one base model
 
 ## Attributes for properties
 ### ViewModelName
-Decorator which used to rename property in view model
+Decorator which is used to rename property in view model
 ```shell
 +------------------------------------------------------------------------------------+
 |                        @ViewModelName                                              |
 +------------------------------------------------------------------------------------+
-|   property             |  isOptional  |                      definition            |
+|   property             |  Mandatory   |                      definition            |
 +------------------------+--------------+--------------------------------------------+
-| 1st param(name)        | false        | name of field in view model                |
-| 2nd param(using models)| true         | view model using this name of field        |
+| 1st param(name)        | true         | name of field in view model                |
+| 2nd param(using models)| false        | view model using this name of field        |
 +------------------------+--------------+--------------------------------------------+
 ```
 * If 2nd param is null - property will be rename in all view models
@@ -183,59 +181,59 @@ Decorator which used to rename property in view model
 public data: string;
 ```
 ### IgnoreViewModel
-Decorator which used to delete property from view model
+Decorator which is used to delete property from view model
 ```shell
 +--------------------------------------------------------------------------------------------------+
 |                              @IgnoreViewModel                                                    |
 +--------------------------------------------------------------------------------------------------+
-|   property                   |  isOptional  |               definition                           |
+|   property                   |   Mandatory  |               definition                           |
 +-------------+----------------+--------------+----------------------------------------------------+
-| 1st param(name of view model)|     true     |       name of view model ,which ignore ths field   |
+| 1st param(name of view model)|     false    |name of view model ,which ignore ths field          |
 +------------------------------+--------------+----------------------------------------------------+
 ```
 * If parametr is not define - this property ignored in all view models.
-* If you need to ignore several models,but not all - it need to write several same decorators with different name parameter
+* If you need to ignore several models, but not all - it need to write several same decorators with different name parameter
 ```typescript
 @IgnoreViewModel()
 
 @IgnoreViewModel("HeroViewModel")
 ```
-### ViewModelTypes
-Decorator  which used to change type of property in view model
+### ViewModelType
+Decorator which is used to change type of property in view model
 ```shell
 +-------------------------------------------------------------------------------------------+
-|                        @GenerateView                                                      |
+|                        @ViewModelType                                                     |
 +-------------------------------------------------------------------------------------------+
-|   property  |  isOptional  |                      definition                              | 
+|   property  |  Mandatory   |                      definition                              | 
 +-------------+--------------+--------------------------------------------------------------+
-| type        | false        | property type in view model                                  |
-| transformer | true         | function used to transform to view model and back im mappers | - complex object
-| modelName   | true         | name of view model which will be have property               |
+| type        | true         | property type in view model                                  |
+| transformer | false        | function used to transform to view model and back im mappers | - complex object
+| modelName   | false        | name of view model which will be have property               |
 +-------------+--------------+--------------------------------------------------------------+
 
 +-------------------------------------------------------------------------------------------+
 |                        transforner Type                                                   |
 +-------------------------------------------------------------------------------------------+
-|   property  |  isOptional  |                      definition                              | 
+|   property  |  Mandatory   |                      definition                              | 
 +-------------+--------------+--------------------------------------------------------------+
-| toView      | false        | transform object which used to transform base model to view  | - complex object
-| fromView    | false        | transform object which used to transform view model to base  | - complex object
+| toView      | true         | transform object which used to transform base model to view  | - complex object
+| fromView    | true         | transform object which used to transform view model to base  | - complex object
 +-------------+--------------+--------------------------------------------------------------+
 
 
 +-------------------------------------------------------------------------------------------+
 |                        toView/fromView objects                                            |
 +-------------------------------------------------------------------------------------------+
-|   property  |  isOptional  |                      definition                              | 
+|   property  |  Mandatory  |                      definition                              | 
 +-------------+--------------+--------------------------------------------------------------+
-| function    | false        | function which transformate model                            | 
-| isAsync     | true         | is function async                                            | 
+| function    | true         | function which transformate model                            | 
+| isAsync     | false        | is function async                                            | 
 +-------------+--------------+--------------------------------------------------------------+
 ```
-* if there is no "transformer" property, use 2 pathes of transform:
-  * if type is complex ,but not generated or generated without mapper - deep copying
+* If there is no "transformer" property, use 2 pathes of transform:
+  * if type is complex, but not generated or generated without mapper - deep copying
   * if type is complex and codegen and has mapper - use mapper
-* if there is no "modelName" property type using for all view models for this base model
+* If there is no "modelName" property, type using for all view models for this base model
 ```typescript
     @ViewModelType({
     "modelName": "HeroViewModel",
