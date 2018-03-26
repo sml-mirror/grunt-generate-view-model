@@ -4,7 +4,7 @@
 
 This repository provides a grunt plugin for code generation view models by models description.
 
-# Installation 
+# Установка
 
   npm install grunt-generate-view-model
   
