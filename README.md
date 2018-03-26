@@ -25,7 +25,7 @@ Array folders show what folders need to explore to find models,which need view m
 * Set decorators to models
 ```typescripts
 import { InnerClass } from "./innerClass";
-import {GenerateView, NeedMapper, ViewModelType} from "grunt-generate-view-model";
+import {GenerateView,ViewModelType} from "grunt-generate-view-model";
 import {InnerClassView } from "../generated/viewmodels/innerClassView";
 import {fromModelToView, fromViewtoModel} from '../function/transformFunction';
 
@@ -33,7 +33,6 @@ import {fromModelToView, fromViewtoModel} from '../function/transformFunction';
     'model':'ClassView',
     'filePath':'./generated/viewmodels',
     'mapperPath':'./generated/mappers'})
-@NeedMapper()
 export class Class {
     public property1: number;
 
