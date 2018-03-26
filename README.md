@@ -186,13 +186,13 @@ public data: string;
 ### IgnoreViewModel
 Decorator which used to delete property from view model
 ```shell
-+--------------------------------------------------------------------------------------+
-|                              @IgnoreViewModel                                        |
-+--------------------------------------------------------------------------------------+
-|   property                   |  isOptional  |               definition               |
-+-------------+----------------+--------------+----------------------------------------+
-| 1st param(name of view model)|     true     |       is field ignored in view model   |
-+------------------------------+--------------+----------------------------------------+
++--------------------------------------------------------------------------------------------------+
+|                              @IgnoreViewModel                                                    |
++--------------------------------------------------------------------------------------------------+
+|   property                   |  isOptional  |               definition                           |
++-------------+----------------+--------------+----------------------------------------------------+
+| 1st param(name of view model)|     true     |       name of view model ,which ignore ths field   |
++------------------------------+--------------+----------------------------------------------------+
 ```
 * If parametr is not define - this property ignored in all view models.
 * If you need to ignore several models,but not all - it need to write several same decorators with different name parameter
