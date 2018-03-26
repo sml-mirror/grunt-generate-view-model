@@ -54,7 +54,7 @@ export class Class {
 
 }
 ```
-* In package.json make script like:
+* In package.json add to "script" property init command:
 ```json
   "scripts": {
     "generation": "generateView"
