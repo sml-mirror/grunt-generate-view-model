@@ -9,7 +9,7 @@ This repository provides a grunt plugin for code generation view models by model
   npm install grunt-generate-view-model
   
 # Begin to use
-* Create gencofig.json in root folder
+* Создайте gencofig.json в корнвом катологе
 ```json
 {
     "check":
@@ -19,9 +19,9 @@ This repository provides a grunt plugin for code generation view models by model
             ]
         }
 }
-```
-Property "folders" show what folders need to explore to find models,which need view models
-* Set decorators for model
+``` 
+Свойство "folders"  показывает, для каких папок ,на этом уровне и ниже, нужны,возможно, модели отображений
+* Установите декораты на нужные модели
 ```typescripts
 import { InnerClass } from "./innerClass";
 import {GenerateView, ViewModelType} from "grunt-generate-view-model";
@@ -54,17 +54,17 @@ export class Class {
 
 }
 ```
-* In package.json add init command to "script" property :
+* В package.json добавьте инициализирующую команду в свойство "script":
 ```json
   "scripts": {
     "generation": "generateView"
   }
   ```
-  where "generateView" is string which launch plugin
+  где "generateView" - строка для запуска плагина
   
 * npm run generation
 
-* go to path, which define in GenerateView decorator and see something like this:
+* после завершения работы плагина по пути,указанному в декораторе GenerateView,появятся файлы с расширением ".ts" :
 
 view model
 ```typescript
@@ -134,13 +134,13 @@ export class ClassViewMapper {
 
 ```
 
-# Attributes
+# Декораторы
 
-There are 4 decorators which are used in this plugin: 1 for classes and 3 for properties
+В этом плагине используются 4 декоратора: 1 для классов и 3 для свойств
 
-## Attributes for classes
+## Декораторы для классов
 ### GenerateView
-Main decorator for creating view model
+Основной декоратор для создания моделей отображения
 ```shell
 +-------------+--------------+-------------------------------------------------------+
 |                        @GenerateView                                               |
@@ -160,9 +160,10 @@ You can create several views from one base model
     'mapperPath':'./generated/mappers'})
 ```
 
-## Attributes for properties
+## Декораторы для свойств
 ### ViewModelName
-Decorator which is used to rename property in view model
+
+Декоратор,который используется для переименования свойства у модели отображения
 ```shell
 +------------------------------------------------------------------------------------+
 |                        @ViewModelName                                              |
@@ -173,7 +174,7 @@ Decorator which is used to rename property in view model
 | 2nd param(using models)| false        | view model using this name of field        |
 +------------------------+--------------+--------------------------------------------+
 ```
-* If 2nd param is null - property will be rename in all view models
+* Если 2 параметр - null : свойство будет переименовано во всех создаваемых от этой базовой модели моделей отображения
 ```typescript
 @ViewModelName("information")
 
@@ -181,7 +182,8 @@ Decorator which is used to rename property in view model
 public data: string;
 ```
 ### IgnoreViewModel
-Decorator which is used to delete property from view model
+
+Декоратор, который используется для удаления свойства из модели отображения
 ```shell
 +--------------------------------------------------------------------------------------------------+
 |                              @IgnoreViewModel                                                    |
@@ -191,15 +193,15 @@ Decorator which is used to delete property from view model
 | 1st param(name of view model)|     false    |name of view model ,which ignore ths field          |
 +------------------------------+--------------+----------------------------------------------------+
 ```
-* If parameter is not define - this property ignored in all view models.
-* If you need to ignore several models, but not all - write several same decorators with different name parameter
+* Если параметр не определен - это свойство игнорируется во всех создаваемых моделях.
+* Если необходимо игнорировать несколько моделей - неоходимо написать декорато для каждой создаваемой модели оотбражения
 ```typescript
 @IgnoreViewModel()
 
 @IgnoreViewModel("HeroViewModel")
 ```
 ### ViewModelType
-Decorator which is used to change type of property in view model
+Декоратор,который используется для смены типа свойства в модели отображения
 ```shell
 +-------------------------------------------------------------------------------------------+
 |                        @ViewModelType                                                     |
@@ -230,10 +232,10 @@ Decorator which is used to change type of property in view model
 | isAsync     | false        | is function async                                            | 
 +-------------+--------------+--------------------------------------------------------------+
 ```
-* If there is no "transformer" property, use 2 pathes of transform:
-  * if type is complex, but not generated or generated without mapper - deep copying
-  * if type is complex and codegen and has mapper - use mapper
-* If there is no "modelName" property, type using for all view models of this base model
+* Если свойство "transformer" отсутствует:
+  * Если тип свойства -составной, но не сгенерирован или сгенерирован без маппера - глубокое копирование
+  * Если тип скодогенериррован с маппером - используй маппер
+ * Если свойство "modelName" отсутствует, тип используется для всех моделей отображения для данной базовой модели
 ```typescript
     @ViewModelType({
     "modelName": "HeroViewModel",
