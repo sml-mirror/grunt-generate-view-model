@@ -224,7 +224,7 @@ Decorator which is used to change type of property in view model
 +-------------------------------------------------------------------------------------------+
 |                        toView/fromView objects                                            |
 +-------------------------------------------------------------------------------------------+
-|   property  |  Mandatory  |                      definition                              | 
+|   property  |  Mandatory   |                      definition                              | 
 +-------------+--------------+--------------------------------------------------------------+
 | function    | true         | function which transformate model                            | 
 | isAsync     | false        | is function async                                            | 
