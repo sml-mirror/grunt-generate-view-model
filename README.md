@@ -21,7 +21,7 @@ This repository provides a grunt plugin for code generation view models by model
 }
 ```
 Property "folders" show what folders need to explore to find models,which need view models
-* Set decorators to model
+* Set decorators for model
 ```typescripts
 import { InnerClass } from "./innerClass";
 import {GenerateView, ViewModelType} from "grunt-generate-view-model";
@@ -54,7 +54,7 @@ export class Class {
 
 }
 ```
-* In package.json add to "script" property init command:
+* In package.json add init command to "script" property :
 ```json
   "scripts": {
     "generation": "generateView"
@@ -136,7 +136,7 @@ export class ClassViewMapper {
 
 # Attributes
 
-There are 4 decorators used in this plugin: 1 for classes and 3 for properties
+There are 4 decorators which are used in this plugin: 1 for classes and 3 for properties
 
 ## Attributes for classes
 ### GenerateView
@@ -191,8 +191,8 @@ Decorator which is used to delete property from view model
 | 1st param(name of view model)|     false    |name of view model ,which ignore ths field          |
 +------------------------------+--------------+----------------------------------------------------+
 ```
-* If parametr is not define - this property ignored in all view models.
-* If you need to ignore several models, but not all - it need to write several same decorators with different name parameter
+* If parameter is not define - this property ignored in all view models.
+* If you need to ignore several models, but not all - write several same decorators with different name parameter
 ```typescript
 @IgnoreViewModel()
 
@@ -233,7 +233,7 @@ Decorator which is used to change type of property in view model
 * If there is no "transformer" property, use 2 pathes of transform:
   * if type is complex, but not generated or generated without mapper - deep copying
   * if type is complex and codegen and has mapper - use mapper
-* If there is no "modelName" property, type using for all view models for this base model
+* If there is no "modelName" property, type using for all view models of this base model
 ```typescript
     @ViewModelType({
     "modelName": "HeroViewModel",
