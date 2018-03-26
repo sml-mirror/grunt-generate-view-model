@@ -145,7 +145,7 @@ Main decorator for creating view model
 +-------------+--------------+-------------------------------------------------------+
 |                        @GenerateView                                               |
 +------------------------------------------------------------------------------------+
-|   property  |  Mandatory   |                      definition                       |
+|   Property  |  Mandatory   |                      Definition                       |
 +-------------+--------------+-------------------------------------------------------+
 | model       | true         | name of view model                                    |
 | filePath    | true         | path to view model relative to the root of the folder |
@@ -167,7 +167,7 @@ Decorator which is used to rename property in view model
 +------------------------------------------------------------------------------------+
 |                        @ViewModelName                                              |
 +------------------------------------------------------------------------------------+
-|   property             |  Mandatory   |                      definition            |
+|   Property             |  Mandatory   |              Definition                    |
 +------------------------+--------------+--------------------------------------------+
 | 1st param(name)        | true         | name of field in view model                |
 | 2nd param(using models)| false        | view model using this name of field        |
@@ -186,7 +186,7 @@ Decorator which is used to delete property from view model
 +--------------------------------------------------------------------------------------------------+
 |                              @IgnoreViewModel                                                    |
 +--------------------------------------------------------------------------------------------------+
-|   property                   |   Mandatory  |               definition                           |
+|   Property                   |   Mandatory  |               Definition                           |
 +-------------+----------------+--------------+----------------------------------------------------+
 | 1st param(name of view model)|     false    |name of view model ,which ignore ths field          |
 +------------------------------+--------------+----------------------------------------------------+
@@ -204,7 +204,7 @@ Decorator which is used to change type of property in view model
 +-------------------------------------------------------------------------------------------+
 |                        @ViewModelType                                                     |
 +-------------------------------------------------------------------------------------------+
-|   property  |  Mandatory   |                      definition                              | 
+|   Property  |  Mandatory   |                      Definition                              | 
 +-------------+--------------+--------------------------------------------------------------+
 | type        | true         | property type in view model                                  |
 | transformer | false        | function used to transform to view model and back im mappers | - complex object
@@ -214,7 +214,7 @@ Decorator which is used to change type of property in view model
 +-------------------------------------------------------------------------------------------+
 |                        transforner Type                                                   |
 +-------------------------------------------------------------------------------------------+
-|   property  |  Mandatory   |                      definition                              | 
+|   Property  |  Mandatory   |                      Definition                              | 
 +-------------+--------------+--------------------------------------------------------------+
 | toView      | true         | transform object which used to transform base model to view  | - complex object
 | fromView    | true         | transform object which used to transform view model to base  | - complex object
@@ -224,7 +224,7 @@ Decorator which is used to change type of property in view model
 +-------------------------------------------------------------------------------------------+
 |                        toView/fromView objects                                            |
 +-------------------------------------------------------------------------------------------+
-|   property  |  Mandatory   |                      definition                              | 
+|   Property  |  Mandatory   |                      Definition                              | 
 +-------------+--------------+--------------------------------------------------------------+
 | function    | true         | function which transformate model                            | 
 | isAsync     | false        | is function async                                            | 
