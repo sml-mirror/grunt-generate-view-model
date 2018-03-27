@@ -9,7 +9,7 @@ This repository provides a grunt plugin for code generation view models by model
   npm install grunt-generate-view-model
   
 # Как начать использовать
-* Создайте gencofig.json в корневом катологе
+* Создайте gencofig.json в корневом каталоге
 ```json
 {
     "check":
