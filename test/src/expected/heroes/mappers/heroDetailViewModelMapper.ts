@@ -2,12 +2,12 @@ import { HeroDetailViewModel } from '../heroDetailViewModel';
 import { HeroDetail } from '../../../../src/model/hero/heroDetail';
 
 export class HeroDetailViewModelMapper {
-      public static async toHeroDetailViewModel(model: HeroDetail): Promise<HeroDetailViewModel> {
+      public static  toHeroDetailViewModel(model: HeroDetail): HeroDetailViewModel {
             let result = new HeroDetailViewModel();
             result.detail = model.data;
             return result;
       }
-      public static async fromHeroDetailViewModel(viewModel: HeroDetailViewModel): Promise<HeroDetail> {
+      public static  fromHeroDetailViewModel(viewModel: HeroDetailViewModel): HeroDetail {
             let result = new HeroDetail();
             result.data = viewModel.detail;
             return result;
