@@ -14,7 +14,7 @@ import {{import.type }} from '{{import.path}}';
 
 {% for class in metafile.classes %}
 export class {{class.name}}Mapper {
-      public static async to{{class.name}}(model: {{class.baseName}}): Promise<{{class.name}}> {
+      public static {% if class.isToViewAsync %}async{% endif %} to{{class.name}}(model: {{class.baseName}}): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
             let result = new {{class.name}}();
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
@@ -50,7 +50,7 @@ export class {{class.name}}Mapper {
 {%endfor%}
             return result;
       }
-      public static async from{{class.name}}(viewModel: {{class.name}}): Promise<{{class.baseName}}> {
+      public static {% if class.isFromViewAsync %}async{% endif %} from{{class.name}}(viewModel: {{class.name}}): {% if class.isFromViewAsync %}Promise<{%endif%}{{class.baseName}}{% if class.isFromViewAsync %}>{%endif%} {
             let result = new {{class.baseName}}();
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}

@@ -188,6 +188,17 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         }
                     });
                     cm.fields.push(fldMetadata);
+                    });
+                cm.fields.forEach(f => {
+                    if (f.fieldConvertFunction) {
+                         let func = f.fieldConvertFunction;
+                         if (func.toView && func.toView.isAsync === true) {
+                             cm.isToViewAsync = true;
+                         }
+                         if (func.fromView && func.fromView.isAsync === true) {
+                            cm.isFromViewAsync = true;
+                         }
+                    }
                 });
             });
             generationFiles.forEach(genFile => {
