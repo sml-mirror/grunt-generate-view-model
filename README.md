@@ -4,28 +4,27 @@
 
 This repository provides a grunt plugin for code generation view models by models description.
 
-# Installation 
+# Установка
 
   npm install grunt-generate-view-model
   
-# Begin to use
-After install plugin you need to make first steps:
-* create gencofig.json
+# Как начать использовать
+* Создайте gencofig.json в корневом каталоге
 ```json
 {
     "check":
         {
             "folders":[
-                "./server/models"
+                "./models"
             ]
         }
 }
-```
-Array folders show what folders need to explore to find models,which need view models
-* Set decorators to models
+``` 
+Свойство "folders" показывает для каких папок(и их внутренних папок) нужны модели отображений.
+* Установите декораторы на нужные модели
 ```typescripts
 import { InnerClass } from "./innerClass";
-import {GenerateView, NeedMapper, ViewModelType} from "grunt-generate-view-model";
+import {GenerateView, ViewModelType} from "grunt-generate-view-model";
 import {InnerClassView } from "../generated/viewmodels/innerClassView";
 import {fromModelToView, fromViewtoModel} from '../function/transformFunction';
 
@@ -33,7 +32,6 @@ import {fromModelToView, fromViewtoModel} from '../function/transformFunction';
     'model':'ClassView',
     'filePath':'./generated/viewmodels',
     'mapperPath':'./generated/mappers'})
-@NeedMapper()
 export class Class {
     public property1: number;
 
@@ -50,20 +48,23 @@ export class Class {
     public property5: InnerClass;
 
     public property6: InnerClass[];
+    
+    @IgnoreViewModel()
+    public property7: number[]
 
 }
 ```
-* In package.json make script like:
+* В package.json добавьте инициализирующую команду в свойство "scripts":
 ```json
   "scripts": {
-    "<your name of script>": "generateView"
+    "generation": "generateView"
   }
   ```
-  where "generateView" is string which launch plugin
+  где "generateView" - строка для запуска плагина
   
-* npm run \<your name of script\>
+* npm run generation
 
-* go to path ,whic define in GenerateView decorator and see something like this:
+* после завершения работы плагина по пути, указанному в декораторе GenerateView, появятся файлы с расширением ".ts" :
 
 view model
 ```typescript
@@ -132,54 +133,108 @@ export class ClassViewMapper {
 }
 
 ```
+# Декораторы
 
+В этом плагине используются 4 декоратора: 1 для классов и 3 для свойств
 
-# Attributes
-
-There are 5 decorators used in this plugin:2 for classes and 3 for properties
-## Attributes for classes
-* @GenerateView - main decorator of plugin.It contains one parameter (Object) with 3 properties:
-  * model - name of view model
-  * filePath - path to view model relative to the root of the folder
-  * mapperPath - path yo mapper(if it need) // optional
-You can create several views from one base model
+## Декораторы для классов
+### GenerateView
+Основной декоратор для создания моделей отображения
+```shell
++-------------+--------------+-------------------------------------------------------+
+|                        @GenerateView                                               |
++------------------------------------------------------------------------------------+
+|   Property  |  Mandatory   |                      Definition                       |
++-------------+--------------+-------------------------------------------------------+
+| model       | true         | name of view model                                    |
+| filePath    | true         | path to view model relative to the root of the folder |
+| mapperpath  | false        | path to mapper                                        |
++-------------+--------------+-------------------------------------------------------+
+```
+Можно создавать несколько моделей отображения от одной базовой модели.
 ```typescript
 @GenerateView({
     'model':'ClassView',
     'filePath':'./generated/viewmodels',
     'mapperPath':'./generated/mappers'})
 ```
-* @NeedMapper - decorator which show to plugin that view model of base model need mapper.
-  There is no parameters inside of this decorator.
-```typescript
-@NeedMapper()
-```
-## Attributes for properties
-* @IgnoreViewModel - if you don't need some property in view model or models. It has one optional parameter,which show what view model will be ignored by this property.If parametrs is not define - this property ignored in all view models. If you need to ignore several models,but not all - it need to write several same decorators with different name parameter
-```typescript
-@IgnoreViewModel()
 
-@IgnoreViewModel("HeroViewModel")
+## Декораторы для свойств
+### ViewModelName
+
+Декоратор, который используется для переименования свойства у модели отображения.
+```shell
++------------------------------------------------------------------------------------+
+|                        @ViewModelName                                              |
++------------------------------------------------------------------------------------+
+|   Property             |  Mandatory   |              Definition                    |
++------------------------+--------------+--------------------------------------------+
+| 1st param(name)        | true         | name of field in view model                |
+| 2nd param(using models)| false        | view model using this name of field        |
++------------------------+--------------+--------------------------------------------+
 ```
-* @ViewModelName - if you want to rename name of property in view model,you need to use this decorator.it contains 2 parameters.
-First of this is name of field in view model.Second parameter is optional and contains view model name.if it is null - property will be rename in all view models
+* Если 2 параметр - null : свойство будет переименовано во всех создаваемых моделях отображения от базовой модели.
 ```typescript
 @ViewModelName("information")
 
 @ViewModelName("information", "HeroViewModel")
 public data: string;
 ```
-* @ViewModelType -if type of this property chanes in view models,you need to use this decorator. Has one object parameter which contains 3 properties:
-  * type - type which will be use in view model
-  * modelName - name of view model which will be have this modernize property//optional. If is is null - it will be works for all  view models of this class.
-  * transformer - complex property ,using if you need to create mapper and transform field by special rules  //optional.
-  Include 2 property:
-     * toView - property which used to transform base field to view field. field "function" - show what function will be transform it.  This function is not codegeneration and need to input one parameter - base model;
-     * isAsync - property which show is the function is async//optional
+### IgnoreViewModel
 
-if there is no "transformer" property, use 2 pathes of transform:
-* if type is complex ,but not generated or generated without mapper - deep copying
-* if type is complex and codegen and has mapper - use mapper
+Декоратор, который используется для удаления свойства из модели отображения.
+```shell
++--------------------------------------------------------------------------------------------------+
+|                              @IgnoreViewModel                                                    |
++--------------------------------------------------------------------------------------------------+
+|   Property                   |   Mandatory  |               Definition                           |
++-------------+----------------+--------------+----------------------------------------------------+
+| 1st param(name of view model)|     false    |name of view model ,which ignore ths field          |
++------------------------------+--------------+----------------------------------------------------+
+```
+* Если параметр не определен - это свойство игнорируется во всех создаваемых моделях.
+* Если необходимо игнорировать несколько моделей - необходимо написать декоратор для каждой создаваемой модели отбражения.
+```typescript
+@IgnoreViewModel()
+
+@IgnoreViewModel("HeroViewModel")
+```
+### ViewModelType
+Декоратор, который используется для смены типа свойства в модели отображения.
+```shell
++-------------------------------------------------------------------------------------------+
+|                        @ViewModelType                                                     |
++-------------------------------------------------------------------------------------------+
+|   Property  |  Mandatory   |                      Definition                              | 
++-------------+--------------+--------------------------------------------------------------+
+| type        | true         | property type in view model                                  |
+| transformer | false        | function used to transform to view model and back im mappers | - complex object
+| modelName   | false        | name of view model which will be have property               |
++-------------+--------------+--------------------------------------------------------------+
+
++-------------------------------------------------------------------------------------------+
+|                        transforner Type                                                   |
++-------------------------------------------------------------------------------------------+
+|   Property  |  Mandatory   |                      Definition                              | 
++-------------+--------------+--------------------------------------------------------------+
+| toView      | true         | transform object which used to transform base model to view  | - complex object
+| fromView    | true         | transform object which used to transform view model to base  | - complex object
++-------------+--------------+--------------------------------------------------------------+
+
+
++-------------------------------------------------------------------------------------------+
+|                        toView/fromView objects                                            |
++-------------------------------------------------------------------------------------------+
+|   Property  |  Mandatory   |                      Definition                              | 
++-------------+--------------+--------------------------------------------------------------+
+| function    | true         | function which transformate model                            | 
+| isAsync     | false        | is function async                                            | 
++-------------+--------------+--------------------------------------------------------------+
+```
+* Если свойство "transformer" отсутствует:
+  * Если тип свойства - составной, но не сгенерирован или сгенерирован без маппера - глубокое копирование.
+  * Если тип скодогенерирован с маппером - используется маппер.
+* Если свойство "modelName" отсутствует, тип используется для всех моделей отображения для данной базовой модели.
 ```typescript
     @ViewModelType({
     "modelName": "HeroViewModel",
