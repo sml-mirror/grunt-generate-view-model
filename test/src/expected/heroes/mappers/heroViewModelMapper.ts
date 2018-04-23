@@ -30,7 +30,7 @@ export class HeroViewModelMapper {
             }
             return result;
       }
-      public static fromHeroViewModel(viewModel: HeroViewModel): Hero {
+      public static  fromHeroViewModel(viewModel: HeroViewModel): Hero {
             let result = new Hero();
             result.id = parseInt(viewModel.id, 10);
             result.name = viewModel.name;
