@@ -14,19 +14,23 @@ import {{import.type }} from '{{import.path}}';
 
 {% for class in metafile.classes %}
 export class {{class.name}}Mapper {
-      public static {% if class.isToViewAsync %}async{% endif %} to{{class.name}}(model: {{class.baseName}}): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
+      public static {% if class.isToViewAsync %}async {% endif %}to{{class.name}}(model: {{class.baseName}}): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
             let result = new {{class.name}}();
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
 {%if field.fieldConvertFunction%}
+{% if field.fieldConvertFunction.toView %}
             result.{{field.name}}  = {% if field.fieldConvertFunction.toView.isAsync %}await{% endif%} {{field.fieldConvertFunction.toView.function}}(model);
+{% else %}
+            result.{{field.name}} = model.{{field.baseModelName}}
+{% endif %}
 {% elif field.isArray %}
 {% if field.needGeneratedMapper%}
             if (model.{{field.baseModelName}}) {
-                  let tmp = await model.{{field.baseModelName}}.map(async function(item: any ) {return await {{field.type}}Mapper.to{{field.type}}(item) });
-                  tmp.forEach(async mp => { 
-                       let p =await mp;
-                       result.{{field.name}}.push(p)});                  
+                  let tmp =  {% if class.isToViewAsync %}await{% endif %} model.{{field.baseModelName}}.map({% if class.isToViewAsync %}async{% endif %} function(item: any ) {return {% if class.isToViewAsync %}await{% endif %} {{field.type}}Mapper.to{{field.type}}(item); });
+                  tmp.forEach({% if class.isToViewAsync %}async{% endif %} mp => {
+                       let p = {% if class.isToViewAsync %}await{% endif %} mp;
+                       result.{{field.name}}.push(p); });
             }
 {%else%}
             if (model.{{field.baseModelName}}) {
@@ -36,7 +40,7 @@ export class {{class.name}}Mapper {
 {% else %}
 {% if field.needGeneratedMapper %}
             if (model.{{field.baseModelName}}) {
-                  result.{{field.name}} =  await {{field.type}}Mapper.to{{field.type}}(model.{{field.baseModelName}});
+                  result.{{field.name}} =  {% if class.isToViewAsync %}await{% endif %} {{field.type}}Mapper.to{{field.type}}(model.{{field.baseModelName}});
             }
 {% elif field.isComplexType %}
             if (model.{{field.baseModelName}}) {
@@ -50,19 +54,23 @@ export class {{class.name}}Mapper {
 {%endfor%}
             return result;
       }
-      public static {% if class.isFromViewAsync %}async{% endif %} from{{class.name}}(viewModel: {{class.name}}): {% if class.isFromViewAsync %}Promise<{%endif%}{{class.baseName}}{% if class.isFromViewAsync %}>{%endif%} {
+      public static {% if class.isFromViewAsync %}async {% endif %}from{{class.name}}(viewModel: {{class.name}}): {% if class.isFromViewAsync %}Promise<{%endif%}{{class.baseName}}{% if class.isFromViewAsync %}>{%endif%} {
             let result = new {{class.baseName}}();
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
-{%if field.fieldConvertFunction%}
+{%if field.fieldConvertFunction %}
+{% if field.fieldConvertFunction.fromView %}
             result.{{field.baseModelName}}  = {% if field.fieldConvertFunction.fromView.isAsync %}await{% endif%} {{field.fieldConvertFunction.fromView.function}}(viewModel);
+{% else%}
+            result.{{field.baseModelName}} = viewModel.{{field.name}};
+{%endif%}
 {% elif field.isArray %}
 {% if field.needGeneratedMapper %}
             if (viewModel.{{field.name}}) {
-                  let tmp = await viewModel.{{field.name}}.map(async function(item: any ) {return await {{field.type}}Mapper.from{{field.type}}(item) });
-                  tmp.forEach(async mp => { 
-                       let p =await mp;
-                       result.{{field.baseModelName}}.push(p)});                  
+                  let tmp = {% if class.isFromViewAsync %}await{% endif %} viewModel.{{field.name}}.map({% if class.isFromViewAsync %}async{% endif %} function(item: any ) {return {% if class.isFromViewAsync %}await{% endif %} {{field.type}}Mapper.from{{field.type}}(item); });
+                  tmp.forEach({% if class.isFromViewAsync %}async{% endif %} mp => {
+                       let p = {% if class.isFromViewAsync %}await{% endif %} mp;
+                       result.{{field.baseModelName}}.push(p); });
             }
 {% else %}
             if (viewModel.{{field.name}}) {
@@ -72,14 +80,14 @@ export class {{class.name}}Mapper {
 {% else %}
 {% if field.needGeneratedMapper %}
             if (viewModel.{{field.name}}) {
-                  result.{{field.baseModelName}} =  await {{field.type}}Mapper.from{{field.type}}(viewModel.{{field.name}});
+                  result.{{field.baseModelName}} =  {% if class.isFromViewAsync %}await{% endif %} {{field.type}}Mapper.from{{field.type}}(viewModel.{{field.name}});
             }
 {% elif field.isComplexType %}
             if (viewModel.{{field.name}}) {
                   result.{{field.baseModelName}} = JSON.parse(JSON.stringify(viewModel.{{field.name}}));
             }
 {% else %}
-            result.{{field.baseModelName}} = {% if field.toStringWanted %}parseInt({% endif %}viewModel.{{field.name}}{% if field.toStringWanted %},10){% endif %};
+            result.{{field.baseModelName}} = {% if field.toStringWanted %}parseInt({% endif %}viewModel.{{field.name}}{% if field.toStringWanted %}, 10){% endif %};
 {% endif %}
 {% endif %}
 {% endif %}

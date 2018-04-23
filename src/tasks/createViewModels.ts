@@ -284,10 +284,14 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
         usingTypesInClass = unique(usingTypesInClass);
         cls.fields.forEach(f => {
             if ( f.fieldConvertFunction && !f.ignoredInView) {
-                usingTypesInClass.push(f.fieldConvertFunction.toView.function.split(".")[0]);
-                imoprtsForMapper .push(f.fieldConvertFunction.toView.function.split(".")[0]);
-                usingTypesInClass.push(f.fieldConvertFunction.fromView.function.split(".")[0]);
-                imoprtsForMapper .push(f.fieldConvertFunction.fromView.function.split(".")[0]);
+                if (f.fieldConvertFunction.toView) {
+                    usingTypesInClass.push(f.fieldConvertFunction.toView.function.split(".")[0]);
+                    imoprtsForMapper.push(f.fieldConvertFunction.toView.function.split(".")[0]);
+                }
+                if (f.fieldConvertFunction.fromView) {
+                    usingTypesInClass.push(f.fieldConvertFunction.fromView.function.split(".")[0]);
+                    imoprtsForMapper.push(f.fieldConvertFunction.fromView.function.split(".")[0]);
+                }
             }
             if (f.needGeneratedMapper) {
                 usingTypesInClass.push(f.type + "Mapper");
