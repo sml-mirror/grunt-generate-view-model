@@ -227,7 +227,9 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
         if (mdata.mapperPath) {
             mdata.classes.forEach(cl => {
                 cl.viewModelFromMapper = require("path").relative(mdata.mapperPath, mdata.filename).split("\\").join("/").split(".ts").join("");
+                // cl.viewModelFromMapper = cl.viewModelFromMapper.charAt(0).toLowerCase() + cl.viewModelFromMapper.slice(1);
                 cl.baseModelFromMapper = require("path").relative(mdata.mapperPath, mdata.basePath).split("\\").join("/").split(".ts").join("");
+                // cl.baseModelFromMapper = cl.baseModelFromMapper.charAt(0).toLowerCase() + cl.baseModelFromMapper.slice(1);
             });
         }
         var c = render("viewTemplateCommon.njk", {metafile: mdata});
@@ -269,7 +271,6 @@ function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: Gene
 }
 
 function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) {
-
     fileMetadata.classes.forEach(cls => {
         let usingTypesInClass = cls.fields.filter(fld => {
             if (fld.ignoredInView) {
@@ -285,15 +286,20 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
         cls.fields.forEach(f => {
             if ( f.fieldConvertFunction && !f.ignoredInView) {
                 if (f.fieldConvertFunction.toView) {
-                    usingTypesInClass.push(f.fieldConvertFunction.toView.function.split(".")[0]);
-                    imoprtsForMapper.push(f.fieldConvertFunction.toView.function.split(".")[0]);
+                    let mainClass = f.fieldConvertFunction.toView.function.split(".")[0];
+                    // mainClass = mainClass.charAt(0).toLowerCase() + mainClass.slice(1);
+                    usingTypesInClass.push(mainClass);
+                    imoprtsForMapper.push(mainClass);
                 }
                 if (f.fieldConvertFunction.fromView) {
-                    usingTypesInClass.push(f.fieldConvertFunction.fromView.function.split(".")[0]);
-                    imoprtsForMapper.push(f.fieldConvertFunction.fromView.function.split(".")[0]);
+                    let mainClass = f.fieldConvertFunction.toView.function.split(".")[0];
+                    // mainClass = mainClass.charAt(0).toLowerCase() + mainClass.slice(1);
+                    usingTypesInClass.push(mainClass);
+                    imoprtsForMapper.push(mainClass);
                 }
             }
             if (f.needGeneratedMapper) {
+                let mapperName = f.type.charAt(0).toLowerCase() + f.type.slice(1);
                 usingTypesInClass.push(f.type + "Mapper");
                 imoprtsForMapper .push(f.type + "Mapper");
             }
@@ -321,7 +327,9 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             imoprtsForMapper.forEach( impForMapper => {
                 if (imports[ind].clauses.indexOf(impForMapper) > -1) {
                     fromPath = fileMetadata.mapperPath;
-                    imp.path = path.relative(fromPath, toPath).split("\\").join("/");
+                    /*imp.path*/let arrayPath = path.relative(fromPath, toPath).split("\\");
+                    arrayPath[arrayPath.length - 1] = arrayPath[arrayPath.length - 1].charAt(0).toLowerCase() + arrayPath[arrayPath.length - 1].slice(1);
+                    imp.path = arrayPath.join("/");
                     if ( imp.path.indexOf("./") < 0 && !imports[ind].isNodeModule ) {
                         imp.path = "./" + imp.path;
                     }

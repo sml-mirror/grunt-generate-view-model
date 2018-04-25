@@ -1,7 +1,7 @@
 import { HeroViewModel } from '../heroViewModel';
 import { Hero } from '../../../../src/model/hero/hero';
 import { Class } from '../../../../src/model/Path/path';
-import { HeroDetailViewModelMapper } from './HeroDetailViewModelMapper';
+import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModelMapper {
       public static async toHeroViewModel(model: Hero): Promise<HeroViewModel> {
