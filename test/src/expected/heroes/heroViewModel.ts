@@ -2,7 +2,7 @@
 import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { HeroDetailViewModel } from './heroDetailViewModel';
 
-  export class HeroViewModel {
+export class HeroViewModel {
 
   public id?: string;
 
@@ -19,4 +19,52 @@ import { HeroDetailViewModel } from './heroDetailViewModel';
   public detailsVM: HeroDetailViewModel [];
 
   public simpleArray: number [];
+  constructor(model?: HeroViewModel) {
+  if (model) {
+    if (model.id !== undefined) {
+        this.id = model.id;
+    }
+    if (model.name !== undefined) {
+        this.name = model.name;
+    }
+    if (model.information !== undefined) {
+        this.information = model.information;
+    }
+    if ( model.detail !== undefined) {
+      if (model.detail === null) {
+        this.detail = null;
+      } else {
+        this.detail = JSON.parse(JSON.stringify(model.detail));
+      }
+    }
+    if ( model.detailVM !== undefined) {
+      if (model.detailVM === null) {
+        this.detailVM = null;
+      } else {
+        this.detailVM = JSON.parse(JSON.stringify(model.detailVM));
+      }
+    }
+    if ( model.details !== undefined) {
+      if (model.details === null) {
+        this.details = null;
+      } else {
+        this.details = JSON.parse(JSON.stringify(model.details));
+      }
+    }
+    if ( model.detailsVM !== undefined) {
+      if (model.detailsVM === null) {
+        this.detailsVM = null;
+      } else {
+        this.detailsVM = JSON.parse(JSON.stringify(model.detailsVM));
+      }
+    }
+    if ( model.simpleArray !== undefined) {
+      if (model.simpleArray === null) {
+        this.simpleArray = null;
+      } else {
+        this.simpleArray = JSON.parse(JSON.stringify(model.simpleArray));
+      }
+    }
+    }
+  }
 }

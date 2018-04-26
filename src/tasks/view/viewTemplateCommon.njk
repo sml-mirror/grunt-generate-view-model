@@ -6,16 +6,43 @@ import {{import.type}} from '{{import.path}}';
 {%endif%}
 {% endfor %}
 
-  {% for class in metafile.classes %}
+{% for class in metafile.classes %}
 export class {{class.name}} {
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
 
   public {{field.name}}{% if field.isNullable %}?{% endif %}: {{field.type}}{% if field.isArray %} []{% endif %};
 {% endif %}
-{% else %}
 {% endfor %}
-}
+  constructor(model?: {{class.name}}) {
+  if (model) {
+{% for field in class.fields %}
+{% if  field.ignoredInView===false %}
+{% if field.isComplexType or field.isArray %}
+    if ( model.{{field.name}} !== undefined) {
+      if (model.{{field.name}} === null) {
+        this.{{field.name}} = null;
+      } else {
+        this.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.name}}));
+      }
+    }
+{% elif field.type === "number" %}
+    if (model.{{field.name}} !== undefined) {
+      if ( model.{{field.name}} === null) {
+        this.{{field.name}} = null;
+      } else {
+        this.{{field.name}} = +model.{{field.name}};
+      }
+    }
 {% else %}
+    if (model.{{field.name}} !== undefined) {
+        this.{{field.name}} = model.{{field.name}};
+    }
+{% endif %}
+{% endif %}
+{% endfor %}
+    }
+  }
+}
 {% endfor %}
 {% endif %}
