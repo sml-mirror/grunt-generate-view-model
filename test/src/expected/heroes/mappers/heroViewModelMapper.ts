@@ -28,6 +28,7 @@ export class HeroViewModelMapper {
             if (model.simpleArray) {
                   result.simpleArray =  model.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
             }
+            result.state = model.state;
             return result;
       }
       public static fromHeroViewModel(viewModel: HeroViewModel): Hero {
@@ -54,6 +55,7 @@ export class HeroViewModelMapper {
             if (viewModel.simpleArray) {
                   result.simpleArray =  viewModel.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
             }
+            result.state = viewModel.state;
             return result;
       }
 }

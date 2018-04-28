@@ -1,6 +1,7 @@
 /*Codegen*/
 import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { HeroDetailViewModel } from './heroDetailViewModel';
+import { States } from '../../../../src/tasks/model/stateModel';
 
 export class HeroViewModel {
 
@@ -19,6 +20,8 @@ export class HeroViewModel {
   public detailsVM: HeroDetailViewModel [];
 
   public simpleArray: number [];
+
+  public state: States;
   constructor(model?: HeroViewModel) {
   if (model) {
     if (model.id !== undefined) {
@@ -63,6 +66,13 @@ export class HeroViewModel {
         this.simpleArray = null;
       } else {
         this.simpleArray = JSON.parse(JSON.stringify(model.simpleArray));
+      }
+    }
+    if (model.state !== undefined) {
+      if ( model.state === null) {
+        this.state = null;
+      } else {
+        this.state = +model.state;
       }
     }
     }

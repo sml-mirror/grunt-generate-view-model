@@ -26,7 +26,7 @@ export class {{class.name}} {
         this.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.name}}));
       }
     }
-{% elif field.type === "number" %}
+{% elif field.type === "number" or field.isEnum %}
     if (model.{{field.name}} !== undefined) {
       if ( model.{{field.name}} === null) {
         this.{{field.name}} = null;

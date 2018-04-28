@@ -117,10 +117,28 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     if (typeName !== "string" && typeName !== "number" && typeName !== "boolean" && typeName !== "undefined"
                     && typeName !== "null") {
                         fldMetadata.isComplexType = true;
+                        possibleImports.forEach(repeatImport => {
+                            if (!repeatImport.isNodeModule) {
+                                repeatImport.clauses.forEach( cl => {
+                                    if (cl === typeName) {
+                                        let fN = repeatImport.absPathNode.join("/") + ".ts";
+                                        let c = fs.readFileSync(fN, "utf-8");
+                                        let iJStructure = parseStruct(c, {}, fN);
+                                        if ( iJStructure.enumDeclarations) {
+                                            iJStructure.enumDeclarations.forEach(enm => {
+                                                if (enm.name === typeName) {
+                                                    fldMetadata.isComplexType = false;
+                                                    fldMetadata.isEnum = true;
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                        });
                     }
                     fldMetadata.name = fld.name;
                     fldMetadata.type = fldMetadata.baseModelType;
-
                     fld.decorators.forEach(dec => {
                         if (dec.name === "IgnoreViewModel") {
                             if (dec.arguments[0] && dec.arguments[0].toString() === cm.name) {

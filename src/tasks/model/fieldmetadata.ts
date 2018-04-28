@@ -9,6 +9,7 @@ export class FieldMetadata {
     public ignoredInView: boolean = false;
     public isArray: boolean = false;
     public isComplexType: boolean = false;
+    public isEnum: boolean = false;
     public fieldConvertFunction: Transformer = null;
     public toStringWanted: boolean = false;
     public needGeneratedMapper: boolean = false;
