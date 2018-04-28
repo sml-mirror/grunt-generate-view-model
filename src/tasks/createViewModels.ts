@@ -149,33 +149,37 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                                         i.clauses.forEach(clause => {
                                             if (clause === fldMetadata.baseModelType) {
                                                 let path: string = "";
-                                                i.absPathNode.forEach(node => {
-                                                    path += `${node}/`;
-                                                });
-                                                path = path.substring(0, path.length - 1) + ".ts";
-                                                let content = fs.readFileSync(path, "utf-8");
-
-                                                let innerJsonStructure = parseStruct(content, {}, "");
-                                                innerJsonStructure.classes.forEach(c => {
-                                                    if (c.name === fldMetadata.baseModelType) {
-                                                        c.decorators.forEach(d => {
-                                                            if (d.name === "GenerateView") {
-                                                                let generateOptions = <GenerateViewOptions>d.arguments[0].valueOf();
-                                                                if (generateOptions.model.toLowerCase() ===
-                                                                fieldTypeOptions.type.toString().toLowerCase()) {
-                                                                    let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
-                                                                    impNode.isNodeModule = false;
-                                                                    let fileName = generateOptions.model[0].toUpperCase() +
-                                                                    generateOptions.model.substring(1) + "Mapper";
-                                                                    impNode.clauses.push(fileName);
-                                                                    impNode.absPathNode.push(generateOptions.mapperPath + "/" + fileName);
-                                                                    fldMetadata.needGeneratedMapper = true;
-                                                                    possibleImports.push(impNode);
+                                                if ( !i.isNodeModule ) {
+                                                    i.absPathNode.forEach(node => {
+                                                        path += `${node}/`;
+                                                    });
+                                                    path = path.substring(0, path.length - 1) + ".ts";
+                                                    let content = fs.readFileSync(path, "utf-8");
+                                                    let innerJsonStructure = parseStruct(content, {}, "");
+                                                    innerJsonStructure.classes.forEach(c => {
+                                                        if (c.name === fldMetadata.baseModelType) {
+                                                            c.decorators.forEach(d => {
+                                                                if (d.name === "GenerateView") {
+                                                                    let generateOptions = <GenerateViewOptions>d.arguments[0].valueOf();
+                                                                    if (generateOptions.model.toLowerCase() ===
+                                                                    fieldTypeOptions.type.toString().toLowerCase()) {
+                                                                        let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
+                                                                        impNode.isNodeModule = false;
+                                                                        let fileName = generateOptions.model[0].toUpperCase() +
+                                                                        generateOptions.model.substring(1) + "Mapper";
+                                                                        impNode.clauses.push(fileName);
+                                                                        impNode.absPathNode.push(generateOptions.mapperPath + "/" + fileName);
+                                                                        fldMetadata.needGeneratedMapper = true;
+                                                                        possibleImports.push(impNode);
+                                                                    }
                                                                 }
-                                                            }
-                                                        });
-                                                    }
-                                                });
+                                                            });
+                                                        }
+                                                    });
+                                                } else {
+                                                    let impNode: ImportNode = {isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode};
+                                                    possibleImports.push(impNode);
+                                                }
                                             }
                                         });
                                     });
