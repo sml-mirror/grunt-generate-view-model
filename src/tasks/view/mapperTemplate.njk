@@ -1,3 +1,6 @@
+/*Codegen*/
+// tslint:disable
+
 {% for class in metafile.classes %}
 import { {{class.name}} } from '{{class.viewModelFromMapper}}';
 import { {{class.baseName}} } from '{{class.baseModelFromMapper}}';

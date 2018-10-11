@@ -1,3 +1,6 @@
+/*Codegen*/
+// tslint:disable
+
 import { HeroViewModel } from '../heroViewModel';
 import { Hero } from '../../../../src/model/hero/hero';
 import { Class } from '../../../../src/model/Path/path';

@@ -1,3 +1,6 @@
+/*Codegen*/
+// tslint:disable
+
 import { SimpeHeroViewModel } from '../simpeHeroViewModel';
 import { SimpleHero } from '../../../../src/model/hero/simplehero';
 
