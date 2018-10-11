@@ -13,7 +13,7 @@ export interface {{class.name}} {
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
 
-  {{field.name}}{% if field.isNullable %}?{% endif %}: {{field.type}}{% if field.isArray %} []{% endif %};
+  {{field.name}}?: {{field.type}}{% if field.isArray %} []{% endif %};
 {% endif %}
 {% endfor %}
 }

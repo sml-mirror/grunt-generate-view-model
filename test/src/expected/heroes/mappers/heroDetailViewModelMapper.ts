@@ -6,7 +6,7 @@ import { HeroDetail } from '../../../../src/model/hero/heroDetail';
 
 export class HeroDetailViewModelMapper {
       public static toHeroDetailViewModel(model: HeroDetail): HeroDetailViewModel {
-            let result = new HeroDetailViewModel();
+            let result : HeroDetailViewModel = {};
             result.detail = model.data;
             return result;
       }

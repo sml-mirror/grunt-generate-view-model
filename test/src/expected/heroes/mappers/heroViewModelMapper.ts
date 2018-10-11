@@ -8,7 +8,7 @@ import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModelMapper {
       public static async toHeroViewModel(model: Hero): Promise<HeroViewModel> {
-            let result = new HeroViewModel();
+            let result : HeroViewModel = {};
             result.id = model.id.toString();
             result.name = model.name;
             result.information = model.data;

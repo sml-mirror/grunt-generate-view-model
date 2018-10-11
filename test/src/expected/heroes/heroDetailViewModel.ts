@@ -3,5 +3,5 @@
 
 export interface HeroDetailViewModel {
 
-  detail: string;
+  detail?: string;
 }

@@ -9,19 +9,19 @@ export interface HeroViewModel {
 
   id?: string;
 
-  name: string;
+  name?: string;
 
-  information: string;
+  information?: string;
 
-  detail: HeroDetail;
+  detail?: HeroDetail;
 
-  detailVM: HeroDetailViewModel;
+  detailVM?: HeroDetailViewModel;
 
-  details: HeroDetailViewModel [];
+  details?: HeroDetailViewModel [];
 
-  detailsVM: HeroDetailViewModel [];
+  detailsVM?: HeroDetailViewModel [];
 
-  simpleArray: number [];
+  simpleArray?: number [];
 
-  state: States;
+  state?: States;
 }

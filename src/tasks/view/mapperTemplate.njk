@@ -18,7 +18,7 @@ import {{import.type }} from '{{import.path}}';
 {% for class in metafile.classes %}
 export class {{class.name}}Mapper {
       public static {% if class.isToViewAsync %}async {% endif %}to{{class.name}}(model: {{class.baseName}}): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
-            let result = new {{class.name}}();
+            let result : {{class.name}} = {};
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
 {%if field.fieldConvertFunction%}

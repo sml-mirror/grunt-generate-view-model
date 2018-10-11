@@ -3,13 +3,13 @@
 
 export class SimpeHeroViewModel {
 
-  login: string;
+  login?: string;
 
-  age: string;
+  age?: string;
 
-  proffesion: string;
+  proffesion?: string;
 
-  level: number;
+  level?: number;
 
-  siblings: string [];
+  siblings?: string [];
 }

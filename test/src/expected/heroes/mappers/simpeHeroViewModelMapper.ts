@@ -6,7 +6,7 @@ import { SimpleHero } from '../../../../src/model/hero/simplehero';
 
 export class SimpeHeroViewModelMapper {
       public static toSimpeHeroViewModel(model: SimpleHero): SimpeHeroViewModel {
-            let result = new SimpeHeroViewModel();
+            let result : SimpeHeroViewModel = {};
             result.login = model.name;
             result.age = model.age;
             result.proffesion = model.proffesion;
