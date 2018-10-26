@@ -93,11 +93,9 @@ export class {{class.name}}Mapper {
             }
 {% else %}
 {% if field.toStringWanted %}
-            if (viewModel.{{field.name}}) {
-{% endif %}
-            result.{{field.baseModelName}} = {% if field.toStringWanted %}+{% endif %}viewModel.{{field.name}};
-{% if field.toStringWanted %}
-            }
+            result.{{field.baseModelName}} = viewModel.{{field.name}} ? +viewModel.{{field.name}} : viewModel.{{field.name}} as any;
+{% else %}
+            result.{{field.baseModelName}} = viewModel.{{field.name}};
 {% endif %}
 {% endif %}
 {% endif %}
