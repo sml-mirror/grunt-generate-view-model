@@ -50,7 +50,7 @@ export class {{class.name}}Mapper {
                   result.{{field.name}} = JSON.parse(JSON.stringify(model.{{field.baseModelName}}));
             }
 {% elif field.type === "number"%}
-            result.{{field.name}} = model.{{field.baseModelName}} ? +model.{{field.baseModelName}} : model.{{field.baseModelName}}
+            result.{{field.name}} = model.{{field.baseModelName}} ? +model.{{field.baseModelName}} : model.{{field.baseModelName}};
 {% else %}
             result.{{field.name}} = model.{{field.baseModelName}}{% if field.toStringWanted %}.toString(){% endif%};
 {% endif %}
