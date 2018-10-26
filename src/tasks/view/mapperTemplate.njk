@@ -92,7 +92,13 @@ export class {{class.name}}Mapper {
                   result.{{field.baseModelName}} = JSON.parse(JSON.stringify(viewModel.{{field.name}}));
             }
 {% else %}
+{% if field.toStringWanted %}
+            if (viewModel.{{field.name}}) {
+{% endif %}
             result.{{field.baseModelName}} = {% if field.toStringWanted %}+{% endif %}viewModel.{{field.name}};
+{% if field.toStringWanted %}
+            }
+{% endif %}
 {% endif %}
 {% endif %}
 {% endif %}
