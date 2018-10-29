@@ -10,7 +10,7 @@ export class SimpeHeroViewModelMapper {
             result.login = model.name;
             result.age = model.age;
             result.proffesion = model.proffesion;
-            result.level = model.level;
+            result.level = model.level ? +model.level : model.level;
             if (model.siblings) {
                   result.siblings =  model.siblings.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
             }
