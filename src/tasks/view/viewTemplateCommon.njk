@@ -10,6 +10,7 @@ import {{import.type}} from '{{import.path}}';
 
 {% for class in metafile.classes %}
 export interface {{class.name}} {
+
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
   {{field.name}}?: {{field.type}}{% if field.isArray %} []{% endif %};
