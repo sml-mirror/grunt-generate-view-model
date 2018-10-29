@@ -155,7 +155,6 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                             }
                         }
                         if (dec.name === "ViewModelType") {
-                            fldMetadata.hasViewModelType = true;
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
                                 fldMetadata.type = fieldTypeOptions.type.toString();

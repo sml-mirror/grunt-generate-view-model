@@ -8,7 +8,6 @@ export class FieldMetadata {
     public baseModelType: string;
     public ignoredInView: boolean = false;
     public isArray: boolean = false;
-    public hasViewModelType: boolean = false;
     public isComplexType: boolean = false;
     public isEnum: boolean = false;
     public fieldConvertFunction: Transformer = null;

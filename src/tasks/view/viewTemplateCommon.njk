@@ -12,11 +12,7 @@ import {{import.type}} from '{{import.path}}';
 export interface {{class.name}} {
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
-{% if field.hasViewModelType%}
-  {{field.name}}?: {{field.type}};
-{%else%}
-  {{field.name}}?: {{field.type}}{% if field.isArray %}[]{% endif %};
-{% endif%}
+  {{field.name}}?: {{field.type}}{% if field.isArray %} []{% endif %};
 
 {% endif %}
 {% endfor %}

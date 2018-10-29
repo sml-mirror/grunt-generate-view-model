@@ -16,11 +16,11 @@ export interface HeroViewModel {
 
   detailVM?: HeroDetailViewModel;
 
-  details?: HeroDetailViewModel[];
+  details?: HeroDetailViewModel [];
 
-  detailsVM?: HeroDetailViewModel;
+  detailsVM?: HeroDetailViewModel [];
 
-  simpleArray?: number[];
+  simpleArray?: number [];
 
   state?: States;
 
