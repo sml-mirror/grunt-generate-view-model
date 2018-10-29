@@ -39,14 +39,14 @@ export class Hero {
     public detailVM: HeroDetail;
 
     @ViewModelType({
-    "type": HeroDetailViewModel,
+    "type": "HeroDetailViewModel[]",
     "modelName": "HeroViewModel"})
     @ViewModelType({
-    "type": HeroDetailViewModel,
+    "type": "HeroDetailViewModel",
     "modelName": "HeroViewModel1"})
     public details: HeroDetail[];
 
-    @ViewModelType({"type": HeroDetailViewModel})
+    @ViewModelType({"type": "HeroDetailViewModel"})
     public detailsVM: HeroDetail[];
 
     public simpleArray: number[];

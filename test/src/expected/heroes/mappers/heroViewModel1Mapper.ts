@@ -11,10 +11,7 @@ export class HeroViewModel1Mapper {
             result.name = model.name;
             result.data = model.data;
             if (model.details) {
-                  let tmp =  await model.details.map(async function(item: any ) {return await HeroDetailViewModelMapper.toHeroDetailViewModel(item); });
-                  tmp.forEach(async mp => {
-                       let p = await mp;
-                       result.details.push(p); });
+                  result.details =  model.details.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
             }
             if (model.detailsVM) {
                   let tmp =  await model.detailsVM.map(async function(item: any ) {return await HeroDetailViewModelMapper.toHeroDetailViewModel(item); });
@@ -33,10 +30,7 @@ export class HeroViewModel1Mapper {
             result.name = viewModel.name;
             result.data = viewModel.data;
             if (viewModel.details) {
-                  let tmp =  viewModel.details.map( function(item: any ) {return  HeroDetailViewModelMapper.fromHeroDetailViewModel(item); });
-                  tmp.forEach( mp => {
-                       let p =  mp;
-                       result.details.push(p); });
+                  result.details =  viewModel.details.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
             }
             if (viewModel.detailsVM) {
                   let tmp =  viewModel.detailsVM.map( function(item: any ) {return  HeroDetailViewModelMapper.fromHeroDetailViewModel(item); });

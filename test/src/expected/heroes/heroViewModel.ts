@@ -6,7 +6,6 @@ import { HeroDetailViewModel } from './heroDetailViewModel';
 import { States } from '../../../../src/tasks/model/stateModel';
 
 export interface HeroViewModel {
-
   id?: string;
 
   name?: string;
@@ -17,11 +16,12 @@ export interface HeroViewModel {
 
   detailVM?: HeroDetailViewModel;
 
-  details?: HeroDetailViewModel [];
+  details?: HeroDetailViewModel[];
 
-  detailsVM?: HeroDetailViewModel [];
+  detailsVM?: HeroDetailViewModel;
 
-  simpleArray?: number [];
+  simpleArray?: number[];
 
   state?: States;
+
 }
