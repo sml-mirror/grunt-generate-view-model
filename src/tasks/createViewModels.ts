@@ -215,7 +215,9 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                                 }
                             }
                             if (fieldTypeOptions.transformer && !fldMetadata.needGeneratedMapper) {
-                                fldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
+                                if (fldMetadata.ignoredInView === false) {
+                                    fldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
+                                }
                                 let isBreak = false;
                             }
                         }
