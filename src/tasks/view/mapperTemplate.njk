@@ -23,7 +23,7 @@ export class {{class.name}}Mapper {
 {% if field.ignoredInView===false %}
 {%if field.fieldConvertFunction%}
 {% if field.fieldConvertFunction.toView %}
-            result.{{field.name}}  = {% if field.fieldConvertFunction.toView.isAsync %}await{% endif%} {{field.fieldConvertFunction.toView.function}}(model);
+            result.{{field.name}}  = {% if field.fieldConvertFunction.toView.isAsync %}await{% endif %} {{field.fieldConvertFunction.toView.function}}(model);
 {% else %}
             result.{{field.name}} = model.{{field.baseModelName}}
 {% endif %}
@@ -43,7 +43,7 @@ export class {{class.name}}Mapper {
 {% else %}
 {% if field.needGeneratedMapper %}
             if (model.{{field.baseModelName}}) {
-                  result.{{field.name}} =  {% if class.isToViewAsync %}await{% endif %} {{field.type}}Mapper.to{{field.type}}(model.{{field.baseModelName}});
+                  result.{{field.name}} = {% if class.isToViewAsync %}await{% endif %} {{field.type}}Mapper.to{{field.type}}(model.{{field.baseModelName}});
             }
 {% elif field.isComplexType %}
             if (model.{{field.baseModelName}}) {
@@ -85,7 +85,7 @@ export class {{class.name}}Mapper {
 {% else %}
 {% if field.needGeneratedMapper %}
             if (viewModel.{{field.name}}) {
-                  result.{{field.baseModelName}} =  {% if class.isFromViewAsync %}await{% endif %} {{field.type}}Mapper.from{{field.type}}(viewModel.{{field.name}});
+                  result.{{field.baseModelName}} = {% if class.isFromViewAsync %}await{% endif %} {{field.type}}Mapper.from{{field.type}}(viewModel.{{field.name}});
             }
 {% elif field.isComplexType %}
             if (viewModel.{{field.name}}) {
