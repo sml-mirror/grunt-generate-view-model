@@ -158,6 +158,12 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
                                 fldMetadata.type = fieldTypeOptions.type.toString();
+                                if (fldMetadata.type.indexOf("[]") > -1) {
+                                    fldMetadata.type = fldMetadata.type.substring(0,  fldMetadata.type.indexOf("[]"));
+                                    fldMetadata.isArray = true;
+                                } else {
+                                    fldMetadata.isArray = false;
+                                }
                                 if ( fldMetadata.type.toLowerCase() === "string" && fldMetadata.type !== fldMetadata.baseModelType ) {
                                     fldMetadata.type = "string";
                                     fldMetadata.toStringWanted = true;
@@ -179,8 +185,13 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                                                             c.decorators.forEach(d => {
                                                                 if (d.name === "GenerateView") {
                                                                     let generateOptions = <GenerateViewOptions>d.arguments[0].valueOf();
-                                                                    if (generateOptions.model.toLowerCase() ===
-                                                                    fieldTypeOptions.type.toString().toLowerCase()) {
+                                                                    let viewModelType = fieldTypeOptions.type.toString();
+                                                                    if (fieldTypeOptions.type.toString().indexOf("[]") > -1 ) {
+                                                                        viewModelType = viewModelType.substring(
+                                                                                0, fieldTypeOptions.type.toString().indexOf("[]")
+                                                                    );
+                                                                    }
+                                                                    if (generateOptions.model.toLowerCase() === viewModelType.toLowerCase()) {
                                                                         let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
                                                                         impNode.isNodeModule = false;
                                                                         let fileName = generateOptions.model[0].toUpperCase() +
