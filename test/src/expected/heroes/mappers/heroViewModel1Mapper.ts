@@ -6,20 +6,23 @@ import { Hero } from '../../../../src/model/hero/hero';
 import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModel1Mapper {
-      public static async toHeroViewModel1(model: Hero): Promise<HeroViewModel1> {
+      public static toHeroViewModel1(model: Hero): HeroViewModel1 {
             let result : HeroViewModel1 = {};
             result.name = model.name;
             result.data = model.data;
+            if (model.detail) {
+                  result.detail = JSON.parse(JSON.stringify(model.detail));
+            }
             if (model.details) {
-                  let tmp =  await model.details.map(async function(item: any ) {return await HeroDetailViewModelMapper.toHeroDetailViewModel(item); });	                  result.details =  model.details.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
-                  tmp.forEach(async mp => {	
-                       let p = await mp;	
+                  let tmp =   model.details.map( function(item: any ) {return  HeroDetailViewModelMapper.toHeroDetailViewModel(item); });
+                  tmp.forEach( mp => {
+                       let p =  mp;
                        result.details.push(p); });
             }
             if (model.detailsVM) {
-                  let tmp =  await model.detailsVM.map(async function(item: any ) {return await HeroDetailViewModelMapper.toHeroDetailViewModel(item); });
-                  tmp.forEach(async mp => {
-                       let p = await mp;
+                  let tmp =   model.detailsVM.map( function(item: any ) {return  HeroDetailViewModelMapper.toHeroDetailViewModel(item); });
+                  tmp.forEach( mp => {
+                       let p =  mp;
                        result.detailsVM.push(p); });
             }
             if (model.simpleArray) {
@@ -32,10 +35,13 @@ export class HeroViewModel1Mapper {
             let result = new Hero();
             result.name = viewModel.name;
             result.data = viewModel.data;
+            if (viewModel.detail) {
+                  result.detail = JSON.parse(JSON.stringify(viewModel.detail));
+            }
             if (viewModel.details) {
-                  let tmp =  viewModel.details.map( function(item: any ) {return  HeroDetailViewModelMapper.fromHeroDetailViewModel(item); });	                  result.details =  viewModel.details.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
-                  tmp.forEach( mp => {	
-                       let p =  mp;	
+                  let tmp =  viewModel.details.map( function(item: any ) {return  HeroDetailViewModelMapper.fromHeroDetailViewModel(item); });
+                  tmp.forEach( mp => {
+                       let p =  mp;
                        result.details.push(p); });
             }
             if (viewModel.detailsVM) {

@@ -1,6 +1,7 @@
 /*Codegen*/
 // tslint:disable
 
+import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { HeroDetailViewModel } from './heroDetailViewModel';
 import { States } from '../../../../src/tasks/model/stateModel';
 
@@ -10,6 +11,8 @@ export interface HeroViewModel1 {
 
   data?: string;
 
+  detail?: HeroDetail;
+
   details?: HeroDetailViewModel [];
 
   detailsVM?: HeroDetailViewModel [];
@@ -17,4 +20,5 @@ export interface HeroViewModel1 {
   simpleArray?: number [];
 
   state?: States;
+
 }

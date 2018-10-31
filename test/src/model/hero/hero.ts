@@ -31,7 +31,6 @@ export class Hero {
     "transformer": { "toView" : { "function": Class , "isAsync": true},
                     "fromView": { "function": Class }},
     "type": HeroDetail})
-    @IgnoreViewModel("HeroViewModel1")
     public detail: HeroDetail;
 
     @ViewModelType({"type": HeroDetailViewModel})
