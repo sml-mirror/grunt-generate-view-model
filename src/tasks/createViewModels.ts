@@ -424,7 +424,7 @@ function getAllfiles(path: string, resultPathes: string[], checkingFolders: stri
         checkingFolders.forEach(_folder => {
             if (fs.statSync(pth).isDirectory()) {
                 if ( (_folder.length >= pth.length
-                    && _folder.includes(pth)) || (pth.length >= _folder.length&& pth.includes(_folder))
+                    && _folder.includes(pth)) || (pth.length >= _folder.length && pth.includes(_folder))
                     ) {
                     getAllfiles(pth , resultPathes, checkingFolders);
                 }
