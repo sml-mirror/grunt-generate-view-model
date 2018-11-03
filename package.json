@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "grunt build",
-    "test": "grunt test"
+    "test": "grunt test",
+    "start": "grunt build && grunt test"
   },
   "dependencies": {
     "mkdirp": "0.5.1",

@@ -8,12 +8,10 @@ import {parseStruct, ImportNode} from "ts-file-parser";
 import {ArrayType, BasicType} from "ts-file-parser";
 import {render, renderString, configure} from "nunjucks";
 import * as path from "path";
-import { Transformer } from "./model/transformer";
 import { ViewModelTypeOptions } from "./model/viewModelTypeOptions";
 import { GenerateViewOptions } from "./model/generateViewOptions";
 import * as fs from "fs";
 import { Config } from "./model/config";
-
 
 export function createViewModelsInternal(): string [] {
     let possibleFiles: string[] = [];
@@ -49,7 +47,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
     var fs = require("fs");
     let generationFiles: FileMetadata[];
     generationFiles = new Array<FileMetadata>();
-    for (var file of files) {
+    for (let file of files) {
         var stringFile = fs.readFileSync(file, "utf-8");
         var jsonStructure = parseStruct(stringFile, {}, file);
         let possibleImports = jsonStructure._imports;
@@ -60,7 +58,6 @@ export function createMetadatas(files: string[]): FileMetadata[] {
 
             classMet.name = cls.name;
             classMet.fields = new Array<FieldMetadata>();
-            let classMetsFields = new Array<Array<FieldMetadata>>();
 
             cls.decorators.forEach(dec => {
                 if (dec.name === "GenerateView") {
@@ -224,12 +221,11 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                                         fldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
                                     }
                                 }
-                                let isBreak = false;
                             }
                         }
                     });
                     cm.fields.push(fldMetadata);
-                    });
+                });
                 cm.fields.forEach(f => {
                     if (f.fieldConvertFunction) {
                          let func = f.fieldConvertFunction;
@@ -368,7 +364,7 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             imoprtsForMapper.forEach( impForMapper => {
                 if (imports[ind].clauses.indexOf(impForMapper) > -1) {
                     fromPath = fileMetadata.mapperPath;
-                    /*imp.path*/let arrayPath = path.relative(fromPath, toPath).split("\\");
+                    let arrayPath = path.relative(fromPath, toPath).split("\\");
                     arrayPath[arrayPath.length - 1] = arrayPath[arrayPath.length - 1].charAt(0).toLowerCase() + arrayPath[arrayPath.length - 1].slice(1);
                     imp.path = arrayPath.join("/");
                     if ( imp.path.indexOf("./") < 0 && !imports[ind].isNodeModule ) {
@@ -427,13 +423,15 @@ function getAllfiles(path: string, resultPathes: string[], checkingFolders: stri
         let pth =  path + `/${f}`;
         checkingFolders.forEach(_folder => {
             if (fs.statSync(pth).isDirectory()) {
-                if ( (_folder.length >= pth.length && _folder.includes(pth)) || (pth.length >= _folder.length && pth.includes(_folder)) ) {
+                if ( (_folder.length >= pth.length
+                    && _folder.includes(pth)) || (pth.length >= _folder.length&& pth.includes(_folder))
+                    ) {
                     getAllfiles(pth , resultPathes, checkingFolders);
                 }
             } else {
                 let tsRegExp = /.+\.ts$/;
                 let matches = tsRegExp.exec(pth);
-                if ( matches && matches.length > 0) {
+                if ( matches && matches.length > 0 && resultPathes.indexOf(matches[0]) === -1) {
                     resultPathes.push( matches[0]);
                 }
             }
