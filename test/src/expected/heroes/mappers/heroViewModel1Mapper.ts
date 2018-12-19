@@ -6,7 +6,7 @@ import { Hero } from '../../../../src/model/hero/hero';
 import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModel1Mapper {
-      public static toHeroViewModel1(model: Hero): HeroViewModel1 {
+      public static toHeroViewModel1(model: Hero, context?: any): HeroViewModel1 {
             let result : HeroViewModel1 = {};
             result.name = model.name;
             result.data = model.data;
@@ -31,7 +31,7 @@ export class HeroViewModel1Mapper {
             result.state = model.state;
             return result;
       }
-      public static fromHeroViewModel1(viewModel: HeroViewModel1): Hero {
+      public static fromHeroViewModel1(viewModel: HeroViewModel1, context?: any): Hero {
             let result = new Hero();
             result.name = viewModel.name;
             result.data = viewModel.data;

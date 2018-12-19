@@ -17,13 +17,13 @@ import {{import.type }} from '{{import.path}}';
 
 {% for class in metafile.classes %}
 export class {{class.name}}Mapper {
-      public static {% if class.isToViewAsync %}async {% endif %}to{{class.name}}(model: {{class.baseName}}): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
+      public static {% if class.isToViewAsync %}async {% endif %}to{{class.name}}(model: {{class.baseName}}, context?: any): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
             let result : {{class.name}} = {};
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
 {%if field.fieldConvertFunction%}
 {% if field.fieldConvertFunction.toView %}
-            result.{{field.name}}  = {% if field.fieldConvertFunction.toView.isAsync %}await{% endif %} {{field.fieldConvertFunction.toView.function}}(model);
+            result.{{field.name}}  = {% if field.fieldConvertFunction.toView.isAsync %}await{% endif %} {{field.fieldConvertFunction.toView.function}}(model{%if field.fieldConvertFunctionContrextObject%}, context{%endif%});
 {% else %}
             result.{{field.name}} = model.{{field.baseModelName}}
 {% endif %}
@@ -59,13 +59,13 @@ export class {{class.name}}Mapper {
 {%endfor%}
             return result;
       }
-      public static {% if class.isFromViewAsync %}async {% endif %}from{{class.name}}(viewModel: {{class.name}}): {% if class.isFromViewAsync %}Promise<{%endif%}{{class.baseName}}{% if class.isFromViewAsync %}>{%endif%} {
+      public static {% if class.isFromViewAsync %}async {% endif %}from{{class.name}}(viewModel: {{class.name}}, context?: any): {% if class.isFromViewAsync %}Promise<{%endif%}{{class.baseName}}{% if class.isFromViewAsync %}>{%endif%} {
             let result = new {{class.baseName}}();
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
 {%if field.fieldConvertFunction %}
 {% if field.fieldConvertFunction.fromView %}
-            result.{{field.baseModelName}}  = {% if field.fieldConvertFunction.fromView.isAsync %}await{% endif%} {{field.fieldConvertFunction.fromView.function}}(viewModel);
+            result.{{field.baseModelName}}  = {% if field.fieldConvertFunction.fromView.isAsync %}await{% endif%} {{field.fieldConvertFunction.fromView.function}}(viewModel{%if field.fieldConvertFunctionContrextObject%}, context{%endif%});
 {% else%}
             result.{{field.baseModelName}} = viewModel.{{field.name}};
 {%endif%}

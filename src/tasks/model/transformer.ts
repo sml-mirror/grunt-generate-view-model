@@ -1,6 +1,7 @@
 export class Transformer {
     public toView?: ToViewTransformer;
     public fromView?: FromViewTransformer;
+    public contextObject?: boolean;
 }
 
 export class ToViewTransformer {

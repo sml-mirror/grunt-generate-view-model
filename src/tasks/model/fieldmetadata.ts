@@ -11,6 +11,7 @@ export class FieldMetadata {
     public isComplexType: boolean = false;
     public isEnum: boolean = false;
     public fieldConvertFunction: Transformer = null;
+    public fieldConvertFunctionContrextObject: boolean = false;
     public toStringWanted: boolean = false;
     public needGeneratedMapper: boolean = false;
 }

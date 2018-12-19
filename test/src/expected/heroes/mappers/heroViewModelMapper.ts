@@ -7,7 +7,7 @@ import { Class } from '../../../../src/model/Path/path';
 import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModelMapper {
-      public static async toHeroViewModel(model: Hero): Promise<HeroViewModel> {
+      public static async toHeroViewModel(model: Hero, context?: any): Promise<HeroViewModel> {
             let result : HeroViewModel = {};
             result.id = model.id.toString();
             result.name = model.name;
@@ -34,7 +34,7 @@ export class HeroViewModelMapper {
             result.state = model.state;
             return result;
       }
-      public static fromHeroViewModel(viewModel: HeroViewModel): Hero {
+      public static fromHeroViewModel(viewModel: HeroViewModel, context?: any): Hero {
             let result = new Hero();
             result.id = viewModel.id ? +viewModel.id : viewModel.id as any;
             result.name = viewModel.name;

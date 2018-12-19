@@ -5,7 +5,7 @@ import { SimpeHeroViewModel } from '../simpeHeroViewModel';
 import { SimpleHero } from '../../../../src/model/hero/simplehero';
 
 export class SimpeHeroViewModelMapper {
-      public static toSimpeHeroViewModel(model: SimpleHero): SimpeHeroViewModel {
+      public static toSimpeHeroViewModel(model: SimpleHero, context?: any): SimpeHeroViewModel {
             let result : SimpeHeroViewModel = {};
             result.login = model.name;
             result.age = model.age;
@@ -16,7 +16,7 @@ export class SimpeHeroViewModelMapper {
             }
             return result;
       }
-      public static fromSimpeHeroViewModel(viewModel: SimpeHeroViewModel): SimpleHero {
+      public static fromSimpeHeroViewModel(viewModel: SimpeHeroViewModel, context?: any): SimpleHero {
             let result = new SimpleHero();
             result.name = viewModel.login;
             result.age = viewModel.age;
