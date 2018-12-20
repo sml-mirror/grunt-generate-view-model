@@ -1,6 +1,6 @@
 {
   "name": "grunt-generate-view-model",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "description": "Grunt task for code generation view models by models description",
   "private": false,
   "main": "dist/src/index.js",
