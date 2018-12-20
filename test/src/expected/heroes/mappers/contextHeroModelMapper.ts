@@ -9,13 +9,13 @@ export class ContextHeroModelMapper {
       public static async toContextHeroModel(model: Hero, context?: any): Promise<ContextHeroModel> {
             let result : ContextHeroModel = {};
             result.name = model.name;
-            result.detail  = await Class(model, context);
+            result.detail  = await (Class as any)(model, context);
             return result;
       }
       public static fromContextHeroModel(viewModel: ContextHeroModel, context?: any): Hero {
             let result = new Hero();
             result.name = viewModel.name;
-            result.detail  =  Class(viewModel, context);
+            result.detail  =  (Class as any)(viewModel, context);
             return result;
       }
 }

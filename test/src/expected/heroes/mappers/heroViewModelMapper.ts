@@ -12,7 +12,7 @@ export class HeroViewModelMapper {
             result.id = model.id.toString();
             result.name = model.name;
             result.information = model.data;
-            result.detail  = await Class(model);
+            result.detail  = await (Class as any)(model, context);
             if (model.detailVM) {
                   result.detailVM = await HeroDetailViewModelMapper.toHeroDetailViewModel(model.detailVM);
             }
@@ -39,7 +39,7 @@ export class HeroViewModelMapper {
             result.id = viewModel.id ? +viewModel.id : viewModel.id as any;
             result.name = viewModel.name;
             result.data = viewModel.information;
-            result.detail  =  Class(viewModel);
+            result.detail  =  (Class as any)(viewModel, context);
             if (viewModel.detailVM) {
                   result.detailVM =  HeroDetailViewModelMapper.fromHeroDetailViewModel(viewModel.detailVM);
             }

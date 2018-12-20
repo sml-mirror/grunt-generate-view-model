@@ -215,16 +215,10 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                                 if (fieldTypeOptions.modelName) {
                                     if (fldMetadata.ignoredInView === false && cm.name === fieldTypeOptions.modelName ) {
                                         fldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
-                                        if (!!fieldTypeOptions.transformer.contextObject) {
-                                            fldMetadata.fieldConvertFunctionContrextObject = true;
-                                        }
                                     }
                                 } else {
                                     if (fldMetadata.ignoredInView === false) {
                                         fldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
-                                        if (!!fieldTypeOptions.transformer.contextObject) {
-                                            fldMetadata.fieldConvertFunctionContrextObject = true;
-                                        }
                                     }
                                 }
                             }

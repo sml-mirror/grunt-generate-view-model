@@ -17,8 +17,7 @@ export class Hero {
     @ViewModelType({
     "modelName": "ContextHeroModel",
     "transformer": { "toView" : { "function": Class , "isAsync": true},
-                    "fromView": { "function": Class },
-                    "contextObject": true
+                    "fromView": { "function": Class }
                 },
     "type": HeroDetail})
     public detail: HeroDetail;
