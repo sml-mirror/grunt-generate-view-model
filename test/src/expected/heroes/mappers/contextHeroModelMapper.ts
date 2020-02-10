@@ -1,5 +1,6 @@
 /*Codegen*/
 // tslint:disable
+/* eslint-disable */
 
 import { ContextHeroModel } from '../contextHeroModel';
 import { Hero } from '../../../../src/model/hero/contextHero';

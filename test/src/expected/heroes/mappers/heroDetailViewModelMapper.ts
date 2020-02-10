@@ -1,5 +1,6 @@
 /*Codegen*/
 // tslint:disable
+/* eslint-disable */
 
 import { HeroDetailViewModel } from '../heroDetailViewModel';
 import { HeroDetail } from '../../../../src/model/hero/heroDetail';

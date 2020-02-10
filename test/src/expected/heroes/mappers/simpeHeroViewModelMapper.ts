@@ -1,5 +1,6 @@
 /*Codegen*/
 // tslint:disable
+/* eslint-disable */
 
 import { SimpeHeroViewModel } from '../simpeHeroViewModel';
 import { SimpleHero } from '../../../../src/model/hero/simplehero';
