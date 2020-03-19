@@ -1,0 +1,1 @@
+test\src\e2e\e2e.ts --sourcemap --emitDecoratorMetadata --removeComments --experimentalDecorators --moduleResolution node --rootDir ./ --typeRoots "node_modules/@types" --target ES6 --module commonjs --outDir ./test/dist

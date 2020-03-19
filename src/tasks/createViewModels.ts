@@ -12,6 +12,7 @@ import {FieldMetadata} from "./model/fieldmetadata";
 import {Options, FileMapping} from "./model/options";
 import { ViewModelTypeOptions } from "./model/viewModelTypeOptions";
 import { GenerateViewOptions } from "./model/generateViewOptions";
+import { Transformer } from "./model/transformer";
 
 const mkdirp = require("mkdirp");
 const arrayType = "[]";
@@ -222,11 +223,11 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                 cm.fields.forEach(f => {
                     if (f.fieldConvertFunction) {
                          let func = f.fieldConvertFunction;
-                         if (func.toView && func.toView.isAsync) {
-                             cm.isToViewAsync = true;
+                         if (func.toView && func.toView.function) {
+                            determineAsyncTransformerOrNot('toView', func, possibleImports, cm);
                          }
-                         if (func.fromView && func.fromView.isAsync) {
-                            cm.isFromViewAsync = true;
+                         if (func.fromView && func.fromView.function) {
+                            determineAsyncTransformerOrNot('fromView', func, possibleImports, cm);
                          }
                     }
                 });
@@ -283,6 +284,27 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
 
     return c;
 }
+
+function determineAsyncTransformerOrNot(direction: 'toView'| 'fromView', func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
+    const importFunctionName = func[direction].function;
+    const im1 = possibleImports.find(import1 => import1.clauses.indexOf(importFunctionName) > -1);
+    const pathFromFile = im1.absPathNode.join('/');
+    const stringFile = fs.readFileSync(path.resolve(pathFromFile + '.ts')).toString();
+    const array = stringFile.split('export');
+    array.forEach(element => {
+        const words = element.split(' ');
+        words.forEach((word, index, self) => {
+            if (word === func[direction].function) {
+                const asyncWord = self.find(item => item === 'async' || item.includes('async(') || item.includes('async ('));
+                if (asyncWord) {
+                    func[direction].isAsync = true;
+                    cm[ direction === 'toView' ? 'isToViewAsync' : 'isFromViewAsync'] = true;
+                }
+            }
+        })
+    })
+}
+
 function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: GenerateViewOptions, file: string) {
     let fileMet : FileMetadata;
     fileMet = new FileMetadata();
