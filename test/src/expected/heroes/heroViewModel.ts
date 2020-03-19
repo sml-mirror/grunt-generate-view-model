@@ -2,6 +2,7 @@
 // tslint:disable
 /* eslint-disable */
 
+type mock = any;
 import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { HeroDetailViewModel } from './heroDetailViewModel';
 import { States } from '../../../../src/tasks/model/stateModel';
