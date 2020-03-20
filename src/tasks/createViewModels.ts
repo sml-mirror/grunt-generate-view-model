@@ -13,7 +13,6 @@ import {Options, FileMapping} from "./model/options";
 import { ViewModelTypeOptions } from "./model/viewModelTypeOptions";
 import { GenerateViewOptions } from "./model/generateViewOptions";
 import { Transformer } from "./model/transformer";
-import { isUndefined, isNull } from "util";
 
 const mkdirp = require("mkdirp");
 const arrayType = "[]";
