@@ -12,5 +12,5 @@ export class HeroDetail {
     @ViewModelName("detail")
     public data: string;
 
-    public temp: {[x: number]: string};
+    public temp: HeroDetail;
 }

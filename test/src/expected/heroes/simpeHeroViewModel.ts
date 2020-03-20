@@ -2,8 +2,6 @@
 // tslint:disable
 /* eslint-disable */
 
-type mock = any;
-
 export class SimpeHeroViewModel {
 
   login?: string;

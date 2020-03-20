@@ -2,12 +2,12 @@
 // tslint:disable
 /* eslint-disable */
 
-type mock = any;
+import { HeroDetail } from "../../model/hero/heroDetail";
 
 export interface HeroDetailViewModel {
 
   detail?: string;
 
-  temp?: mock;
+  temp?: HeroDetail;
 
 }

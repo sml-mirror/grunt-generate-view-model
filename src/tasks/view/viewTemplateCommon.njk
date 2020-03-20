@@ -3,7 +3,6 @@
 // tslint:disable
 /* eslint-disable */
 
-type mock = any;
 {% for import in metafile.imports %}
 {%if import.forMapper ===false%}
 import {{import.type}} from '{{import.path}}';
