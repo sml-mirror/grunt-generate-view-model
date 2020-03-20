@@ -40,8 +40,7 @@ export function createOptionsOfGrunt(obj: IGrunt): Options {
 }
 
 export function createMetadatas(files: string[]): FileMetadata[] {
-    let generationFiles: FileMetadata[];
-    generationFiles = new Array<FileMetadata>();
+    let generationFiles: FileMetadata[] = [];
     for (let file of files) {
         var stringFile = fs.readFileSync(file, "utf-8");
         var jsonStructure = parseStruct(stringFile, {}, file);
@@ -106,8 +105,8 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         fldMetadata.baseModelType = (<BasicType>fld.type).typeName;
                     }
                     let typeName = fldMetadata.baseModelType;
-                    if (typeName !== "string" && typeName !== "number" && typeName !== "boolean" && typeName !== "undefined"
-                    && typeName !== "null") {
+                    const baseTypes = ["string", "number", "boolean", "undefined", "null", "object"]
+                    if ( !baseTypes.find(type => type === typeName)) {
                         fldMetadata.isComplexType = true;
                         possibleImports.forEach(repeatImport => {
                             if (!repeatImport.isNodeModule) {
@@ -224,10 +223,10 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     if (f.fieldConvertFunction) {
                          let func = f.fieldConvertFunction;
                          if (func.toView && func.toView.function) {
-                            determineAsyncTransformerOrNot('toView', func, possibleImports, cm);
+                                determineAsyncTransformerOrNot('toView', func, possibleImports, cm);
                          }
                          if (func.fromView && func.fromView.function) {
-                            determineAsyncTransformerOrNot('fromView', func, possibleImports, cm);
+                                determineAsyncTransformerOrNot('fromView', func, possibleImports, cm);
                          }
                     }
                 });
@@ -287,8 +286,8 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
 
 function determineAsyncTransformerOrNot(direction: 'toView'| 'fromView', func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
     const importFunctionName = func[direction].function;
-    const im1 = possibleImports.find(import1 => import1.clauses.indexOf(importFunctionName) > -1);
-    const pathFromFile = im1.absPathNode.join('/');
+    const moduleImport = possibleImports.find(import1 => import1.clauses.indexOf(importFunctionName) > -1);
+    const pathFromFile = moduleImport.absPathNode.join('/');
     const stringFile = fs.readFileSync(path.resolve(pathFromFile + '.ts')).toString();
     const array = stringFile.split('export');
     array.forEach(element => {
@@ -317,11 +316,12 @@ function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: Gene
 }
 
 function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) {
+
     fileMetadata.classes.forEach(cls => {
         let usingTypesInClass = unique(cls.fields
             .filter(fld => !fld.ignoredInView)
             .map(fld => fld.type));
-        let indexesOfCorrectImoprts = [];
+        let indexesOfCorrectImoprts: number[] = [];
         let imoprtsForMapper = [];
         cls.fields.forEach(f => {
             if ( f.fieldConvertFunction && !f.ignoredInView) {
@@ -348,7 +348,8 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
                 }
             }
         });
-        indexesOfCorrectImoprts.forEach(ind => {
+        const uniqueIndexsOfCorrectImports: Set<number> = new Set(indexesOfCorrectImoprts);
+        uniqueIndexsOfCorrectImports.forEach(ind => {
             let imp = new Import();
             imp.type = `{ ${imports[ind].clauses.join(",")} }`;
             let toPath = imports[ind].absPathNode.join("/");
@@ -384,11 +385,14 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             tmpImports.push(i);
         }
     });
-    fileMetadata.imports = JSON.parse(JSON.stringify(tmpImports));
-    FilterImportingMappers(fileMetadata);
+    fileMetadata.imports = tmpImports;
+    fileMetadata.imports = FilterImportingMappers(fileMetadata);
+    fileMetadata.imports = filterTransformerWhichAlreadyExistInMapper(fileMetadata.imports);
 }
+
 function FilterImportingMappers(meta: FileMetadata) {
-    meta.imports.forEach( imp => {
+    const imports = meta.imports;
+    imports.forEach( imp => {
         let mapperMatch = imp.type.match(/[a-zA-Z]+Mapper/);
         if (mapperMatch) {
             let mapperName = mapperMatch[0];
@@ -402,7 +406,30 @@ function FilterImportingMappers(meta: FileMetadata) {
         }
         imp.dependencyMappers = unique(imp.dependencyMappers);
     });
+    return imports;
 }
+
+function filterTransformerWhichAlreadyExistInMapper(imports: Import[]) {
+    const tmpImports = imports;
+    const newImports:Import[] = [];
+    tmpImports.forEach(imp => {
+        if (newImports.length === 0) {
+            newImports.push(imp);
+        } else {
+            const newImportsSamePathImports = newImports.find(_import => _import.path === imp.path);
+            if (newImportsSamePathImports) {
+                const targetImportClauses = imp.type.replace('{', '').replace('}', '').trim().split(',');
+                const inArrayImportClasues = imp.type.replace('{', '').replace('}', '').trim().split(',');
+                const commonArrayOfClauses = Array.from(new Set([...targetImportClauses, ...inArrayImportClasues]));
+                newImportsSamePathImports.type = `{ ${commonArrayOfClauses.join(',')}}`;
+            } else {
+                newImports.push(imp);
+            }
+        }
+    });
+    return newImports;
+}
+
 function unique(arr: string[]): string[] {
     let obj = {};
 
