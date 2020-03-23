@@ -223,10 +223,10 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     if (f.fieldConvertFunction) {
                          let func = f.fieldConvertFunction;
                          if (func.toView && func.toView.function) {
-                                determineAsyncTransformerOrNot("toView", func, possibleImports, cm);
+                                saveInfoAboutTransformer("toView", func, possibleImports, cm);
                          }
                          if (func.fromView && func.fromView.function) {
-                                determineAsyncTransformerOrNot("fromView", func, possibleImports, cm);
+                                saveInfoAboutTransformer("fromView", func, possibleImports, cm);
                          }
                     }
                 });
@@ -284,26 +284,18 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     return c;
 }
 
-function determineAsyncTransformerOrNot(direction: "toView"| "fromView", func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
+function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
     const importFunctionName = func[direction].function;
     const moduleImport = possibleImports.find(import1 => import1.clauses.indexOf(importFunctionName) > -1);
     if (moduleImport) {
         const pathFromFile = moduleImport.absPathNode.join("/");
         const stringFile = fs.readFileSync(path.resolve(pathFromFile + ".ts")).toString();
-        const array = stringFile.split("export");
-        array.forEach(element => {
-            const words = element.split(" ");
-            words.forEach((word, index, self) => {
-                if (word === func[direction].function) {
-                    const asyncWord = self.find(item => item === "async" || item.includes("async(") || item.includes("async ("));
-                    if (asyncWord) {
-                        func[direction].isAsync = true;
-                        cm[ direction === "toView" ? "isToViewAsync" : "isFromViewAsync"] = true;
-                    }
-                    func[direction].isPrimitive = false;
-                }
-            });
-        });
+        var jsonStructure = parseStruct(stringFile, {}, pathFromFile);
+        const funcs = jsonStructure.functions;
+        const targetFuncs = funcs.find(func => func.name === importFunctionName);
+        func[direction].isAsync = targetFuncs.isAsync;
+        cm[ direction === "toView" ? "isToViewAsync" : "isFromViewAsync"] = targetFuncs.isAsync;
+        func[direction].isPrimitive = false;
     } else {
         func[direction].isPrimitive = true;
         if ( func[direction].function !== "null" && func[direction].function !== "undefined") {
