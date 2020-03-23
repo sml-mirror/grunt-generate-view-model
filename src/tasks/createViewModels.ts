@@ -105,7 +105,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         fldMetadata.baseModelType = (<BasicType>fld.type).typeName;
                     }
                     let typeName = fldMetadata.baseModelType;
-                    const baseTypes = ["string", "number", "boolean", "undefined", "null", "object"]
+                    const baseTypes = ["string", "number", "boolean", "undefined", "null", "object"];
                     if ( !baseTypes.find(type => type === typeName)) {
                         fldMetadata.isComplexType = true;
                         possibleImports.forEach(repeatImport => {
@@ -223,10 +223,10 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     if (f.fieldConvertFunction) {
                          let func = f.fieldConvertFunction;
                          if (func.toView && func.toView.function) {
-                                determineAsyncTransformerOrNot('toView', func, possibleImports, cm);
+                                determineAsyncTransformerOrNot("toView", func, possibleImports, cm);
                          }
                          if (func.fromView && func.fromView.function) {
-                                determineAsyncTransformerOrNot('fromView', func, possibleImports, cm);
+                                determineAsyncTransformerOrNot("fromView", func, possibleImports, cm);
                          }
                     }
                 });
@@ -284,26 +284,26 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     return c;
 }
 
-function determineAsyncTransformerOrNot(direction: 'toView'| 'fromView', func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
+function determineAsyncTransformerOrNot(direction: "toView"| "fromView", func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
     const importFunctionName = func[direction].function;
     const moduleImport = possibleImports.find(import1 => import1.clauses.indexOf(importFunctionName) > -1);
     if (moduleImport) {
-        const pathFromFile = moduleImport.absPathNode.join('/');
-        const stringFile = fs.readFileSync(path.resolve(pathFromFile + '.ts')).toString();
-        const array = stringFile.split('export');
+        const pathFromFile = moduleImport.absPathNode.join("/");
+        const stringFile = fs.readFileSync(path.resolve(pathFromFile + ".ts")).toString();
+        const array = stringFile.split("export");
         array.forEach(element => {
-            const words = element.split(' ');
+            const words = element.split(" ");
             words.forEach((word, index, self) => {
                 if (word === func[direction].function) {
-                    const asyncWord = self.find(item => item === 'async' || item.includes('async(') || item.includes('async ('));
+                    const asyncWord = self.find(item => item === "async" || item.includes("async(") || item.includes("async ("));
                     if (asyncWord) {
                         func[direction].isAsync = true;
-                        cm[ direction === 'toView' ? 'isToViewAsync' : 'isFromViewAsync'] = true;
+                        cm[ direction === "toView" ? "isToViewAsync" : "isFromViewAsync"] = true;
                     }
                     func[direction].isPrimitive = false;
                 }
-            })
-        })
+            });
+        });
     } else {
         func[direction].isPrimitive = true;
         if ( func[direction].function !== "null" && func[direction].function !== "undefined") {
@@ -421,17 +421,17 @@ function FilterImportingMappers(meta: FileMetadata) {
 
 function filterTransformerWhichAlreadyExistInMapper(imports: Import[]) {
     const tmpImports = imports;
-    const newImports:Import[] = [];
+    const newImports: Import[] = [];
     tmpImports.forEach(imp => {
         if (newImports.length === 0) {
             newImports.push(imp);
         } else {
             const newImportsSamePathImports = newImports.find(_import => _import.path === imp.path);
             if (newImportsSamePathImports) {
-                const targetImportClauses = imp.type.replace('{', '').replace('}', '').trim().split(',');
-                const inArrayImportClasues = imp.type.replace('{', '').replace('}', '').trim().split(',');
+                const targetImportClauses = imp.type.replace("{", "").replace("}", "").trim().split(",");
+                const inArrayImportClasues = imp.type.replace("{", "").replace("}", "").trim().split(",");
                 const commonArrayOfClauses = Array.from(new Set([...targetImportClauses, ...inArrayImportClasues]));
-                newImportsSamePathImports.type = `{ ${commonArrayOfClauses.join(',')}}`;
+                newImportsSamePathImports.type = `{ ${commonArrayOfClauses.join(",")}}`;
             } else {
                 newImports.push(imp);
             }
