@@ -15,6 +15,7 @@ export class Hero {
 
     @ViewModelType({
     modelName: "ContextHeroModel",
+    nullable: false,
     transformer: { toView: { function: asyncTransformer},
                     fromView: { function: null }
                 },

@@ -13,6 +13,7 @@ import {Options, FileMapping} from "./model/options";
 import { ViewModelTypeOptions } from "./model/viewModelTypeOptions";
 import { GenerateViewOptions } from "./model/generateViewOptions";
 import { Transformer } from "./model/transformer";
+import { isBoolean } from "util";
 
 const mkdirp = require("mkdirp");
 const arrayType = "[]";
@@ -89,8 +90,8 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                 cm.baseNamePath =  file;
                 cls.fields.forEach(fld => {
                     let fldMetadata = new FieldMetadata();
-                    fldMetadata.isNullable = fld.optional;
                     fldMetadata.baseModelName = fld.name;
+                    fldMetadata.nullable = true;
                     if (fld.type.typeKind === 1) {
                         fldMetadata.isArray = true;
                     }
@@ -147,7 +148,11 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         }
                         if (dec.name === "ViewModelType") {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
+                            fldMetadata.nullable = (fieldTypeOptions && isBoolean(fieldTypeOptions.nullable) && !fieldTypeOptions.nullable)
+                                ? false
+                                : true;
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
+
                                 fldMetadata.type = fieldTypeOptions.type.toString();
                                 if (fldMetadata.type.indexOf(arrayType) > -1) {
                                     fldMetadata.type = fldMetadata.type.substring(0,  fldMetadata.type.indexOf(arrayType));

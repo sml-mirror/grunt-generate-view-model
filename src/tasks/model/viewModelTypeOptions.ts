@@ -5,4 +5,5 @@ export class ViewModelTypeOptions {
     type: Object;
     modelName?: string;
     transformer?: Transformer;
+    nullable?: boolean;
 }
