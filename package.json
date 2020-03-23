@@ -16,7 +16,7 @@
     "mkdirp": "0.5.1",
     "nunjucks": "3.1.2",
     "path": "0.12.7",
-    "ts-file-parser": "0.0.12",
+    "ts-file-parser": "0.0.13",
     "typescript": "2.7.2"
   },
   "devDependencies": {
