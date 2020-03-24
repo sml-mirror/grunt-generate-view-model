@@ -291,11 +291,16 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
 
 function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
     const importFunctionName = func[direction].function;
-    const moduleImport = possibleImports.find(import1 => import1.clauses.indexOf(importFunctionName) > -1);
+    const moduleImport = possibleImports.find(possibleImport => possibleImport.clauses.indexOf(importFunctionName) > -1);
     if (moduleImport) {
+        let stringFile = "";
         const pathFromFile = moduleImport.absPathNode.join("/");
-        const stringFile = fs.readFileSync(path.resolve(pathFromFile + ".ts")).toString();
-        var jsonStructure = parseStruct(stringFile, {}, pathFromFile);
+        try {
+            stringFile = fs.readFileSync(path.resolve(pathFromFile + ".ts")).toString();
+        } catch (e) {
+            stringFile = fs.readFileSync(path.resolve(pathFromFile + "/index.ts")).toString();
+        }
+        const jsonStructure = parseStruct(stringFile, {}, pathFromFile);
         const funcs = jsonStructure.functions;
         const targetFuncs = funcs.find(func => func.name === importFunctionName);
         func[direction].isAsync = targetFuncs.isAsync;
