@@ -4,7 +4,7 @@
 
 import { HeroViewModel } from '../heroViewModel';
 import { Hero } from '../../../../src/model/hero/hero';
-import { Class } from '../../../../src/model/Path/path';
+import { asyncTransformer,notAsyncTransformer } from '../../../../../transformer/asyncTransformer';
 import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModelMapper {
@@ -13,7 +13,7 @@ export class HeroViewModelMapper {
             result.id = model.id.toString();
             result.name = model.name;
             result.information = model.data;
-            result.detail  = await (Class as any)(model, context);
+            result.detail  = await (asyncTransformer as any)(model, context);
             if (model.detailVM) {
                   result.detailVM = await HeroDetailViewModelMapper.toHeroDetailViewModel(model.detailVM);
             }
@@ -40,7 +40,7 @@ export class HeroViewModelMapper {
             result.id = viewModel.id ? +viewModel.id : viewModel.id as any;
             result.name = viewModel.name;
             result.data = viewModel.information;
-            result.detail  =  (Class as any)(viewModel, context);
+            result.detail  =  (notAsyncTransformer as any)(viewModel, context);
             if (viewModel.detailVM) {
                   result.detailVM =  HeroDetailViewModelMapper.fromHeroDetailViewModel(viewModel.detailVM);
             }

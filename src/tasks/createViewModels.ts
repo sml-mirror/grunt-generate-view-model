@@ -1,24 +1,28 @@
-import { Import } from "./model/import";
-import {ClassMetadata} from "./model/classmetadata";
-import {FieldMetadata} from "./model/fieldmetadata";
-import {FileMetadata} from "./model/filemetadata";
-import {Options, FileMapping} from "./model/options";
-import {IExtensionGruntFilesConfig} from "./model/extensionFileConfig";
+import * as fs from "fs";
+import * as path from "path";
 import {parseStruct, ImportNode} from "ts-file-parser";
 import {ArrayType, BasicType} from "ts-file-parser";
-import {render, renderString, configure} from "nunjucks";
-import * as path from "path";
+import {render, configure} from "nunjucks";
+
+import { Import } from "./model/import";
+import { Config } from "./model/config";
+import {FileMetadata} from "./model/filemetadata";
+import {ClassMetadata} from "./model/classmetadata";
+import {FieldMetadata} from "./model/fieldmetadata";
+import {Options, FileMapping} from "./model/options";
 import { ViewModelTypeOptions } from "./model/viewModelTypeOptions";
 import { GenerateViewOptions } from "./model/generateViewOptions";
-import * as fs from "fs";
-import { Config } from "./model/config";
+import { Transformer } from "./model/transformer";
+import { isBoolean } from "util";
 
+const mkdirp = require("mkdirp");
+const arrayType = "[]";
 export function createViewModelsInternal(): string [] {
     let possibleFiles: string[] = [];
     let config = <Config>JSON.parse(fs.readFileSync("genconfig.json", "utf8"));
     getAllfiles(".", possibleFiles, config.check.folders);
-    var  metadata = createMetadatas(possibleFiles);
-    var resultTemplate = CreateFiles(metadata);
+    const  metadata = createMetadatas(possibleFiles);
+    const resultTemplate = CreateFiles(metadata);
     return resultTemplate;
 }
 
@@ -27,26 +31,17 @@ export function createOptionsOfGrunt(obj: IGrunt): Options {
     var files = new Array<FileMapping>();
     for (var i = 0; i < obj.task.current.files.length; i++) {
         var file = new FileMapping();
-        if (obj.task.current.files[i].src.length === 1) {
-            file.source = obj.task.current.files[i].src[0];
-        } else {
-            file.source = obj.task.current.files[i].src[0];
-        }
+        file.source = obj.task.current.files[i].src[0];
         file.destination = obj.task.current.files[i].dest;
         files.push(file);
     }
 
     options.files = files;
-    if (obj.task.current.data.oneFile && obj.task.current.files.length) {
-        var fileConfig = obj.task.current.files[0] as IExtensionGruntFilesConfig;
-    }
     return options;
 }
 
 export function createMetadatas(files: string[]): FileMetadata[] {
-    var fs = require("fs");
-    let generationFiles: FileMetadata[];
-    generationFiles = new Array<FileMetadata>();
+    let generationFiles: FileMetadata[] = [];
     for (let file of files) {
         var stringFile = fs.readFileSync(file, "utf-8");
         var jsonStructure = parseStruct(stringFile, {}, file);
@@ -81,13 +76,13 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         if (genViewOpt.mapperPath) {
                             otherClassMet.needMapper = true;
                         }
-                        classMets.push( otherClassMet);
+                        classMets.push(otherClassMet);
 
                         FillFileMetadataArray(generationFiles, genViewOpt, file);
                     }
                 }
             });
-            if (classMet.generateView === false) {
+            if (!classMet.generateView) {
                 return;
             }
             classMets.forEach(cm => {
@@ -95,8 +90,8 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                 cm.baseNamePath =  file;
                 cls.fields.forEach(fld => {
                     let fldMetadata = new FieldMetadata();
-                    fldMetadata.isNullable = fld.optional;
                     fldMetadata.baseModelName = fld.name;
+                    fldMetadata.nullable = true;
                     if (fld.type.typeKind === 1) {
                         fldMetadata.isArray = true;
                     }
@@ -111,8 +106,8 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         fldMetadata.baseModelType = (<BasicType>fld.type).typeName;
                     }
                     let typeName = fldMetadata.baseModelType;
-                    if (typeName !== "string" && typeName !== "number" && typeName !== "boolean" && typeName !== "undefined"
-                    && typeName !== "null") {
+                    const baseTypes = ["string", "number", "boolean", "undefined", "null", "object"];
+                    if ( !baseTypes.find(type => type === typeName)) {
                         fldMetadata.isComplexType = true;
                         possibleImports.forEach(repeatImport => {
                             if (!repeatImport.isNodeModule) {
@@ -153,10 +148,14 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         }
                         if (dec.name === "ViewModelType") {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
+                            fldMetadata.nullable = (fieldTypeOptions && isBoolean(fieldTypeOptions.nullable) && !fieldTypeOptions.nullable)
+                                ? false
+                                : true;
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
+
                                 fldMetadata.type = fieldTypeOptions.type.toString();
-                                if (fldMetadata.type.indexOf("[]") > -1) {
-                                    fldMetadata.type = fldMetadata.type.substring(0,  fldMetadata.type.indexOf("[]"));
+                                if (fldMetadata.type.indexOf(arrayType) > -1) {
+                                    fldMetadata.type = fldMetadata.type.substring(0,  fldMetadata.type.indexOf(arrayType));
                                     fldMetadata.isArray = true;
                                 } else {
                                     fldMetadata.isArray = false;
@@ -183,16 +182,15 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                                                                 if (d.name === "GenerateView") {
                                                                     let generateOptions = <GenerateViewOptions>d.arguments[0].valueOf();
                                                                     let viewModelType = fieldTypeOptions.type.toString();
-                                                                    if (fieldTypeOptions.type.toString().indexOf("[]") > -1 ) {
+                                                                    if (fieldTypeOptions.type.toString().indexOf(arrayType) > -1 ) {
                                                                         viewModelType = viewModelType.substring(
-                                                                                0, fieldTypeOptions.type.toString().indexOf("[]")
+                                                                                0, fieldTypeOptions.type.toString().indexOf(arrayType)
                                                                     );
                                                                     }
                                                                     if (generateOptions.model.toLowerCase() === viewModelType.toLowerCase()) {
                                                                         let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
-                                                                        impNode.isNodeModule = false;
-                                                                        let fileName = generateOptions.model[0].toUpperCase() +
-                                                                        generateOptions.model.substring(1) + "Mapper";
+                                                                        const {model} = generateOptions;
+                                                                        let fileName = model[0].toUpperCase() + model.substring(1) + "Mapper";
                                                                         impNode.clauses.push(fileName);
                                                                         impNode.absPathNode.push(generateOptions.mapperPath + "/" + fileName);
                                                                         fldMetadata.needGeneratedMapper = true;
@@ -213,11 +211,11 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                             }
                             if (fieldTypeOptions.transformer && !fldMetadata.needGeneratedMapper) {
                                 if (fieldTypeOptions.modelName) {
-                                    if (fldMetadata.ignoredInView === false && cm.name === fieldTypeOptions.modelName ) {
+                                    if (!fldMetadata.ignoredInView && cm.name === fieldTypeOptions.modelName ) {
                                         fldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
                                     }
                                 } else {
-                                    if (fldMetadata.ignoredInView === false) {
+                                    if (!fldMetadata.ignoredInView ) {
                                         fldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
                                     }
                                 }
@@ -229,11 +227,11 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                 cm.fields.forEach(f => {
                     if (f.fieldConvertFunction) {
                          let func = f.fieldConvertFunction;
-                         if (func.toView && func.toView.isAsync === true) {
-                             cm.isToViewAsync = true;
+                         if (func.toView && func.toView.function) {
+                                saveInfoAboutTransformer("toView", func, possibleImports, cm);
                          }
-                         if (func.fromView && func.fromView.isAsync === true) {
-                            cm.isFromViewAsync = true;
+                         if (func.fromView && func.fromView.function) {
+                                saveInfoAboutTransformer("fromView", func, possibleImports, cm);
                          }
                     }
                 });
@@ -258,33 +256,26 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     configure(viewsFolder, {autoescape: true, trimBlocks : true});
 
     let res: string [] = [];
-    for ( var i = 0; i < metadata.length; i++ ) {
-        var mdata = metadata[i];
-        mdata.classes = mdata.classes.filter((item) => item.generateView);
+    let c = null;
+    for ( let i = 0; i < metadata.length; i++ ) {
+        let mdata = metadata[i];
+        mdata.classes = mdata.classes.filter(item => item.generateView);
         if (mdata.mapperPath) {
             mdata.classes.forEach(cl => {
-                cl.viewModelFromMapper = require("path").relative(mdata.mapperPath, mdata.filename).split("\\").join("/").split(".ts").join("");
-                // cl.viewModelFromMapper = cl.viewModelFromMapper.charAt(0).toLowerCase() + cl.viewModelFromMapper.slice(1);
-                cl.baseModelFromMapper = require("path").relative(mdata.mapperPath, mdata.basePath).split("\\").join("/").split(".ts").join("");
-                // cl.baseModelFromMapper = cl.baseModelFromMapper.charAt(0).toLowerCase() + cl.baseModelFromMapper.slice(1);
+                cl.viewModelFromMapper = path.relative(mdata.mapperPath, mdata.filename).split("\\").join("/").split(".ts").join("");
+                cl.baseModelFromMapper = path.relative(mdata.mapperPath, mdata.basePath).split("\\").join("/").split(".ts").join("");
             });
         }
-        var c = render("viewTemplateCommon.njk", {metafile: mdata});
-        var mapperc = render("mapperTemplate.njk", {metafile: mdata});
+        c = render("viewTemplateCommon.njk", {metafile: mdata});
+        let mapperc = render("mapperTemplate.njk", {metafile: mdata});
         if (c && c.trim()) {
-            var fs = require("fs");
-            var mkdirp = require("mkdirp");
-            var getDirName = require("path").dirname;
+            const getDirName = path.dirname;
             mkdirp.sync(getDirName(mdata.filename));
             fs.writeFileSync(mdata.filename, c, "utf-8");
             res.push(c);
 
-            let needMapper = true;
-            mdata.classes.forEach(cls => {
-                if (cls.needMapper === false) {
-                    needMapper = false;
-                }
-            });
+            let needMapper = !mdata.classes.find(cls => !cls.needMapper) ;
+
             if (needMapper) {
                 let pathArray = mdata.filename.split(".ts").join("").split("/");
                 let mapperfilename = mdata.mapperPath + "/" + pathArray[pathArray.length - 1] + "Mapper.ts";
@@ -297,46 +288,67 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
 
     return c;
 }
+
+function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
+    const importFunctionName = func[direction].function;
+    const moduleImport = possibleImports.find(possibleImport => possibleImport.clauses.indexOf(importFunctionName) > -1);
+    if (moduleImport) {
+        let stringFile = "";
+        const pathFromFile = moduleImport.absPathNode.join("/");
+        try {
+            stringFile = fs.readFileSync(path.resolve(pathFromFile + ".ts")).toString();
+        } catch (e) {
+            stringFile = fs.readFileSync(path.resolve(pathFromFile + "/index.ts")).toString();
+        }
+        const jsonStructure = parseStruct(stringFile, {}, pathFromFile);
+        const funcs = jsonStructure.functions;
+        const targetFuncs = funcs.find(func => func.name === importFunctionName);
+        func[direction].isAsync = targetFuncs.isAsync;
+        cm[ direction === "toView" ? "isToViewAsync" : "isFromViewAsync"] = targetFuncs.isAsync;
+        func[direction].isPrimitive = false;
+    } else {
+        func[direction].isPrimitive = true;
+        if ( func[direction].function !== "null" && func[direction].function !== "undefined") {
+            func[direction].isPrimitiveString = isNaN(+func[direction].function);
+        } else {
+            func[direction].isPrimitiveString = false;
+        }
+    }
+}
+
 function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: GenerateViewOptions, file: string) {
     let fileMet : FileMetadata;
     fileMet = new FileMetadata();
     fileMet.basePath = file;
     fileMet.classes = new Array<ClassMetadata>();
-    fileMet.filename = genViewOpt.filePath + "/" + genViewOpt.model[0].toLowerCase() + genViewOpt.model.substring(1) +  ".ts" ;
+    const {filePath, model} = genViewOpt;
+    fileMet.filename = `${filePath}/${model[0].toLowerCase()}${model.substring(1)}.ts`;
     fileMet.mapperPath = genViewOpt.mapperPath;
     generationFiles.push( fileMet);
 }
 
 function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) {
+
     fileMetadata.classes.forEach(cls => {
-        let usingTypesInClass = cls.fields.filter(fld => {
-            if (fld.ignoredInView) {
-                return false;
-            }
-            return true;
-        }).map(fld => {
-            return fld.type;
-        });
-        let indexesOfCorrectImoprts = [];
+        let usingTypesInClass = unique(cls.fields
+            .filter(fld => !fld.ignoredInView)
+            .map(fld => fld.type));
+        let indexesOfCorrectImoprts: number[] = [];
         let imoprtsForMapper = [];
-        usingTypesInClass = unique(usingTypesInClass);
         cls.fields.forEach(f => {
             if ( f.fieldConvertFunction && !f.ignoredInView) {
-                if (f.fieldConvertFunction.toView) {
+                if (f.fieldConvertFunction.toView && !f.fieldConvertFunction.toView.isPrimitive) {
                     let mainClass = f.fieldConvertFunction.toView.function.split(".")[0];
-                    // mainClass = mainClass.charAt(0).toLowerCase() + mainClass.slice(1);
                     usingTypesInClass.push(mainClass);
                     imoprtsForMapper.push(mainClass);
                 }
-                if (f.fieldConvertFunction.fromView) {
-                    let mainClass = f.fieldConvertFunction.toView.function.split(".")[0];
-                    // mainClass = mainClass.charAt(0).toLowerCase() + mainClass.slice(1);
+                if (f.fieldConvertFunction.fromView && !f.fieldConvertFunction.fromView.isPrimitive) {
+                    let mainClass = f.fieldConvertFunction.fromView.function.split(".")[0];
                     usingTypesInClass.push(mainClass);
                     imoprtsForMapper.push(mainClass);
                 }
             }
             if (f.needGeneratedMapper) {
-                let mapperName = f.type.charAt(0).toLowerCase() + f.type.slice(1);
                 usingTypesInClass.push(f.type + "Mapper");
                 imoprtsForMapper .push(f.type + "Mapper");
             }
@@ -348,9 +360,10 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
                 }
             }
         });
-        indexesOfCorrectImoprts.forEach(ind => {
+        const uniqueIndexsOfCorrectImports: Set<number> = new Set(indexesOfCorrectImoprts);
+        uniqueIndexsOfCorrectImports.forEach(ind => {
             let imp = new Import();
-            imp.type = "{ " + imports[ind].clauses.join(",") + " }";
+            imp.type = `{ ${imports[ind].clauses.join(",")} }`;
             let toPath = imports[ind].absPathNode.join("/");
             let fromPath = fileMetadata.filename.split(".ts").join("");
             let _path: string = toPath;
@@ -379,21 +392,19 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
     let tmpImports : Import[] = [];
 
     fileMetadata.imports.forEach( i => {
-        let isExist = false;
-        tmpImports.forEach(tI => {
-            if (tI.type === i.type) {
-                isExist = true;
-            }
-        });
+        const isExist = !!tmpImports.find(ti => ti.type === i.type);
         if (!isExist) {
             tmpImports.push(i);
         }
     });
-    fileMetadata.imports = JSON.parse(JSON.stringify(tmpImports));
-    FilterImportingMappers(fileMetadata);
+    fileMetadata.imports = tmpImports;
+    fileMetadata.imports = FilterImportingMappers(fileMetadata);
+    fileMetadata.imports = filterTransformerWhichAlreadyExistInMapper(fileMetadata.imports);
 }
+
 function FilterImportingMappers(meta: FileMetadata) {
-    meta.imports.forEach( imp => {
+    const imports = meta.imports;
+    imports.forEach( imp => {
         let mapperMatch = imp.type.match(/[a-zA-Z]+Mapper/);
         if (mapperMatch) {
             let mapperName = mapperMatch[0];
@@ -407,7 +418,30 @@ function FilterImportingMappers(meta: FileMetadata) {
         }
         imp.dependencyMappers = unique(imp.dependencyMappers);
     });
+    return imports;
 }
+
+function filterTransformerWhichAlreadyExistInMapper(imports: Import[]) {
+    const tmpImports = imports;
+    const newImports: Import[] = [];
+    tmpImports.forEach(imp => {
+        if (newImports.length === 0) {
+            newImports.push(imp);
+        } else {
+            const newImportsSamePathImports = newImports.find(_import => _import.path === imp.path);
+            if (newImportsSamePathImports) {
+                const targetImportClauses = imp.type.replace("{", "").replace("}", "").trim().split(",");
+                const inArrayImportClasues = imp.type.replace("{", "").replace("}", "").trim().split(",");
+                const commonArrayOfClauses = Array.from(new Set([...targetImportClauses, ...inArrayImportClasues]));
+                newImportsSamePathImports.type = `{ ${commonArrayOfClauses.join(",")}}`;
+            } else {
+                newImports.push(imp);
+            }
+        }
+    });
+    return newImports;
+}
+
 function unique(arr: string[]): string[] {
     let obj = {};
 

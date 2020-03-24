@@ -4,6 +4,7 @@
   "description": "Grunt task for code generation view models by models description",
   "private": false,
   "main": "dist/src/index.js",
+  "types": "./index.d.ts",
   "bin": {
     "generateView": "./dist/src/bin.js"
   },
@@ -16,7 +17,7 @@
     "mkdirp": "0.5.1",
     "nunjucks": "3.1.2",
     "path": "0.12.7",
-    "ts-file-parser": "0.0.12",
+    "ts-file-parser": "0.0.16",
     "typescript": "2.7.2"
   },
   "devDependencies": {

@@ -8,6 +8,6 @@ export interface ContextHeroModel {
 
   name?: string;
 
-  detail?: HeroDetail;
+  detail: HeroDetail;
 
 }
