@@ -304,7 +304,10 @@ function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transfo
         const funcs = jsonStructure.functions;
         const targetFuncs = funcs.find(func => func.name === importFunctionName);
         func[direction].isAsync = targetFuncs.isAsync;
-        cm[ direction === "toView" ? "isToViewAsync" : "isFromViewAsync"] = targetFuncs.isAsync;
+        const asyncDirect = direction === "toView" ? "isToViewAsync" : "isFromViewAsync";
+        if (!cm[asyncDirect]) {
+            cm[asyncDirect] = targetFuncs.isAsync;
+        }
         func[direction].isPrimitive = false;
     } else {
         func[direction].isPrimitive = true;
