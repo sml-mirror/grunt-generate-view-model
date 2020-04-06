@@ -4,7 +4,7 @@
 
 import { HeroViewModel } from '../heroViewModel';
 import { Hero } from '../../../../src/model/hero/hero';
-import { asyncTransformer,notAsyncTransformer } from '../../../../../transformer/asyncTransformer';
+import { asyncTransformer,notAsyncTransformer,asyncTransformer2 } from '../../../../../transformer/asyncTransformer';
 import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModelMapper {
@@ -29,9 +29,7 @@ export class HeroViewModelMapper {
                        let p = await mp;
                        result.detailsVM.push(p); });
             }
-            if (model.simpleArray) {
-                  result.simpleArray =  model.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
-            }
+            result.simpleArray  = await (asyncTransformer2 as any)(model, context);
             result.state = model.state;
             return result;
       }
@@ -56,9 +54,7 @@ export class HeroViewModelMapper {
                        let p =  mp;
                        result.detailsVM.push(p); });
             }
-            if (viewModel.simpleArray) {
-                  result.simpleArray =  viewModel.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
-            }
+            result.simpleArray = viewModel.simpleArray;
             result.state = viewModel.state;
             return result;
       }

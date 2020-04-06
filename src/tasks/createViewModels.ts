@@ -17,6 +17,8 @@ import { isBoolean } from "util";
 
 const mkdirp = require("mkdirp");
 const arrayType = "[]";
+const primitiveTypes = ["string", "number", "object", "any" , "null", "undefined"];
+
 export function createViewModelsInternal(): string [] {
     let possibleFiles: string[] = [];
     let config = <Config>JSON.parse(fs.readFileSync("genconfig.json", "utf8"));
@@ -53,7 +55,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
 
             classMet.name = cls.name;
             classMet.fields = new Array<FieldMetadata>();
-
+            let fileMet: FileMetadata = null;
             cls.decorators.forEach(dec => {
                 if (dec.name === "GenerateView") {
                     let genViewOpt = <GenerateViewOptions>dec.arguments[0].valueOf();
@@ -66,7 +68,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         }
                         classMets.push(classMet);
 
-                        FillFileMetadataArray(generationFiles, genViewOpt, file);
+                        fileMet = FillFileMetadataArray(generationFiles, genViewOpt, file);
                     } else {
                         let otherClassMet = new ClassMetadata();
                         otherClassMet.generateView = true;
@@ -78,7 +80,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         }
                         classMets.push(otherClassMet);
 
-                        FillFileMetadataArray(generationFiles, genViewOpt, file);
+                        fileMet = FillFileMetadataArray(generationFiles, genViewOpt, file);
                     }
                 }
             });
@@ -148,9 +150,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         }
                         if (dec.name === "ViewModelType") {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
-                            fldMetadata.nullable = (fieldTypeOptions && isBoolean(fieldTypeOptions.nullable) && !fieldTypeOptions.nullable)
-                                ? false
-                                : true;
+                            fldMetadata.nullable = !(fieldTypeOptions && isBoolean(fieldTypeOptions.nullable) && !fieldTypeOptions.nullable);
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
 
                                 fldMetadata.type = fieldTypeOptions.type.toString();
@@ -228,10 +228,10 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     if (f.fieldConvertFunction) {
                          let func = f.fieldConvertFunction;
                          if (func.toView && func.toView.function) {
-                                saveInfoAboutTransformer("toView", func, possibleImports, cm);
+                                saveInfoAboutTransformer("toView", func, possibleImports, cm, fileMet.mapperPath);
                          }
                          if (func.fromView && func.fromView.function) {
-                                saveInfoAboutTransformer("fromView", func, possibleImports, cm);
+                                saveInfoAboutTransformer("fromView", func, possibleImports, cm, fileMet.mapperPath);
                          }
                     }
                 });
@@ -289,16 +289,18 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     return c;
 }
 
-function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
+function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata, pathToEndFile: string) {
     const importFunctionName = func[direction].function;
     const moduleImport = possibleImports.find(possibleImport => possibleImport.clauses.indexOf(importFunctionName) > -1);
     if (moduleImport) {
         let stringFile = "";
-        const pathFromFile = moduleImport.absPathNode.join("/");
+        let pathFromFile = moduleImport.absPathNode.join("/");
         try {
             stringFile = fs.readFileSync(path.resolve(pathFromFile + ".ts")).toString();
+            pathFromFile = pathFromFile + ".ts";
         } catch (e) {
             stringFile = fs.readFileSync(path.resolve(pathFromFile + "/index.ts")).toString();
+            pathFromFile = pathFromFile + "/index.ts";
         }
         const jsonStructure = parseStruct(stringFile, {}, pathFromFile);
         const funcs = jsonStructure.functions;
@@ -309,6 +311,27 @@ function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transfo
             cm[asyncDirect] = targetFuncs.isAsync;
         }
         func[direction].isPrimitive = false;
+        const contextTypeOfTransformer = targetFuncs.params[1] && targetFuncs.params[1].type || null;
+        if (contextTypeOfTransformer) {
+            if (!cm.contextType[direction]) {
+                cm.contextType[direction] = contextTypeOfTransformer;
+            } else {
+                throw new Error("Context for one-side mapper shuold be of one type or any");
+            }
+            const isPrimitiveType = !!primitiveTypes.find(type => type === cm.contextType[direction] );
+            if (!isPrimitiveType) {
+                const contextTypeImport = jsonStructure._imports.find(imp => !!imp.clauses.find(cluse =>  cm.contextType[direction].includes(cluse)));
+                const pth = contextTypeImport.absPathNode.join("/");
+                const pathForTypeFromMapper = path.relative(pathToEndFile, pth );
+                possibleImports.push({
+                    clauses: [cm.contextType[direction]],
+                    absPathNode: pathForTypeFromMapper.split("\\"),
+                    isNodeModule: false
+                });
+
+            }
+        }
+
     } else {
         func[direction].isPrimitive = true;
         if ( func[direction].function !== "null" && func[direction].function !== "undefined") {
@@ -319,6 +342,7 @@ function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transfo
     }
 }
 
+
 function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: GenerateViewOptions, file: string) {
     let fileMet : FileMetadata;
     fileMet = new FileMetadata();
@@ -328,10 +352,10 @@ function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: Gene
     fileMet.filename = `${filePath}/${model[0].toLowerCase()}${model.substring(1)}.ts`;
     fileMet.mapperPath = genViewOpt.mapperPath;
     generationFiles.push( fileMet);
+    return fileMet ;
 }
 
 function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) {
-
     fileMetadata.classes.forEach(cls => {
         let usingTypesInClass = unique(cls.fields
             .filter(fld => !fld.ignoredInView)
@@ -353,9 +377,15 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             }
             if (f.needGeneratedMapper) {
                 usingTypesInClass.push(f.type + "Mapper");
-                imoprtsForMapper .push(f.type + "Mapper");
+                imoprtsForMapper.push(f.type + "Mapper");
             }
         });
+        if (cls.contextType.fromView && !primitiveTypes.find(type => cls.contextType.fromView === type)) {
+            imoprtsForMapper.push(cls.contextType.fromView);
+        }
+        if (cls.contextType.toView && !primitiveTypes.find(type => cls.contextType.toView === type)) {
+            imoprtsForMapper.push(cls.contextType.toView);
+        }
         usingTypesInClass.forEach(type => {
             for ( let ind = 0; ind < imports.length; ind++) {
                 if ( imports[ind].clauses.indexOf(type) > -1) {
@@ -377,6 +407,7 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
                 }
             }
             imp.path = _path;
+            console.log(imoprtsForMapper);
             imoprtsForMapper.forEach( impForMapper => {
                 if (imports[ind].clauses.indexOf(impForMapper) > -1) {
                     fromPath = fileMetadata.mapperPath;
@@ -389,11 +420,12 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
                     imp.forMapper = true;
                 }
             });
+
             fileMetadata.imports.push(imp);
         });
     });
+    // console.log(fileMetadata.imports);
     let tmpImports : Import[] = [];
-
     fileMetadata.imports.forEach( i => {
         const isExist = !!tmpImports.find(ti => ti.type === i.type);
         if (!isExist) {

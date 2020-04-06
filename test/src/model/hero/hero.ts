@@ -53,7 +53,7 @@ export class Hero {
         modelName: "HeroViewModel",
         transformer: {
             toView : { function: asyncTransformer2 }},
-        type: 'number[]'})
+        type: "number[]"})
     public simpleArray: number[];
 
     public state: States;

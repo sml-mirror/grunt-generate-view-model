@@ -12,4 +12,11 @@ export class ClassMetadata {
     public baseName: string = null;
     public baseNamePath: string = null;
     public baseModelFromMapper: string = null;
+    contextType: {
+        toView: string;
+        fromView: string;
+    } = {
+        toView: "",
+        fromView: "",
+    };
 }
