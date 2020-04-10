@@ -19,4 +19,11 @@ export class ClassMetadata {
         toView: "",
         fromView: "",
     };
+    contextTypeFields: {
+        toView: string[];
+        fromView: string[];
+    } = {
+        toView: [],
+        fromView: []
+    };
 }

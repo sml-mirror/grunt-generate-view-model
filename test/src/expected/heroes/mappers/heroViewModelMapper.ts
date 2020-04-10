@@ -4,11 +4,12 @@
 
 import { HeroViewModel } from '../heroViewModel';
 import { Hero } from '../../../../src/model/hero/hero';
-import { asyncTransformer,notAsyncTransformer,asyncTransformer2 } from '../../../../../transformer/asyncTransformer';
+import { ComplexInterface } from '../../../../../transformer/complexContextParam';
+import { asyncTransformer,notAsyncTransformer,asyncTransformer2,asyncTransformer3 } from '../../../../../transformer/asyncTransformer';
 import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModelMapper {
-      public static async toHeroViewModel(model: Hero, context?: any): Promise<HeroViewModel> {
+      public static async toHeroViewModel(model: Hero, context?: ComplexInterface ): Promise<HeroViewModel> {
             let result : HeroViewModel = {};
             result.id = model.id.toString();
             result.name = model.name;
@@ -29,11 +30,11 @@ export class HeroViewModelMapper {
                        let p = await mp;
                        result.detailsVM.push(p); });
             }
-            result.simpleArray  = await (asyncTransformer2 as any)(model, context);
+            result.simpleArray  = await (asyncTransformer as any)(model, context);
             result.state = model.state;
             return result;
       }
-      public static fromHeroViewModel(viewModel: HeroViewModel, context?: any): Hero {
+      public static fromHeroViewModel(viewModel: HeroViewModel, context?: string ): Hero {
             let result = new Hero();
             result.id = viewModel.id ? +viewModel.id : viewModel.id as any;
             result.name = viewModel.name;

@@ -306,32 +306,32 @@ function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transfo
         const funcs = jsonStructure.functions;
         const targetFuncs = funcs.find(func => func.name === importFunctionName);
         func[direction].isAsync = targetFuncs.isAsync;
-        const asyncDirect = direction === "toView" ? "isToViewAsync" : "isFromViewAsync";
+        const asyncDirect = direction === "toView"
+            ? "isToViewAsync"
+            : "isFromViewAsync";
         if (!cm[asyncDirect]) {
             cm[asyncDirect] = targetFuncs.isAsync;
         }
         func[direction].isPrimitive = false;
         const contextTypeOfTransformer = targetFuncs.params[1] && targetFuncs.params[1].type || null;
         if (contextTypeOfTransformer) {
-            if (!cm.contextType[direction]) {
+            if (!cm.contextType[direction] || cm.contextType[direction] && cm.contextType[direction] === contextTypeOfTransformer) {
+                cm.contextType[direction] = contextTypeOfTransformer;
+            } else if ( contextTypeOfTransformer === "any") {
                 cm.contextType[direction] = contextTypeOfTransformer;
             } else {
                 throw new Error("Context for one-side mapper shuold be of one type or any");
             }
             const isPrimitiveType = !!primitiveTypes.find(type => type === cm.contextType[direction] );
             if (!isPrimitiveType) {
-                const contextTypeImport = jsonStructure._imports.find(imp => !!imp.clauses.find(cluse =>  cm.contextType[direction].includes(cluse)));
-                const pth = contextTypeImport.absPathNode.join("/");
-                const pathForTypeFromMapper = path.relative(pathToEndFile, pth );
+                const contextTypeImport = jsonStructure._imports.find(imp => !!imp.clauses.find(clause =>  cm.contextType[direction].includes(clause)));
                 possibleImports.push({
                     clauses: [cm.contextType[direction]],
-                    absPathNode: pathForTypeFromMapper.split("\\"),
+                    absPathNode: contextTypeImport.absPathNode,
                     isNodeModule: false
                 });
-
             }
         }
-
     } else {
         func[direction].isPrimitive = true;
         if ( func[direction].function !== "null" && func[direction].function !== "undefined") {
@@ -361,30 +361,40 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             .filter(fld => !fld.ignoredInView)
             .map(fld => fld.type));
         let indexesOfCorrectImoprts: number[] = [];
-        let imoprtsForMapper = [];
+        let importsForMapper: string[] = [];
         cls.fields.forEach(f => {
             if ( f.fieldConvertFunction && !f.ignoredInView) {
                 if (f.fieldConvertFunction.toView && !f.fieldConvertFunction.toView.isPrimitive) {
                     let mainClass = f.fieldConvertFunction.toView.function.split(".")[0];
                     usingTypesInClass.push(mainClass);
-                    imoprtsForMapper.push(mainClass);
+                    importsForMapper.push(mainClass);
                 }
                 if (f.fieldConvertFunction.fromView && !f.fieldConvertFunction.fromView.isPrimitive) {
                     let mainClass = f.fieldConvertFunction.fromView.function.split(".")[0];
                     usingTypesInClass.push(mainClass);
-                    imoprtsForMapper.push(mainClass);
+                    importsForMapper.push(mainClass);
                 }
             }
             if (f.needGeneratedMapper) {
                 usingTypesInClass.push(f.type + "Mapper");
-                imoprtsForMapper.push(f.type + "Mapper");
+                importsForMapper.push(f.type + "Mapper");
             }
         });
         if (cls.contextType.fromView && !primitiveTypes.find(type => cls.contextType.fromView === type)) {
-            imoprtsForMapper.push(cls.contextType.fromView);
+            importsForMapper.push(cls.contextType.fromView);
+            imports.forEach((ind, j) => {
+                if (ind.clauses.find( clause => clause === cls.contextType.fromView)) {
+                    indexesOfCorrectImoprts.push(j);
+                }
+            });
         }
         if (cls.contextType.toView && !primitiveTypes.find(type => cls.contextType.toView === type)) {
-            imoprtsForMapper.push(cls.contextType.toView);
+            importsForMapper.push(cls.contextType.toView);
+            imports.forEach((ind, j) => {
+                if (ind.clauses.find( clause => clause === cls.contextType.toView)) {
+                    indexesOfCorrectImoprts.push(j);
+                }
+            });
         }
         usingTypesInClass.forEach(type => {
             for ( let ind = 0; ind < imports.length; ind++) {
@@ -407,8 +417,7 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
                 }
             }
             imp.path = _path;
-            console.log(imoprtsForMapper);
-            imoprtsForMapper.forEach( impForMapper => {
+            importsForMapper.forEach( impForMapper => {
                 if (imports[ind].clauses.indexOf(impForMapper) > -1) {
                     fromPath = fileMetadata.mapperPath;
                     let arrayPath = path.relative(fromPath, toPath).split("\\");
@@ -424,7 +433,6 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             fileMetadata.imports.push(imp);
         });
     });
-    // console.log(fileMetadata.imports);
     let tmpImports : Import[] = [];
     fileMetadata.imports.forEach( i => {
         const isExist = !!tmpImports.find(ti => ti.type === i.type);
