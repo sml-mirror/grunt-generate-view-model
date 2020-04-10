@@ -9,6 +9,6 @@ export const notAsyncTransformer = (modelParam: any, contextParam: string ) => {
 export async function asyncTransformer2 () { console.log("async"); }
 
 
-export const asyncTransformer3 = async(modelParam2: any, contextParam: ComplexInterface1) => {
+export const asyncTransformer3 = async(modelParam2: any, contextParam: ComplexInterface) => {
     return null;
 };

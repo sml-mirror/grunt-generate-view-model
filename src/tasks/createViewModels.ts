@@ -228,10 +228,10 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     if (f.fieldConvertFunction) {
                          let func = f.fieldConvertFunction;
                          if (func.toView && func.toView.function) {
-                                saveInfoAboutTransformer("toView", func, possibleImports, cm, fileMet.mapperPath);
+                                saveInfoAboutTransformer("toView", func, possibleImports, cm);
                          }
                          if (func.fromView && func.fromView.function) {
-                                saveInfoAboutTransformer("fromView", func, possibleImports, cm, fileMet.mapperPath);
+                                saveInfoAboutTransformer("fromView", func, possibleImports, cm);
                          }
                     }
                 });
@@ -289,7 +289,7 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
     return c;
 }
 
-function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata, pathToEndFile: string) {
+function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
     const importFunctionName = func[direction].function;
     const moduleImport = possibleImports.find(possibleImport => possibleImport.clauses.indexOf(importFunctionName) > -1);
     if (moduleImport) {
@@ -315,10 +315,17 @@ function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transfo
         func[direction].isPrimitive = false;
         const contextTypeOfTransformer = targetFuncs.params[1] && targetFuncs.params[1].type || null;
         if (contextTypeOfTransformer) {
-            if (!cm.contextType[direction] || cm.contextType[direction] && cm.contextType[direction] === contextTypeOfTransformer) {
+            if (!cm.contextType[direction]
+                || (cm.contextType[direction] && cm.contextType[direction] === contextTypeOfTransformer)
+                || contextTypeOfTransformer === "any") {
                 cm.contextType[direction] = contextTypeOfTransformer;
-            } else if ( contextTypeOfTransformer === "any") {
-                cm.contextType[direction] = contextTypeOfTransformer;
+                const fldsWithContext =  cm.fields.filter(f => f.fieldConvertFunction && f.fieldConvertFunction[direction]);
+                fldsWithContext.forEach(f => {
+                    const funcToRecognize =  funcs.find(func => func.name === f.fieldConvertFunction[direction].function);
+                    if (funcToRecognize && funcToRecognize.params && funcToRecognize.params[1]) {
+                        cm.contextTypeFields[direction].push(f.name);
+                    }
+                });
             } else {
                 throw new Error("Context for one-side mapper shuold be of one type or any");
             }

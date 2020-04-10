@@ -52,7 +52,7 @@ export class Hero {
     @ViewModelType({
         modelName: "HeroViewModel",
         transformer: {
-            toView : { function: asyncTransformer }},
+            toView : { function: asyncTransformer3 }},
         type: "number[]"})
     public simpleArray: number[];
 

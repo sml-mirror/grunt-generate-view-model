@@ -14,7 +14,7 @@ export class HeroViewModelMapper {
             result.id = model.id.toString();
             result.name = model.name;
             result.information = model.data;
-            result.detail  = await (asyncTransformer as any)(model, context);
+            result.detail  = await asyncTransformer(model, context);
             if (model.detailVM) {
                   result.detailVM = await HeroDetailViewModelMapper.toHeroDetailViewModel(model.detailVM);
             }
@@ -30,7 +30,7 @@ export class HeroViewModelMapper {
                        let p = await mp;
                        result.detailsVM.push(p); });
             }
-            result.simpleArray  = await (asyncTransformer as any)(model, context);
+            result.simpleArray  = await asyncTransformer3(model, context);
             result.state = model.state;
             return result;
       }
@@ -39,7 +39,7 @@ export class HeroViewModelMapper {
             result.id = viewModel.id ? +viewModel.id : viewModel.id as any;
             result.name = viewModel.name;
             result.data = viewModel.information;
-            result.detail  =  (notAsyncTransformer as any)(viewModel, context);
+            result.detail  =  notAsyncTransformer(viewModel, context);
             if (viewModel.detailVM) {
                   result.detailVM =  HeroDetailViewModelMapper.fromHeroDetailViewModel(viewModel.detailVM);
             }
