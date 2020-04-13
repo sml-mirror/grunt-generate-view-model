@@ -18,7 +18,7 @@ import {{import.type }} from '{{import.path}}';
 
 {% for class in metafile.classes %}
 export class {{class.name}}Mapper {
-      public static {% if class.isToViewAsync %}async {% endif %}to{{class.name}}(model: {{class.baseName}}{% if class.contextType.toView %}, context?: {{class.contextType.toView}} {% endif %}): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
+      public static {% if class.isToViewAsync %}async {% endif %}to{{class.name}}(model: {{class.baseName}}{% if class.contextType.toView %}, context?: {{class.contextType.toView}}{% endif %}): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
             let result : {{class.name}} = {};
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
@@ -68,7 +68,7 @@ export class {{class.name}}Mapper {
 {%endfor%}
             return result;
       }
-      public static {% if class.isFromViewAsync %}async {% endif %}from{{class.name}}(viewModel: {{class.name}}{% if class.contextType.fromView %}, context?: {{class.contextType.fromView}} {% endif %}): {% if class.isFromViewAsync %}Promise<{%endif%}{{class.baseName}}{% if class.isFromViewAsync %}>{%endif%} {
+      public static {% if class.isFromViewAsync %}async {% endif %}from{{class.name}}(viewModel: {{class.name}}{% if class.contextType.fromView %}, context?: {{class.contextType.fromView}}{% endif %}): {% if class.isFromViewAsync %}Promise<{%endif%}{{class.baseName}}{% if class.isFromViewAsync %}>{%endif%} {
             let result = new {{class.baseName}}();
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
