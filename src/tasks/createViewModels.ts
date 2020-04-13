@@ -55,7 +55,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
 
             classMet.name = cls.name;
             classMet.fields = new Array<FieldMetadata>();
-            let fileMet: FileMetadata = null;
+
             cls.decorators.forEach(dec => {
                 if (dec.name === "GenerateView") {
                     let genViewOpt = <GenerateViewOptions>dec.arguments[0].valueOf();
@@ -68,7 +68,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         }
                         classMets.push(classMet);
 
-                        fileMet = FillFileMetadataArray(generationFiles, genViewOpt, file);
+                        FillFileMetadataArray(generationFiles, genViewOpt, file);
                     } else {
                         let otherClassMet = new ClassMetadata();
                         otherClassMet.generateView = true;
@@ -80,7 +80,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                         }
                         classMets.push(otherClassMet);
 
-                        fileMet = FillFileMetadataArray(generationFiles, genViewOpt, file);
+                        FillFileMetadataArray(generationFiles, genViewOpt, file);
                     }
                 }
             });
