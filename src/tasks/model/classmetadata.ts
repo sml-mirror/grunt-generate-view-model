@@ -1,6 +1,11 @@
 
 import {FieldMetadata} from "./fieldmetadata";
 
+export interface ContextInfo {
+    value: string;
+    mandatory: boolean;
+}
+
 export class ClassMetadata {
     public name: string;
     public fields: FieldMetadata[];
@@ -13,11 +18,11 @@ export class ClassMetadata {
     public baseNamePath: string = null;
     public baseModelFromMapper: string = null;
     contextType: {
-        toView: string;
-        fromView: string;
+        toView: ContextInfo;
+        fromView: ContextInfo;
     } = {
-        toView: "",
-        fromView: "",
+        toView: {value: "", mandatory: false},
+        fromView: {value: "", mandatory: false},
     };
     contextTypeFields: {
         toView: string[];

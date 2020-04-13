@@ -314,11 +314,14 @@ function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transfo
         }
         func[direction].isPrimitive = false;
         const contextTypeOfTransformer = targetFuncs.params[1] && targetFuncs.params[1].type || null;
+        const contextMandatoryOfType = targetFuncs.params[1] && targetFuncs.params[1].mandatory || false;
+        const directionValueInfo = cm.contextType[direction];
         if (contextTypeOfTransformer) {
-            if (!cm.contextType[direction]
-                || (cm.contextType[direction] && cm.contextType[direction] === contextTypeOfTransformer)
+            if (!directionValueInfo.value
+                || directionValueInfo.value === contextTypeOfTransformer
                 || contextTypeOfTransformer === "any") {
-                cm.contextType[direction] = contextTypeOfTransformer;
+                directionValueInfo.value = contextTypeOfTransformer;
+                directionValueInfo.mandatory = contextMandatoryOfType || directionValueInfo.mandatory;
                 const fldsWithContext =  cm.fields.filter(f => f.fieldConvertFunction && f.fieldConvertFunction[direction]);
                 fldsWithContext.forEach(f => {
                     const funcToRecognize =  funcs.find(func => func.name === f.fieldConvertFunction[direction].function);
@@ -329,11 +332,11 @@ function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transfo
             } else {
                 throw new Error("Context for one-side mapper shuold be of one type or any");
             }
-            const isPrimitiveType = !!primitiveTypes.find(type => type === cm.contextType[direction] );
+            const isPrimitiveType = !!primitiveTypes.find(type => type === directionValueInfo.value );
             if (!isPrimitiveType) {
-                const contextTypeImport = jsonStructure._imports.find(imp => !!imp.clauses.find(clause =>  cm.contextType[direction].includes(clause)));
+                const contextTypeImport = jsonStructure._imports.find(imp => !!imp.clauses.find(clause =>  directionValueInfo.value.includes(clause)));
                 possibleImports.push({
-                    clauses: [cm.contextType[direction]],
+                    clauses: [directionValueInfo.value],
                     absPathNode: contextTypeImport.absPathNode,
                     isNodeModule: false
                 });
@@ -387,18 +390,18 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
                 importsForMapper.push(f.type + "Mapper");
             }
         });
-        if (cls.contextType.fromView && !primitiveTypes.find(type => cls.contextType.fromView === type)) {
-            importsForMapper.push(cls.contextType.fromView);
+        if (cls.contextType.fromView && !primitiveTypes.find(type => cls.contextType.fromView.value === type)) {
+            importsForMapper.push(cls.contextType.fromView.value);
             imports.forEach((ind, j) => {
-                if (ind.clauses.find( clause => clause === cls.contextType.fromView)) {
+                if (ind.clauses.find( clause => clause === cls.contextType.fromView.value)) {
                     indexesOfCorrectImoprts.push(j);
                 }
             });
         }
-        if (cls.contextType.toView && !primitiveTypes.find(type => cls.contextType.toView === type)) {
-            importsForMapper.push(cls.contextType.toView);
+        if (cls.contextType.toView && !primitiveTypes.find(type => cls.contextType.toView.value === type)) {
+            importsForMapper.push(cls.contextType.toView.value);
             imports.forEach((ind, j) => {
-                if (ind.clauses.find( clause => clause === cls.contextType.toView)) {
+                if (ind.clauses.find( clause => clause === cls.contextType.toView.value)) {
                     indexesOfCorrectImoprts.push(j);
                 }
             });

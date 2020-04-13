@@ -9,7 +9,7 @@ import { asyncTransformer,notAsyncTransformer,asyncTransformer2,asyncTransformer
 import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModelMapper {
-      public static async toHeroViewModel(model: Hero, context?: ComplexInterface ): Promise<HeroViewModel> {
+      public static async toHeroViewModel(model: Hero, context?: ComplexInterface): Promise<HeroViewModel> {
             let result : HeroViewModel = {};
             result.id = model.id.toString();
             result.name = model.name;
@@ -34,7 +34,7 @@ export class HeroViewModelMapper {
             result.state = model.state;
             return result;
       }
-      public static fromHeroViewModel(viewModel: HeroViewModel, context?: string ): Hero {
+      public static fromHeroViewModel(viewModel: HeroViewModel, context?: string): Hero {
             let result = new Hero();
             result.id = viewModel.id ? +viewModel.id : viewModel.id as any;
             result.name = viewModel.name;
