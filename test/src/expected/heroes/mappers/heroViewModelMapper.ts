@@ -4,16 +4,17 @@
 
 import { HeroViewModel } from '../heroViewModel';
 import { Hero } from '../../../../src/model/hero/hero';
-import { asyncTransformer,notAsyncTransformer } from '../../../../../transformer/asyncTransformer';
+import { ComplexInterface } from '../../../../../transformer/complexContextParam';
+import { asyncTransformer,notAsyncTransformer,asyncTransformer2,asyncTransformer3 } from '../../../../../transformer/asyncTransformer';
 import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
 
 export class HeroViewModelMapper {
-      public static async toHeroViewModel(model: Hero, context?: any): Promise<HeroViewModel> {
+      public static async toHeroViewModel(model: Hero, context?: ComplexInterface): Promise<HeroViewModel> {
             let result : HeroViewModel = {};
             result.id = model.id.toString();
             result.name = model.name;
             result.information = model.data;
-            result.detail  = await (asyncTransformer as any)(model, context);
+            result.detail  = await asyncTransformer(model, context);
             if (model.detailVM) {
                   result.detailVM = await HeroDetailViewModelMapper.toHeroDetailViewModel(model.detailVM);
             }
@@ -29,18 +30,16 @@ export class HeroViewModelMapper {
                        let p = await mp;
                        result.detailsVM.push(p); });
             }
-            if (model.simpleArray) {
-                  result.simpleArray =  model.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
-            }
+            result.simpleArray  = await asyncTransformer3(model, context);
             result.state = model.state;
             return result;
       }
-      public static fromHeroViewModel(viewModel: HeroViewModel, context?: any): Hero {
+      public static fromHeroViewModel(viewModel: HeroViewModel, context?: string): Hero {
             let result = new Hero();
             result.id = viewModel.id ? +viewModel.id : viewModel.id as any;
             result.name = viewModel.name;
             result.data = viewModel.information;
-            result.detail  =  (notAsyncTransformer as any)(viewModel, context);
+            result.detail  =  notAsyncTransformer(viewModel, context);
             if (viewModel.detailVM) {
                   result.detailVM =  HeroDetailViewModelMapper.fromHeroDetailViewModel(viewModel.detailVM);
             }
@@ -56,9 +55,7 @@ export class HeroViewModelMapper {
                        let p =  mp;
                        result.detailsVM.push(p); });
             }
-            if (viewModel.simpleArray) {
-                  result.simpleArray =  viewModel.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
-            }
+            result.simpleArray = viewModel.simpleArray;
             result.state = viewModel.state;
             return result;
       }
