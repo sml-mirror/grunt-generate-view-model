@@ -334,7 +334,7 @@ function saveInfoAboutTransformer(direction: "toView"| "fromView", func: Transfo
             }
             const isPrimitiveType = !!primitiveTypes.find(type => type === directionValueInfo.value );
             if (!isPrimitiveType) {
-                const contextTypeImport = jsonStructure._imports.find(imp => !!imp.clauses.find(clause =>  directionValueInfo.value.includes(clause)));
+                const contextTypeImport = jsonStructure._imports.find(imp => !!imp.clauses.find(clause =>  directionValueInfo.value === clause));
                 possibleImports.push({
                     clauses: [directionValueInfo.value],
                     absPathNode: contextTypeImport.absPathNode,
