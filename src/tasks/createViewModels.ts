@@ -275,7 +275,7 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
                     });
                 });
             }
-            return !importArray.includes(mdata.classes[0].baseName);
+            return !importArray.find( imp => imp === mdata.classes[0].baseName);
         });
         c = render("viewTemplateCommon.njk", {metafile: mdata});
         let mapperc = render("mapperTemplate.njk", {metafile: mdata});
