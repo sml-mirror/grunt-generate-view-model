@@ -266,6 +266,17 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
                 cl.baseModelFromMapper = path.relative(mdata.mapperPath, mdata.basePath).split("\\").join("/").split(".ts").join("");
             });
         }
+        mdata.imports = mdata.imports.filter(imp => {
+            const importArray  = imp.type.slice(1, imp.type.length - 1).trim().split(",");
+            if (mdata.classes.length > 1) {
+                importArray.forEach(item => {
+                    mdata.classes.forEach(cls => {
+                        return !(cls.baseName === item);
+                    });
+                });
+            }
+            return !importArray.includes(mdata.classes[0].baseName);
+        });
         c = render("viewTemplateCommon.njk", {metafile: mdata});
         let mapperc = render("mapperTemplate.njk", {metafile: mdata});
         if (c && c.trim()) {
@@ -274,7 +285,7 @@ export function  CreateFiles(metadata: FileMetadata[]): string [] {
             fs.writeFileSync(mdata.filename, c, "utf-8");
             res.push(c);
 
-            let needMapper = !mdata.classes.find(cls => !cls.needMapper) ;
+            let needMapper = !mdata.classes.find(cls => !cls.needMapper);
 
             if (needMapper) {
                 let pathArray = mdata.filename.split(".ts").join("").split("/");
