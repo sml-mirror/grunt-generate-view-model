@@ -28,9 +28,9 @@ export class {{class.name}}Mapper {
             result.{{field.name}}  = {% if field.fieldConvertFunction.toView.isAsync %}await{% endif %} {{field.fieldConvertFunction.toView.function}}(model{% if field.name in class.contextTypeFields.toView %}, context{% endif %});
 {% else %}
 {% if field.fieldConvertFunction.toView.isPrimitiveString === true%}
-            result.{{field.baseModelName}} = "{{field.fieldConvertFunction.toView.function}}";
+            result.{{field.name}} = "{{field.fieldConvertFunction.toView.function}}";
 {% else %}
-            result.{{field.baseModelName}} = {{field.fieldConvertFunction.toView.function}};
+            result.{{field.name}} = {{field.fieldConvertFunction.toView.function}};
 {% endif %}
 {% endif %}
 {% else %}

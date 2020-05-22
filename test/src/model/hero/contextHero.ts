@@ -13,6 +13,7 @@ export class Hero {
 
     public name: string;
 
+    @ViewModelName("detailForView", "ContextHeroModel")
     @ViewModelType({
     modelName: "ContextHeroModel",
     nullable: false,
