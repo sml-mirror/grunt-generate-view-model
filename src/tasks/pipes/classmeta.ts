@@ -7,6 +7,7 @@ import { ClassMetadata } from "../model/classmetadata";
 import { FieldMetadata } from "../model/fieldmetadata";
 import { GenerateViewOptions, ViewModelTypeOptions } from "../../..";
 import { Decorators } from "./decorators";
+import { ConsoleColor } from "./enums";
 
 const arrayType = "[]";
 const baseTypes = ["string", "number", "boolean", "undefined", "null", "object"];
@@ -88,86 +89,91 @@ export const updateFieldMetadataForViewModelNameDecorator = (decorators: Decorat
 };
 
 export const updateFieldMetadataForViewModelTypeDecorator = (decorators: Decorator[], classMeta: any, flMetadata: FieldMetadata, fileStructure: any) => {
-    if (!decorators || !decorators.length) {
-        return {fieldMetadata: flMetadata, possibleImports: []};
-    }
-    const updatedFieldMetadata = {...flMetadata};
-    const possibleImports: ImportNode[] = [];
-    decorators.forEach(decorator => {
-        let fieldTypeOptions = decorator.arguments[0].valueOf() as ViewModelTypeOptions;
-        updatedFieldMetadata.nullable = !(fieldTypeOptions && typeof fieldTypeOptions.nullable === "boolean" && !fieldTypeOptions.nullable);
-        if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === classMeta.name) || (!fieldTypeOptions.modelName )) {
+    try {
+        if (!decorators || !decorators.length) {
+            return {fieldMetadata: flMetadata, possibleImports: []};
+        }
+        const updatedFieldMetadata = {...flMetadata};
+        const possibleImports: ImportNode[] = [];
+        decorators.forEach(decorator => {
+            let fieldTypeOptions = decorator.arguments[0].valueOf() as ViewModelTypeOptions;
+            updatedFieldMetadata.nullable = !(fieldTypeOptions && typeof fieldTypeOptions.nullable === "boolean" && !fieldTypeOptions.nullable);
+            if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === classMeta.name) || (!fieldTypeOptions.modelName )) {
 
-            updatedFieldMetadata.type = fieldTypeOptions.type.toString();
-            if (updatedFieldMetadata.type.indexOf(arrayType) > -1) {
-                updatedFieldMetadata.type = updatedFieldMetadata.type.substring(0,  updatedFieldMetadata.type.indexOf(arrayType));
-                updatedFieldMetadata.isArray = true;
-            } else {
-                updatedFieldMetadata.isArray = false;
-            }
-            if ( updatedFieldMetadata.type.toLowerCase() === "string" && updatedFieldMetadata.type !== updatedFieldMetadata.baseModelType ) {
-                updatedFieldMetadata.type = "string";
-                updatedFieldMetadata.toStringWanted = true;
-            }
-            if (!fieldTypeOptions.transformer) {
-                fileStructure._imports.forEach(i => {
-                    i.clauses.forEach(clause => {
-                        if (clause === updatedFieldMetadata.baseModelType) {
-                            let path: string = "";
-                            if ( !i.isNodeModule ) {
-                                i.absPathNode.forEach(node => {
-                                    path += `${node}/`;
-                                });
-                                path = path.substring(0, path.length - 1) + ".ts";
-                                let content = fs.readFileSync(path, "utf-8");
-                                let innerJsonStructure = parseStruct(content, {}, "");
-                                innerJsonStructure.classes.forEach(c => {
-                                    if (c.name === updatedFieldMetadata.baseModelType) {
-                                        c.decorators.forEach(d => {
-                                            if (d.name === Decorators.GenerateView) {
-                                                let generateOptions = d.arguments[0].valueOf() as GenerateViewOptions;
-                                                let viewModelType = fieldTypeOptions.type.toString();
-                                                if (fieldTypeOptions.type.toString().indexOf(arrayType) > -1 ) {
-                                                    viewModelType = viewModelType.substring(
-                                                            0, fieldTypeOptions.type.toString().indexOf(arrayType)
-                                                );
+                updatedFieldMetadata.type = fieldTypeOptions.type.toString();
+                if (updatedFieldMetadata.type.indexOf(arrayType) > -1) {
+                    updatedFieldMetadata.type = updatedFieldMetadata.type.substring(0,  updatedFieldMetadata.type.indexOf(arrayType));
+                    updatedFieldMetadata.isArray = true;
+                } else {
+                    updatedFieldMetadata.isArray = false;
+                }
+                if ( updatedFieldMetadata.type.toLowerCase() === "string" && updatedFieldMetadata.type !== updatedFieldMetadata.baseModelType ) {
+                    updatedFieldMetadata.type = "string";
+                    updatedFieldMetadata.toStringWanted = true;
+                }
+                if (!fieldTypeOptions.transformer) {
+                    fileStructure._imports.forEach(i => {
+                        i.clauses.forEach(clause => {
+                            if (clause === updatedFieldMetadata.baseModelType) {
+                                let path: string = "";
+                                if ( !i.isNodeModule ) {
+                                    i.absPathNode.forEach(node => {
+                                        path += `${node}/`;
+                                    });
+                                    path = path.substring(0, path.length - 1) + ".ts";
+                                    let content = fs.readFileSync(path, "utf-8");
+                                    let innerJsonStructure = parseStruct(content, {}, "");
+                                    innerJsonStructure.classes.forEach(c => {
+                                        if (c.name === updatedFieldMetadata.baseModelType) {
+                                            c.decorators.forEach(d => {
+                                                if (d.name === Decorators.GenerateView) {
+                                                    let generateOptions = d.arguments[0].valueOf() as GenerateViewOptions;
+                                                    let viewModelType = fieldTypeOptions.type.toString();
+                                                    if (fieldTypeOptions.type.toString().indexOf(arrayType) > -1 ) {
+                                                        viewModelType = viewModelType.substring(
+                                                                0, fieldTypeOptions.type.toString().indexOf(arrayType)
+                                                    );
+                                                    }
+                                                    if (generateOptions.model.toLowerCase() === viewModelType.toLowerCase()) {
+                                                        let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
+                                                        const {model} = generateOptions;
+                                                        let fileName = model[0].toUpperCase() + model.substring(1) + "Mapper";
+                                                        impNode.clauses.push(fileName);
+                                                        impNode.absPathNode.push(generateOptions.mapperPath + "/" + fileName);
+                                                        updatedFieldMetadata.needGeneratedMapper = true;
+                                                        possibleImports.push(impNode);
+                                                    }
                                                 }
-                                                if (generateOptions.model.toLowerCase() === viewModelType.toLowerCase()) {
-                                                    let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
-                                                    const {model} = generateOptions;
-                                                    let fileName = model[0].toUpperCase() + model.substring(1) + "Mapper";
-                                                    impNode.clauses.push(fileName);
-                                                    impNode.absPathNode.push(generateOptions.mapperPath + "/" + fileName);
-                                                    updatedFieldMetadata.needGeneratedMapper = true;
-                                                    possibleImports.push(impNode);
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-                            } else {
-                                let impNode: ImportNode = {isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode};
-                                possibleImports.push(impNode);
+                                            });
+                                        }
+                                    });
+                                } else {
+                                    let impNode: ImportNode = {isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode};
+                                    possibleImports.push(impNode);
+                                }
                             }
-                        }
+                        });
                     });
-                });
-            }
-        }
-        if (fieldTypeOptions.transformer && !updatedFieldMetadata.needGeneratedMapper) {
-            if (fieldTypeOptions.modelName) {
-                if (!updatedFieldMetadata.ignoredInView && classMeta.name === fieldTypeOptions.modelName ) {
-                    updatedFieldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
-                }
-            } else {
-                if (!updatedFieldMetadata.ignoredInView ) {
-                    updatedFieldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
                 }
             }
-        }
-    });
+            if (fieldTypeOptions.transformer && !updatedFieldMetadata.needGeneratedMapper) {
+                if (fieldTypeOptions.modelName) {
+                    if (!updatedFieldMetadata.ignoredInView && classMeta.name === fieldTypeOptions.modelName ) {
+                        updatedFieldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
+                    }
+                } else {
+                    if (!updatedFieldMetadata.ignoredInView ) {
+                        updatedFieldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
+                    }
+                }
+            }
+        });
 
-    return {fieldMetadata: updatedFieldMetadata, possibleImports};
+        return {fieldMetadata: updatedFieldMetadata, possibleImports};
+    } catch (e) {
+        console.error(ConsoleColor.Red, `Generate View: Error: updateFieldMetadataForViewModelTypeDecorator: ${e.message}`);
+        throw e;
+    }
 };
 
 
