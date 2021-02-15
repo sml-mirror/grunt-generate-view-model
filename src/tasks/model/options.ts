@@ -2,9 +2,9 @@ export class Options {
     public mapperDestination: string;
     public files: FileMapping[];
 }
-export class FileMapping {
-    public viewModelNames?: string[];
-    public baseName?: string;
-    public source: string;
-    public destination: string;
+export interface FileMapping {
+    viewModelNames?: string[];
+    baseName?: string;
+    source: string;
+    destination: string;
 }
