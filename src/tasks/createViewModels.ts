@@ -20,9 +20,8 @@ const arrayType = "[]";
 const primitiveTypes = ["string", "number", "object", "any" , "null", "undefined"];
 
 export function createViewModelsInternal(): string [] {
-    let possibleFiles: string[] = [];
     let config = <Config>JSON.parse(fs.readFileSync("genconfig.json", "utf8"));
-    getAllfiles(".", possibleFiles, config.check.folders);
+    const possibleFiles = getAllFiles(config.check.folders);
     const  metadata = createMetadatas(possibleFiles);
     const resultTemplate = CreateFiles(metadata);
     return resultTemplate;
@@ -135,22 +134,23 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     fldMetadata.type = fldMetadata.baseModelType;
                     fld.decorators.forEach(dec => {
                         if (dec.name === "IgnoreViewModel") {
-                            if (dec.arguments[0] && dec.arguments[0].toString() === cm.name) {
-                                fldMetadata.ignoredInView = true;
-                            } else if (!dec.arguments[0]) {
+                            const ignoreViewModelName = dec.arguments[0];
+                            const setIgnoreNameToClass = ignoreViewModelName && ignoreViewModelName.toString() === cm.name;
+                            if (setIgnoreNameToClass || !ignoreViewModelName) {
                                 fldMetadata.ignoredInView = true;
                             }
                         }
                         if (dec.name === "ViewModelName") {
-                            if (dec.arguments[1] && dec.arguments[1].toString() === cm.name) {
-                                fldMetadata.name = dec.arguments[0].toString();
-                            } else if (!dec.arguments[1]) {
-                                fldMetadata.name = dec.arguments[0].toString();
+                            const fieldName = dec.arguments[0];
+                            const modelName = dec.arguments[1];
+                            const modelNameSetForClass = modelName && modelName.toString() === cm.name;
+                            if (modelNameSetForClass || !modelName) {
+                                fldMetadata.name = fieldName.toString();
                             }
                         }
                         if (dec.name === "ViewModelType") {
                             let fieldTypeOptions = <ViewModelTypeOptions>dec.arguments[0].valueOf();
-                            fldMetadata.nullable = !(fieldTypeOptions && isBoolean(fieldTypeOptions.nullable) && !fieldTypeOptions.nullable);
+                            fldMetadata.nullable = !(fieldTypeOptions && typeof fieldTypeOptions.nullable === "boolean" && !fieldTypeOptions.nullable);
                             if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === cm.name) || (!fieldTypeOptions.modelName )) {
 
                                 fldMetadata.type = fieldTypeOptions.type.toString();
@@ -495,8 +495,8 @@ function filterTransformerWhichAlreadyExistInMapper(imports: Import[]) {
             const newImportsSamePathImports = newImports.find(_import => _import.path === imp.path);
             if (newImportsSamePathImports) {
                 const targetImportClauses = imp.type.replace("{", "").replace("}", "").trim().split(",");
-                const inArrayImportClasues = imp.type.replace("{", "").replace("}", "").trim().split(",");
-                const commonArrayOfClauses = Array.from(new Set([...targetImportClauses, ...inArrayImportClasues]));
+                const inArrayImportClauses = imp.type.replace("{", "").replace("}", "").trim().split(",");
+                const commonArrayOfClauses = Array.from(new Set([...targetImportClauses, ...inArrayImportClauses]));
                 newImportsSamePathImports.type = `{ ${commonArrayOfClauses.join(",")}}`;
             } else {
                 newImports.push(imp);
@@ -516,23 +516,24 @@ function unique(arr: string[]): string[] {
     return Object.keys(obj);
 }
 
-function getAllfiles(path: string, resultPathes: string[], checkingFolders: string[]) {
-    fs.readdirSync(path).forEach(f => {
-        let pth =  path + `/${f}`;
-        checkingFolders.forEach(_folder => {
-            if (fs.statSync(pth).isDirectory()) {
-                if ( (_folder.length >= pth.length
-                    && _folder.includes(pth)) || (pth.length >= _folder.length && pth.includes(_folder))
-                    ) {
-                    getAllfiles(pth , resultPathes, checkingFolders);
-                }
-            } else {
-                let tsRegExp = /.+\.ts$/;
-                let matches = tsRegExp.exec(pth);
-                if ( matches && matches.length > 0 && resultPathes.indexOf(matches[0]) === -1) {
-                    resultPathes.push( matches[0]);
-                }
+function getAllFiles(checkingFolders: string[] = []) {
+    let tsRegExp = /.+\.ts$/;
+    const returnFiles: string[] = [];
+
+    checkingFolders.forEach(folderPath => {
+        const files = fs.readdirSync(folderPath);
+        files.forEach(file => {
+            const endPath = `${folderPath}/${file}`;
+            let matches = tsRegExp.exec(endPath);
+            const isAnyMatches = matches && matches.length > 0;
+            const isPathIdDirectory = fs.statSync(endPath).isDirectory();
+            if (isPathIdDirectory) {
+                const subFiles = getAllFiles([endPath]);
+                returnFiles.push(...subFiles);
+            } else if (isAnyMatches) {
+                returnFiles.push(matches[0]);
             }
         });
     });
-  }
+    return returnFiles;
+}
