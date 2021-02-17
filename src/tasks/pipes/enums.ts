@@ -15,5 +15,6 @@ export const asyncDirection = {
 export enum ConsoleColor {
     Red = "\x1b[31m",
     Green = "\x1b[32m",
+    Cyan = "\x1b[36m",
     Default = "\x1b[0m"
 }

@@ -11,29 +11,31 @@ import {Options, FileMapping} from "./model/options";
 import { GenerateViewOptions } from "./model/generateViewOptions";
 import { Transformer } from "./model/transformer";
 
-import { downFirstLetter, getModelNameFromPath } from "./pipes";
+import { downFirstLetter, unique } from "./pipes";
 import { Decorators } from "./pipes/decorators";
 import { asyncDirection, ConsoleColor, FuncDirection } from "./pipes/enums";
-import { createClassMeta, createFieldMetadata, } from "./pipes/classmeta";
+import { createClassMeta, createFieldMetadata, filterFileMetadata, getDependencyImportsForImports, mapFileClasses, } from "./pipes/classmeta";
 import { FieldMetadata } from "./model/fieldmetadata";
+import { createMapperFile, getAllFiles } from "./pipes/files";
 
 const mkdirp = require("mkdirp");
 const primitiveTypes = ["string", "number", "object", "any" , "null", "undefined"];
 
 const configName = "genconfig.json";
 
-export function createViewModelsInternal(): string [] {
+const UTF8 = "utf8";
+
+export function createViewModelsInternal(): void {
     const dateStart = Date.now();
-    let config: Config = JSON.parse(fs.readFileSync(configName, "utf8"));
+    let config: Config = JSON.parse(fs.readFileSync(configName, UTF8));
     const possibleFiles = getAllFiles(config.check.folders);
     const metadata = createMetadatas(possibleFiles);
-    const resultTemplate = createFiles(metadata);
+    createFiles(metadata);
     const dateEnd = Date.now();
 
     console.log(ConsoleColor.Green, `Generate View: Count of files: ${possibleFiles.length}`);
     console.log(`Generate View: Execution time: ${dateEnd - dateStart}ms`);
     console.log(ConsoleColor.Default);
-    return resultTemplate;
 }
 
 export function createOptionsOfGrunt(obj: IGrunt): Options {
@@ -54,7 +56,9 @@ export function createOptionsOfGrunt(obj: IGrunt): Options {
 
 export function createMetadatas(files: string[]): FileMetadata[] {
     let generationFiles: FileMetadata[] = [];
+    console.log(ConsoleColor.Cyan, `GenerateView: Create Metadata for files...`);
     for (let file of files) {
+        console.log(ConsoleColor.Cyan, `GenerateView: Create Metadata for ${file}...`);
         const stringFile = fs.readFileSync(file, "utf-8");
         const jsonStructure = parseStruct(stringFile, {}, file);
         let possibleImports = jsonStructure._imports || [];
@@ -66,14 +70,14 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                 return;
             }
 
-            const classMets = generateViewDecorators.map(dec => {
+            const classesMeta = generateViewDecorators.map(dec => {
                 let genViewOpt = dec.arguments[0].valueOf() as GenerateViewOptions;
                 const classMeta = createClassMeta(genViewOpt.model);
                 FillFileMetadataArray(generationFiles, genViewOpt, file);
                 return classMeta;
             });
 
-            classMets.forEach(cm => {
+            classesMeta.forEach(cm => {
                 cm.baseName = cls.name;
                 cm.baseNamePath =  file;
                 cls.fields.forEach(fld => {
@@ -91,67 +95,62 @@ export function createMetadatas(files: string[]): FileMetadata[] {
             });
 
             generationFiles.forEach(genFile => {
-                classMets.forEach( cm => {
+                classesMeta.forEach( cm => {
                     const classMetaFileName = `${downFirstLetter(cm.name)}.ts`;
-                    if (genFile.filename.indexOf(classMetaFileName) > -1) {
-                        genFile.classes.push(cm);
+                    if (genFile.filename.indexOf(classMetaFileName) === -1) {
+                        return;
                     }
+                    genFile.classes.push(cm);
                 });
                 makeCorrectImports(genFile, possibleImports);
             });
         });
+        console.log(ConsoleColor.Cyan, `GenerateView: Create Metadata for ${file} end`);
+        console.log(ConsoleColor.Cyan, `---`);
     }
+    console.log(ConsoleColor.Cyan, `GenerateView: Create Metadata for files end`);
     return generationFiles.filter(file => file.filename);
 }
 
-export function createFiles(metadata: FileMetadata[]): string [] {
-    let viewsFolder = path.resolve(__dirname, "view/");
+export function createFiles(filesMetadata: FileMetadata[]): void {
+    console.log(ConsoleColor.Cyan, `GenerateView: Create Files`);
+    const viewsFolder = path.resolve(__dirname, "view/");
     configure(viewsFolder, {autoescape: true, trimBlocks : true});
+    filesMetadata.forEach(_fileMetadata => {
+        console.log(ConsoleColor.Cyan, `GenerateView: creating file "${_fileMetadata.filename}"`);
 
-    let res: string [] = [];
-    let c = null;
-    for ( let i = 0; i < metadata.length; i++ ) {
-        let mdata = metadata[i];
-        mdata.classes = mdata.classes.filter(item => item.generateView);
-        if (mdata.mapperPath) {
-            mdata.classes.forEach(cl => {
-                cl.viewModelFromMapper = getModelNameFromPath(mdata.mapperPath, mdata.filename);
-                cl.baseModelFromMapper = getModelNameFromPath(mdata.mapperPath, mdata.basePath);
-            });
+        const fileMetadata = {..._fileMetadata};
+        fileMetadata.classes = fileMetadata.classes.filter(item => item.generateView);
+        if (fileMetadata.mapperPath) {
+            fileMetadata.classes = mapFileClasses(fileMetadata.classes, fileMetadata);
         }
-        mdata.imports = mdata.imports.filter(imp => {
-            const importArray  = imp.type.slice(1, imp.type.length - 1).trim().split(",");
-            if (mdata.classes.length > 1) {
-                importArray.forEach(item => {
-                    mdata.classes.forEach(cls => {
-                        return !(cls.baseName === item);
-                    });
-                });
-            }
-            return !importArray.find( imp => imp === mdata.classes[0].baseName);
-        });
-        c = render("viewTemplateCommon.njk", {metafile: mdata});
-        let createdMapperFileContent = render("mapperTemplate.njk", {metafile: mdata});
-        if (c && c.trim()) {
-            const getDirName = path.dirname;
-            mkdirp.sync(getDirName(mdata.filename));
-            fs.writeFileSync(mdata.filename, c, "utf-8");
-            res.push(c);
+        fileMetadata.imports = filterFileMetadata(fileMetadata.imports, fileMetadata.classes);
 
-            let needMapper = !mdata.classes.some(cls => !cls.needMapper);
+        const generatedClassFileContent = render("viewTemplateCommon.njk", {metafile: fileMetadata});
+        let createdMapperFileContent = render("mapperTemplate.njk", {metafile: fileMetadata});
+        const generatedFileExist = generatedClassFileContent && generatedClassFileContent.trim();
 
-            if (needMapper) {
-                let pathArray = mdata.filename.split(".ts").join("").split("/");
-                const mapperModelName = pathArray[pathArray.length - 1];
-                const mapperFilename = `${mdata.mapperPath}/${mapperModelName}Mapper.ts`;
-                mkdirp.sync(mdata.mapperPath);
-                fs.writeFileSync( mapperFilename, createdMapperFileContent, "utf-8");
-                res.push(createdMapperFileContent);
-            }
+        if (!generatedFileExist) {
+            return;
         }
-    }
 
-    return c;
+        mkdirp.sync(path.dirname(fileMetadata.filename));
+        fs.writeFileSync(fileMetadata.filename, generatedClassFileContent, "utf-8");
+
+        let needMapper = !fileMetadata.classes.some(cls => !cls.needMapper);
+
+        console.log(ConsoleColor.Cyan, `GenerateView: file "${_fileMetadata.filename}" created`);
+
+        if (!needMapper) {
+            console.log(ConsoleColor.Cyan, `---`);
+            return;
+        }
+
+        createMapperFile(fileMetadata, createdMapperFileContent);
+        console.log(ConsoleColor.Cyan, `GenerateView: mapper file "${_fileMetadata.filename}" created`);
+        console.log(ConsoleColor.Cyan, `---`);
+    });
+    console.log(ConsoleColor.Cyan, `GenerateView: Create Files end`);
 }
 
 function saveInfoAboutTransformer(direction: FuncDirection, func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
@@ -231,14 +230,13 @@ function saveInfoAboutTransformer(direction: FuncDirection, func: Transformer, p
 
 
 function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: GenerateViewOptions, file: string) {
-    let fileMet : FileMetadata;
-    fileMet = new FileMetadata();
+    const {filePath, model} = genViewOpt;
+    const fileMet = new FileMetadata();
     fileMet.basePath = file;
     fileMet.classes = [];
-    const {filePath, model} = genViewOpt;
     fileMet.filename = `${filePath}/${model[0].toLowerCase()}${model.substring(1)}.ts`;
     fileMet.mapperPath = genViewOpt.mapperPath;
-    generationFiles.push( fileMet);
+    generationFiles.push(fileMet);
     return fileMet ;
 }
 
@@ -249,11 +247,13 @@ const getInfoFromClassField = (classField: FieldMetadata) => {
     if ( classField.fieldConvertFunction && !classField.ignoredInView) {
         [FuncDirection.toView, FuncDirection.fromView].forEach(direction => {
             const directionInfo = classField.fieldConvertFunction[direction];
-            if (directionInfo && directionInfo.isPrimitive) {
-                let mainClass = directionInfo.function.split(".")[0];
-                usingTypesInClass.push(mainClass);
-                importsForMapper.push(mainClass);
+            const isDirectionTypeIsPrimitive = directionInfo && directionInfo.isPrimitive;
+            if (!isDirectionTypeIsPrimitive) {
+                return;
             }
+            let mainClass = directionInfo.function.split(".")[0];
+            usingTypesInClass.push(mainClass);
+            importsForMapper.push(mainClass);
         });
     }
     if (classField.needGeneratedMapper) {
@@ -275,35 +275,37 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
             .map(fld => fld.type));
         let indexesOfCorrectImports: number[] = [];
         let importsForMapper: string[] = [];
-        const classFields = cls.fields;
-        const mapResult = classFields.map(getInfoFromClassField).forEach(info => {
+        cls.fields.map(getInfoFromClassField).forEach(info => {
             usingTypesInClass.push(...info.usingTypesInClass);
             importsForMapper.push(...info.importsForMapper);
         });
         if (cls.contextType.fromView && !primitiveTypes.find(type => cls.contextType.fromView.value === type)) {
             importsForMapper.push(cls.contextType.fromView.value);
-            imports.forEach((ind, j) => {
-                if (ind.clauses.find( clause => clause === cls.contextType.fromView.value)) {
-                    indexesOfCorrectImports.push(j);
-                }
-            });
+            indexesOfCorrectImports = imports.map((_import, index) => {
+                const clause = _import.clauses.find( clause => clause === cls.contextType.fromView.value);
+                return clause ? index : null;
+            }).filter(i => !!i);
         }
         if (cls.contextType.toView && !primitiveTypes.find(type => cls.contextType.toView.value === type)) {
             importsForMapper.push(cls.contextType.toView.value);
             imports.forEach((ind, j) => {
-                if (ind.clauses.find( clause => clause === cls.contextType.toView.value)) {
-                    indexesOfCorrectImports.push(j);
+                const clause = ind.clauses.find( clause => clause === cls.contextType.toView.value);
+                if (!clause) {
+                    return;
                 }
+                indexesOfCorrectImports.push(j);
             });
         }
         usingTypesInClass.forEach(type => {
-            for ( let ind = 0; ind < imports.length; ind++) {
-                if ( imports[ind].clauses.indexOf(type) > -1) {
-                    indexesOfCorrectImports.push(ind);
+            imports.forEach((currentImport, ind) => {
+                const indexOfImportClauses = currentImport.clauses.indexOf(type);
+                if (indexOfImportClauses === -1) {
+                    return;
                 }
-            }
+                indexesOfCorrectImports.push(ind);
+            });
         });
-        const uniqueIndexesOfCorrectImports: Set<number> = new Set(indexesOfCorrectImports);
+        const uniqueIndexesOfCorrectImports = new Set(indexesOfCorrectImports);
         uniqueIndexesOfCorrectImports.forEach(ind => {
             let imp = new Import();
             imp.type = `{ ${imports[ind].clauses.join(",")} }`;
@@ -314,21 +316,24 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
                 const from = path.dirname(fromPath);
                 _path = path.relative(from, toPath).split("\\").join("/");
                 if ( _path.indexOf("./") < 0 ) {
-                _path = "./" + _path;
+                    _path =  `./${_path}`;
                 }
             }
             imp.path = _path;
             importsForMapper.forEach( impForMapper => {
-                if (imports[ind].clauses.indexOf(impForMapper) > -1) {
-                    fromPath = fileMetadata.mapperPath;
-                    let arrayPath = path.relative(fromPath, toPath).split("\\");
-                    arrayPath[arrayPath.length - 1] = downFirstLetter(arrayPath[arrayPath.length - 1]);
-                    imp.path = arrayPath.join("/");
-                    if ( imp.path.indexOf("./") < 0 && !imports[ind].isNodeModule ) {
-                        imp.path = "./" + imp.path;
-                    }
-                    imp.forMapper = true;
+                const indexOFImportClauses = imports[ind].clauses.indexOf(impForMapper);
+                if (indexOFImportClauses === -1) {
+                    return;
                 }
+                fromPath = fileMetadata.mapperPath;
+                let arrayPath = path.relative(fromPath, toPath).split("\\");
+                const arrayPathLength = arrayPath.length - 1;
+                arrayPath[arrayPathLength] = downFirstLetter(arrayPath[arrayPathLength]);
+                imp.path = arrayPath.join("/");
+                if ( imp.path.indexOf("./") < 0 && !imports[ind].isNodeModule ) {
+                    imp.path = `./${imp.path}`;
+                }
+                imp.forMapper = true;
             });
 
             fileMetadata.imports.push(imp);
@@ -347,21 +352,8 @@ function makeCorrectImports(fileMetadata: FileMetadata , imports: ImportNode[]) 
 }
 
 function FilterImportingMappers(meta: FileMetadata) {
-    const imports = meta.imports;
-    imports.forEach( imp => {
-        let mapperMatch = imp.type.match(/[a-zA-Z]+Mapper/);
-        if (mapperMatch) {
-            let mapperName = mapperMatch[0];
-            meta.classes.forEach(cls => {
-                cls.fields.forEach(field => {
-                    if (mapperName.includes(field.type) && field.needGeneratedMapper && !field.ignoredInView) {
-                        imp.dependencyMappers.push(cls.name);
-                    }
-                });
-            });
-        }
-        imp.dependencyMappers = unique(imp.dependencyMappers);
-    });
+    let {imports} = meta;
+    imports = getDependencyImportsForImports(imports, meta);
     return imports;
 }
 
@@ -380,39 +372,7 @@ function filterTransformerWhichAlreadyExistInMapper(imports: Import[]) {
         }
         const targetImportClauses = imp.type.replace("{", "").replace("}", "").trim().split(",");
         const commonArrayOfClauses = Array.from(new Set([...targetImportClauses]));
-        newImportsSamePathImports.type = `{ ${commonArrayOfClauses.join(",")}}`;
+        newImportsSamePathImports.type = `{ ${commonArrayOfClauses.join(",")} }`;
     });
     return newImports;
-}
-
-function unique(arr: string[]): string[] {
-    let obj = {};
-
-    for (var i = 0; i < arr.length; i++) {
-      var str = arr[i];
-      obj[str] = true;
-    }
-    return Object.keys(obj);
-}
-
-function getAllFiles(checkingFolders: string[] = []) {
-    let tsRegExp = /.+\.ts$/;
-    const returnFiles: string[] = [];
-
-    checkingFolders.forEach(folderPath => {
-        const files = fs.readdirSync(folderPath);
-        files.forEach(file => {
-            const endPath = `${folderPath}/${file}`;
-            let matches = tsRegExp.exec(endPath);
-            const isAnyMatches = matches && matches.length > 0;
-            const isPathIdDirectory = fs.statSync(endPath).isDirectory();
-            if (isPathIdDirectory) {
-                const subFiles = getAllFiles([endPath]);
-                returnFiles.push(...subFiles);
-            } else if (isAnyMatches) {
-                returnFiles.push(matches[0]);
-            }
-        });
-    });
-    return returnFiles;
 }
