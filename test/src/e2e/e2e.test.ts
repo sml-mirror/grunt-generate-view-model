@@ -3,7 +3,6 @@
 import * as fs from "fs";
 import {} from "mocha";
 import {createViewModels} from "../../../src/index";
-import {Options, FileMapping} from "../../../src/tasks/model/options";
 import {expect} from "chai";
 
 

@@ -7,7 +7,6 @@ import { Import } from "./model/import";
 import { Config } from "./model/config";
 import {FileMetadata} from "./model/filemetadata";
 import {ClassMetadata} from "./model/classmetadata";
-import {Options, FileMapping} from "./model/options";
 import { GenerateViewOptions } from "./model/generateViewOptions";
 import { Transformer } from "./model/transformer";
 
@@ -36,22 +35,6 @@ export function createViewModelsInternal(): void {
     console.log(ConsoleColor.Green, `Generate View: Count of files: ${possibleFiles.length}`);
     console.log(`Generate View: Execution time: ${dateEnd - dateStart}ms`);
     console.log(ConsoleColor.Default);
-}
-
-export function createOptionsOfGrunt(obj: IGrunt): Options {
-    const options = new Options();
-    const filesLength = obj.task.current.files.length;
-    const files: FileMapping[] = [];
-    for (let i = 0; i < filesLength; i++) {
-        let file: FileMapping = {
-            source: obj.task.current.files[i].src[0],
-            destination: obj.task.current.files[i].dest
-        };
-        files.push(file);
-    }
-
-    options.files = files;
-    return options;
 }
 
 export function createMetadatas(files: string[]): FileMetadata[] {
