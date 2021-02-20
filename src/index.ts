@@ -1,4 +1,4 @@
-import {createViewModelsInternal} from "../src/tasks/createViewModels";
+import {createViewModelsInternal} from "./tasks/createViewModels";
 import { ViewModelTypeOptions } from "./tasks/model/viewModelTypeOptions";
 import { GenerateViewOptions } from "./tasks/model/generateViewOptions";
 

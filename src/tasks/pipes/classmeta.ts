@@ -242,6 +242,7 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
         fldMetadata,
         json
     );
+
     fldMetadata = result.fieldMetadata;
 
     possibleImports.push(...result.possibleImports);

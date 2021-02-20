@@ -3,18 +3,19 @@
   "version": "0.1.01",
   "description": "Global task for generation view model",
   "private": false,
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
   "types": "./index.d.ts",
   "bin": {
-    "generateView": "./dist/src/bin.js"
+    "generateView": "./dist/bin.js"
   },
   "scripts": {
     "clean": "rimraf dist/",
-    "copy-files": "copyfiles src/tasks/view/*.njk dist/tasks/view/",
+    "copy-files": "copyfiles --flat src/tasks/view/class/*.njk dist/tasks/view/class/ && copyfiles --flat src/tasks/view/interface/*.njk dist/tasks/view/interface/ ",
     "build": "npm run clean && tsc -p src && npm run copy-files",
     "build-test": "tsc -p test/src",
     "test": "echo NOT READY",
-    "start": "grunt build && grunt test"
+    "start": "grunt build && grunt test",
+    "test-start": "node ./dist/bin.js"
   },
   "dependencies": {
 

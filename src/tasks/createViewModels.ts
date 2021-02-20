@@ -53,6 +53,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                 cm.baseName = cls.name;
                 cm.baseNamePath = file;
                 cls.fields.forEach(fld => {
+                    console.log(fld.decorators);
                     const fieldMetadata = createFieldMetadata(fld, jsonStructure, cm, possibleImports);
                     cm.fields.push(fieldMetadata);
                 });
@@ -86,9 +87,11 @@ export function createMetadatas(files: string[]): FileMetadata[] {
 
 export function createFiles(filesMetadata: FileMetadata[]): void {
     console.log(ConsoleColor.Cyan, 'GenerateView: Create Files');
-    const viewsFolder = path.resolve(__dirname, 'view/');
-    configure(viewsFolder, { autoescape: true, trimBlocks: true });
     filesMetadata.forEach(_fileMetadata => {
+        const templatePath= `./view/${_fileMetadata.type}`;
+        const viewsFolder = path.resolve(__dirname, templatePath);
+
+        configure(viewsFolder, { autoescape: true, trimBlocks: true });
         console.log(ConsoleColor.Cyan, `GenerateView: creating file "${_fileMetadata.filename}"`);
 
         const fileMetadata = { ..._fileMetadata };
@@ -208,17 +211,20 @@ function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: Gene
     fileMet.classes = [];
     fileMet.filename = `${filePath}/${downFirstLetter(model)}.ts`;
     fileMet.mapperPath = genViewOpt.mapperPath;
+    if (genViewOpt.type) {
+        fileMet.type = genViewOpt.type;
+    }
     generationFiles.push(fileMet);
     return fileMet;
 }
 
-const getInfoFromClassField = (classField: FieldMetadata) => {
+const getInfoFromClassField = (fieldMetadata: FieldMetadata) => {
 
     const usingTypesInClass: string[] = [];
     const importsForMapper: string[] = [];
-    if ( classField.fieldConvertFunction && !classField.ignoredInView) {
+    if ( fieldMetadata.fieldConvertFunction && !fieldMetadata.ignoredInView) {
         [FuncDirection.toView, FuncDirection.fromView].forEach(direction => {
-            const directionInfo = classField.fieldConvertFunction[direction];
+            const directionInfo = fieldMetadata.fieldConvertFunction[direction];
             const isDirectionTypeIsPrimitive = directionInfo && directionInfo.isPrimitive;
             if (!isDirectionTypeIsPrimitive) {
                 return;
@@ -228,9 +234,9 @@ const getInfoFromClassField = (classField: FieldMetadata) => {
             importsForMapper.push(mainClass);
         });
     }
-    if (classField.needGeneratedMapper) {
-        usingTypesInClass.push(`${classField.type}Mapper`);
-        importsForMapper.push(`${classField.type}Mapper`);
+    if (fieldMetadata.needGeneratedMapper) {
+        usingTypesInClass.push(`${fieldMetadata.type}Mapper`);
+        importsForMapper.push(`${fieldMetadata.type}Mapper`);
     }
     return {
         usingTypesInClass,
@@ -351,14 +357,19 @@ function filterTransformerWhichAlreadyExistInMapper(imports: Import[]) {
 
 
 export const createViewModelsInternal = () => {
-    const dateStart = Date.now();
-    const config: Config = JSON.parse(fs.readFileSync(configName, UTF8));
-    const possibleFiles = getAllFiles(config.check.folders);
-    const metadata = createMetadatas(possibleFiles);
-    createFiles(metadata);
-    const dateEnd = Date.now();
+    try {
+        const dateStart = Date.now();
+        const config: Config = JSON.parse(fs.readFileSync(configName, UTF8));
+        const possibleFiles = getAllFiles(config.check.folders);
+        const metadata = createMetadatas(possibleFiles);
+        createFiles(metadata);
+        const dateEnd = Date.now();
 
-    console.log(ConsoleColor.Green, `Generate View: Count of files: ${possibleFiles.length}`);
-    console.log(`Generate View: Execution time: ${dateEnd - dateStart}ms`);
-    console.log(ConsoleColor.Default);
+        console.log(ConsoleColor.Green, `Generate View: Count of files: ${possibleFiles.length}`);
+        console.log(`Generate View: Execution time: ${dateEnd - dateStart}ms`);
+    } catch (e) {
+        console.log(ConsoleColor.Red, e.message);
+    } finally {
+        console.log(ConsoleColor.Default);
+    }
 }
