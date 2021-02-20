@@ -1,20 +1,30 @@
-import { ArrayType, BasicType, Decorator, FieldModel, ImportNode, TypeKind } from "ts-file-parser";
-import * as fs from "fs";
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import * as fs from 'fs';
+import {
+    parseStruct,
+    ArrayType,
+    BasicType,
+    Decorator,
+    FieldModel,
+    ImportNode,
+    TypeKind
+} from 'ts-file-parser';
 
-import { parseStruct } from "ts-file-parser";
-import { getModelNameFromPath, upFirstLetter } from ".";
+import { getModelNameFromPath, upFirstLetter } from '.';
+import { GenerateViewOptions, ViewModelTypeOptions } from '../../..';
 
-import { ClassMetadata } from "../model/classmetadata";
-import { FieldMetadata } from "../model/fieldmetadata";
-import { GenerateViewOptions, ViewModelTypeOptions } from "../../..";
-import { Decorators } from "./decorators";
-import { ConsoleColor } from "./enums";
-import { Import } from "../model/import";
-import { FileMetadata } from "../model/filemetadata";
-import { unique } from "../pipes";
+import { Decorators } from './decorators';
+import { ConsoleColor } from './enums';
 
-const arrayType = "[]";
-const baseTypes = ["string", "number", "boolean", "undefined", "null", "object"];
+import { Import } from '../model/import';
+import { ClassMetadata } from '../model/classmetadata';
+import { FieldMetadata } from '../model/fieldmetadata';
+import { FileMetadata } from '../model/filemetadata';
+
+import { unique } from '../pipes';
+
+const arrayType = '[]';
+const baseTypes = ['string', 'number', 'boolean', 'undefined', 'null', 'object'];
 
 export const createClassMeta = (name: string ) => {
     const classMeta = new ClassMetadata();
@@ -36,13 +46,13 @@ export const getInfoFromImports = (imports: ImportNode[], typeName: string) => {
             if (cl !== typeName) {
                 return;
             }
-            let fileName = repeatImport.absPathNode.join("/") + ".ts";
-            let fileContent = fs.readFileSync(fileName, "utf-8");
-            let parsedFile = parseStruct(fileContent, {}, fileName);
+            const fileName = repeatImport.absPathNode.join('/') + '.ts';
+            const fileContent = fs.readFileSync(fileName, 'utf-8');
+            const parsedFile = parseStruct(fileContent, {}, fileName);
             if (!parsedFile.enumDeclarations) {
                 return;
             }
-            const isEnumType =  !!parsedFile.enumDeclarations.find(enm => enm.name === typeName);
+            const isEnumType = !!parsedFile.enumDeclarations.find(enm => enm.name === typeName);
             isComplexType = !isEnumType;
             isEnum = !!isEnumType;
         });
@@ -60,7 +70,7 @@ export const updateFieldMetadataForIgnoreViewModelDecorator = (decorators: Decor
         return fldMetadata;
     }
 
-    const updatedFldMetadata = {...fldMetadata};
+    const updatedFldMetadata = { ...fldMetadata };
 
     decorators.forEach(decorator => {
         const ignoreViewModelName = decorator.arguments[0];
@@ -78,7 +88,7 @@ export const updateFieldMetadataForViewModelNameDecorator = (decorators: Decorat
         return fldMetadata;
     }
 
-    const updatedFldMetadata = {...fldMetadata};
+    const updatedFldMetadata = { ...fldMetadata };
 
     decorators.forEach(decorator => {
         const fieldName = decorator.arguments[0];
@@ -92,29 +102,30 @@ export const updateFieldMetadataForViewModelNameDecorator = (decorators: Decorat
     return updatedFldMetadata;
 };
 
-export const updateFieldMetadataForViewModelTypeDecorator = (decorators: Decorator[], classMeta: any, flMetadata: FieldMetadata, fileStructure: any) => {
+export const updateFieldMetadataForViewModelTypeDecorator = (
+    decorators: Decorator[], classMeta: ClassMetadata, flMetadata: FieldMetadata, fileStructure: any) => {
     try {
         if (!decorators || !decorators.length) {
-            return {fieldMetadata: flMetadata, possibleImports: []};
+            return { fieldMetadata: flMetadata, possibleImports: [] };
         }
-        const updatedFieldMetadata = {...flMetadata};
+        const updatedFieldMetadata = { ...flMetadata };
         const possibleImports: ImportNode[] = [];
         decorators.forEach(decorator => {
-            let fieldTypeOptions = decorator.arguments[0].valueOf() as ViewModelTypeOptions;
-            updatedFieldMetadata.nullable = !(fieldTypeOptions && typeof fieldTypeOptions.nullable === "boolean" && !fieldTypeOptions.nullable);
+            const fieldTypeOptions = decorator.arguments[0].valueOf() as ViewModelTypeOptions;
+            updatedFieldMetadata.nullable = !(fieldTypeOptions && typeof fieldTypeOptions.nullable === 'boolean' && !fieldTypeOptions.nullable);
             const fieldIsAvailableToClass = fieldTypeOptions.modelName && fieldTypeOptions.modelName === classMeta.name;
             const allFieldsForAllClassAvailable = !fieldTypeOptions.modelName;
             if (fieldIsAvailableToClass || allFieldsForAllClassAvailable) {
 
                 updatedFieldMetadata.type = fieldTypeOptions.type.toString();
                 if (updatedFieldMetadata.type.indexOf(arrayType) > -1) {
-                    updatedFieldMetadata.type = updatedFieldMetadata.type.substring(0,  updatedFieldMetadata.type.indexOf(arrayType));
+                    updatedFieldMetadata.type = updatedFieldMetadata.type.substring(0, updatedFieldMetadata.type.indexOf(arrayType));
                     updatedFieldMetadata.isArray = true;
                 } else {
                     updatedFieldMetadata.isArray = false;
                 }
-                if ( updatedFieldMetadata.type.toLowerCase() === "string" && updatedFieldMetadata.type !== updatedFieldMetadata.baseModelType ) {
-                    updatedFieldMetadata.type = "string";
+                if ( updatedFieldMetadata.type.toLowerCase() === 'string' && updatedFieldMetadata.type !== updatedFieldMetadata.baseModelType ) {
+                    updatedFieldMetadata.type = 'string';
                     updatedFieldMetadata.toStringWanted = true;
                 }
                 if (fieldTypeOptions.transformer) {
@@ -125,9 +136,9 @@ export const updateFieldMetadataForViewModelTypeDecorator = (decorators: Decorat
                         if (clause !== updatedFieldMetadata.baseModelType) {
                             return;
                         }
-                        let path: string = "";
+                        let path = '';
                         if (i.isNodeModule) {
-                            let impNode: ImportNode = {isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode};
+                            const impNode: ImportNode = { isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode };
                             possibleImports.push(impNode);
                             return;
                         }
@@ -135,8 +146,8 @@ export const updateFieldMetadataForViewModelTypeDecorator = (decorators: Decorat
                             path += `${node}/`;
                         });
                         path = `${path.substring(0, path.length - 1)}.ts`;
-                        let content = fs.readFileSync(path, "utf-8");
-                        let innerJsonStructure = parseStruct(content, {}, "");
+                        const content = fs.readFileSync(path, 'utf-8');
+                        const innerJsonStructure = parseStruct(content, {}, '');
                         innerJsonStructure.classes.forEach(c => {
                             if (c.name !== updatedFieldMetadata.baseModelType) {
                                 return;
@@ -145,7 +156,7 @@ export const updateFieldMetadataForViewModelTypeDecorator = (decorators: Decorat
                                 if (d.name !== Decorators.GenerateView) {
                                     return;
                                 }
-                                let generateOptions = d.arguments[0].valueOf() as GenerateViewOptions;
+                                const generateOptions = d.arguments[0].valueOf() as GenerateViewOptions;
                                 let viewModelType = fieldTypeOptions.type.toString();
                                 if (fieldTypeOptions.type.toString().indexOf(arrayType) > -1 ) {
                                     viewModelType = viewModelType.substring(0, fieldTypeOptions.type.toString().indexOf(arrayType));
@@ -153,9 +164,9 @@ export const updateFieldMetadataForViewModelTypeDecorator = (decorators: Decorat
                                 if (generateOptions.model.toLowerCase() !== viewModelType.toLowerCase()) {
                                     return;
                                 }
-                                let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
-                                const {model} = generateOptions;
-                                let fileName = `${upFirstLetter(model)}Mapper`;
+                                const impNode: ImportNode = { isNodeModule: false, clauses: [], absPathNode: [] };
+                                const { model } = generateOptions;
+                                const fileName = `${upFirstLetter(model)}Mapper`;
                                 impNode.clauses.push(fileName);
                                 impNode.absPathNode.push(`${generateOptions.mapperPath}/${fileName}`);
                                 updatedFieldMetadata.needGeneratedMapper = true;
@@ -176,7 +187,7 @@ export const updateFieldMetadataForViewModelTypeDecorator = (decorators: Decorat
             }
         });
 
-        return {fieldMetadata: updatedFieldMetadata, possibleImports};
+        return { fieldMetadata: updatedFieldMetadata, possibleImports };
     } catch (e) {
         console.error(ConsoleColor.Red, `Generate View: Error: updateFieldMetadataForViewModelTypeDecorator: ${e.message}`);
         throw e;
@@ -201,7 +212,7 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
         currentBase = currentBase.base as ArrayType;
         fldMetadata.baseModelType = (currentBase as any as BasicType).typeName;
     }
-    let typeName = fldMetadata.baseModelType;
+    const typeName = fldMetadata.baseModelType;
     const isBaseTypesIncludeTypeName = baseTypes.find(type => type === typeName);
 
     if ( !isBaseTypesIncludeTypeName ) {
@@ -238,18 +249,18 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
     return fldMetadata;
 };
 
-export const filterFileMetadata = (imports: Import[], classes: ClassMetadata[]) => {
+export const filterFileMetadata = (imports: Import[], classes: ClassMetadata[]): Import[] => {
     const newImports = imports.filter(imp => {
-        const importArray  = imp.type.slice(1, imp.type.length - 1).trim().split(",");
-        return !importArray.find( imp => imp === classes[0].baseName);
+        const importArray = imp.type.slice(1, imp.type.length - 1).trim().split(',');
+        return !importArray.find(_imp => _imp === classes[0].baseName);
     });
 
     return newImports;
 };
 
-export const mapFileClasses = (classes: any[], fileMetadata: FileMetadata) => {
+export const mapFileClasses = (classes: ClassMetadata[], fileMetadata: FileMetadata): ClassMetadata[] => {
     const mappedClasses = classes.map(cl => {
-        const newClass = {...cl};
+        const newClass = { ...cl };
 
         newClass.viewModelFromMapper = getModelNameFromPath(fileMetadata.mapperPath, fileMetadata.filename);
         newClass.baseModelFromMapper = getModelNameFromPath(fileMetadata.mapperPath, fileMetadata.basePath);
@@ -266,19 +277,22 @@ export const getDependencyImportsForImports = (_imports: Import[], fileMetadata:
 
     imports = imports.map( imp => {
         let dependencyMappers: string[] = [];
-        let mapperMatch = imp.type.match(mapperFileRegexp);
-        if (mapperMatch) {
-            let mapperName = mapperMatch[0];
-            fileMetadata.classes.forEach(cls => {
-                cls.fields.forEach(field => {
-                    const condition = mapperName.includes(field.type) && field.needGeneratedMapper && !field.ignoredInView;
-                    if (!condition) {
-                        return;
-                    }
-                    dependencyMappers.push(cls.name);
-                });
-            });
+        // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
+        const mapperMatch = imp.type.match(mapperFileRegexp);
+        if (!mapperMatch) {
+            imp.dependencyMappers = [];
+            return imp;
         }
+        const mapperName = mapperMatch[0];
+        fileMetadata.classes.forEach(cls => {
+            cls.fields.forEach(field => {
+                const condition = mapperName.includes(field.type) && field.needGeneratedMapper && !field.ignoredInView;
+                if (!condition) {
+                    return;
+                }
+                dependencyMappers.push(cls.name);
+            });
+        });
         dependencyMappers = unique(dependencyMappers);
         imp.dependencyMappers = dependencyMappers;
         return imp;

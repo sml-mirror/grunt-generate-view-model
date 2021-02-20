@@ -1,8 +1,7 @@
-import { Transformer } from "./transformer";
-import { Type } from "typescript";
+import { Transformer } from './transformer';
 
 export class ViewModelTypeOptions {
-    type: Object;
+    type: any;
     modelName?: string;
     transformer?: Transformer;
     nullable?: boolean;
