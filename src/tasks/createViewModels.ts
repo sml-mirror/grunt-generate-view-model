@@ -24,19 +24,6 @@ const configName = "genconfig.json";
 
 const UTF8 = "utf8";
 
-export function createViewModelsInternal(): void {
-    const dateStart = Date.now();
-    let config: Config = JSON.parse(fs.readFileSync(configName, UTF8));
-    const possibleFiles = getAllFiles(config.check.folders);
-    const metadata = createMetadatas(possibleFiles);
-    createFiles(metadata);
-    const dateEnd = Date.now();
-
-    console.log(ConsoleColor.Green, `Generate View: Count of files: ${possibleFiles.length}`);
-    console.log(`Generate View: Execution time: ${dateEnd - dateStart}ms`);
-    console.log(ConsoleColor.Default);
-}
-
 export function createMetadatas(files: string[]): FileMetadata[] {
     let generationFiles: FileMetadata[] = [];
     console.log(ConsoleColor.Cyan, `GenerateView: Create Metadata for files...`);
@@ -217,7 +204,7 @@ function FillFileMetadataArray(generationFiles: FileMetadata[], genViewOpt: Gene
     const fileMet = new FileMetadata();
     fileMet.basePath = file;
     fileMet.classes = [];
-    fileMet.filename = `${filePath}/${model[0].toLowerCase()}${model.substring(1)}.ts`;
+    fileMet.filename = `${filePath}/${downFirstLetter(model)}.ts`;
     fileMet.mapperPath = genViewOpt.mapperPath;
     generationFiles.push(fileMet);
     return fileMet ;
@@ -358,4 +345,18 @@ function filterTransformerWhichAlreadyExistInMapper(imports: Import[]) {
         newImportsSamePathImports.type = `{ ${commonArrayOfClauses.join(",")} }`;
     });
     return newImports;
+}
+
+
+export function createViewModelsInternal(): void {
+    const dateStart = Date.now();
+    let config: Config = JSON.parse(fs.readFileSync(configName, UTF8));
+    const possibleFiles = getAllFiles(config.check.folders);
+    const metadata = createMetadatas(possibleFiles);
+    createFiles(metadata);
+    const dateEnd = Date.now();
+
+    console.log(ConsoleColor.Green, `Generate View: Count of files: ${possibleFiles.length}`);
+    console.log(`Generate View: Execution time: ${dateEnd - dateStart}ms`);
+    console.log(ConsoleColor.Default);
 }

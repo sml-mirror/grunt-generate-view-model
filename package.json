@@ -1,7 +1,7 @@
 {
-  "name": "generate-view-model",
+  "name": "@sml/generate-view-model",
   "version": "0.1.01",
-  "description": "Global task for generation view model (grunt-deprecated)",
+  "description": "Global task for generation view model",
   "private": false,
   "main": "dist/src/index.js",
   "types": "./index.d.ts",

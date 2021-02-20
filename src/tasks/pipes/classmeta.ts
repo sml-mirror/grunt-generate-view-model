@@ -29,23 +29,23 @@ export const getInfoFromImports = (imports: ImportNode[], typeName: string) => {
     let isComplexType = true;
     let isEnum = false;
     imports.forEach(repeatImport => {
-        if (!repeatImport.isNodeModule) {
-            repeatImport.clauses.forEach( cl => {
-                if (cl === typeName) {
-                    let fileName = repeatImport.absPathNode.join("/") + ".ts";
-                    let fileContent = fs.readFileSync(fileName, "utf-8");
-                    let parsedFile = parseStruct(fileContent, {}, fileName);
-                    if ( parsedFile.enumDeclarations) {
-                        parsedFile.enumDeclarations.forEach(enm => {
-                            if (enm.name === typeName) {
-                                isComplexType = false;
-                                isEnum = true;
-                            }
-                        });
-                    }
-                }
-            });
+        if (repeatImport.isNodeModule) {
+            return;
         }
+        repeatImport.clauses.forEach( cl => {
+            if (cl !== typeName) {
+                return;
+            }
+            let fileName = repeatImport.absPathNode.join("/") + ".ts";
+            let fileContent = fs.readFileSync(fileName, "utf-8");
+            let parsedFile = parseStruct(fileContent, {}, fileName);
+            if (!parsedFile.enumDeclarations) {
+                return;
+            }
+            const isEnumType =  !!parsedFile.enumDeclarations.find(enm => enm.name === typeName);
+            isComplexType = !isEnumType;
+            isEnum = !!isEnumType;
+        });
     });
 
     return {
@@ -102,7 +102,9 @@ export const updateFieldMetadataForViewModelTypeDecorator = (decorators: Decorat
         decorators.forEach(decorator => {
             let fieldTypeOptions = decorator.arguments[0].valueOf() as ViewModelTypeOptions;
             updatedFieldMetadata.nullable = !(fieldTypeOptions && typeof fieldTypeOptions.nullable === "boolean" && !fieldTypeOptions.nullable);
-            if ((fieldTypeOptions.modelName && fieldTypeOptions.modelName === classMeta.name) || (!fieldTypeOptions.modelName )) {
+            const fieldIsAvailableToClass = fieldTypeOptions.modelName && fieldTypeOptions.modelName === classMeta.name;
+            const allFieldsForAllClassAvailable = !fieldTypeOptions.modelName;
+            if (fieldIsAvailableToClass || allFieldsForAllClassAvailable) {
 
                 updatedFieldMetadata.type = fieldTypeOptions.type.toString();
                 if (updatedFieldMetadata.type.indexOf(arrayType) > -1) {
@@ -115,61 +117,62 @@ export const updateFieldMetadataForViewModelTypeDecorator = (decorators: Decorat
                     updatedFieldMetadata.type = "string";
                     updatedFieldMetadata.toStringWanted = true;
                 }
-                if (!fieldTypeOptions.transformer) {
-                    fileStructure._imports.forEach(i => {
-                        i.clauses.forEach(clause => {
-                            if (clause === updatedFieldMetadata.baseModelType) {
-                                let path: string = "";
-                                if ( !i.isNodeModule ) {
-                                    i.absPathNode.forEach(node => {
-                                        path += `${node}/`;
-                                    });
-                                    path = path.substring(0, path.length - 1) + ".ts";
-                                    let content = fs.readFileSync(path, "utf-8");
-                                    let innerJsonStructure = parseStruct(content, {}, "");
-                                    innerJsonStructure.classes.forEach(c => {
-                                        if (c.name === updatedFieldMetadata.baseModelType) {
-                                            c.decorators.forEach(d => {
-                                                if (d.name === Decorators.GenerateView) {
-                                                    let generateOptions = d.arguments[0].valueOf() as GenerateViewOptions;
-                                                    let viewModelType = fieldTypeOptions.type.toString();
-                                                    if (fieldTypeOptions.type.toString().indexOf(arrayType) > -1 ) {
-                                                        viewModelType = viewModelType.substring(
-                                                                0, fieldTypeOptions.type.toString().indexOf(arrayType)
-                                                    );
-                                                    }
-                                                    if (generateOptions.model.toLowerCase() === viewModelType.toLowerCase()) {
-                                                        let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
-                                                        const {model} = generateOptions;
-                                                        let fileName = model[0].toUpperCase() + model.substring(1) + "Mapper";
-                                                        impNode.clauses.push(fileName);
-                                                        impNode.absPathNode.push(generateOptions.mapperPath + "/" + fileName);
-                                                        updatedFieldMetadata.needGeneratedMapper = true;
-                                                        possibleImports.push(impNode);
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    });
-                                } else {
-                                    let impNode: ImportNode = {isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode};
-                                    possibleImports.push(impNode);
-                                }
+                if (fieldTypeOptions.transformer) {
+                    return;
+                }
+                fileStructure._imports.forEach(i => {
+                    i.clauses.forEach(clause => {
+                        if (clause !== updatedFieldMetadata.baseModelType) {
+                            return;
+                        }
+                        let path: string = "";
+                        if (i.isNodeModule) {
+                            let impNode: ImportNode = {isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode};
+                            possibleImports.push(impNode);
+                            return;
+                        }
+                        i.absPathNode.forEach(node => {
+                            path += `${node}/`;
+                        });
+                        path = `${path.substring(0, path.length - 1)}.ts`;
+                        let content = fs.readFileSync(path, "utf-8");
+                        let innerJsonStructure = parseStruct(content, {}, "");
+                        innerJsonStructure.classes.forEach(c => {
+                            if (c.name !== updatedFieldMetadata.baseModelType) {
+                                return;
                             }
+                            c.decorators.forEach(d => {
+                                if (d.name !== Decorators.GenerateView) {
+                                    return;
+                                }
+                                let generateOptions = d.arguments[0].valueOf() as GenerateViewOptions;
+                                let viewModelType = fieldTypeOptions.type.toString();
+                                if (fieldTypeOptions.type.toString().indexOf(arrayType) > -1 ) {
+                                    viewModelType = viewModelType.substring(0, fieldTypeOptions.type.toString().indexOf(arrayType));
+                                }
+                                if (generateOptions.model.toLowerCase() !== viewModelType.toLowerCase()) {
+                                    return;
+                                }
+                                let impNode: ImportNode = {isNodeModule: false, clauses: [], absPathNode: []};
+                                const {model} = generateOptions;
+                                let fileName = `${upFirstLetter(model)}Mapper`;
+                                impNode.clauses.push(fileName);
+                                impNode.absPathNode.push(`${generateOptions.mapperPath}/${fileName}`);
+                                updatedFieldMetadata.needGeneratedMapper = true;
+                                possibleImports.push(impNode);
+                            });
                         });
                     });
-                }
+                });
             }
-            if (fieldTypeOptions.transformer && !updatedFieldMetadata.needGeneratedMapper) {
-                if (fieldTypeOptions.modelName) {
-                    if (!updatedFieldMetadata.ignoredInView && classMeta.name === fieldTypeOptions.modelName ) {
-                        updatedFieldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
-                    }
-                } else {
-                    if (!updatedFieldMetadata.ignoredInView ) {
-                        updatedFieldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
-                    }
-                }
+            const transformerExistAndNoNeedMapper = fieldTypeOptions.transformer && !updatedFieldMetadata.needGeneratedMapper;
+            if (!transformerExistAndNoNeedMapper) {
+                return;
+            }
+            if (fieldTypeOptions.modelName && !updatedFieldMetadata.ignoredInView && classMeta.name === fieldTypeOptions.modelName ) {
+                updatedFieldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
+            } else if (!updatedFieldMetadata.ignoredInView ) {
+                updatedFieldMetadata.fieldConvertFunction = fieldTypeOptions.transformer;
             }
         });
 
@@ -238,13 +241,6 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
 export const filterFileMetadata = (imports: Import[], classes: ClassMetadata[]) => {
     const newImports = imports.filter(imp => {
         const importArray  = imp.type.slice(1, imp.type.length - 1).trim().split(",");
-        if (classes.length > 1) {
-            importArray.forEach(item => {
-                classes.forEach(cls => {
-                    return !(cls.baseName === item);
-                });
-            });
-        }
         return !importArray.find( imp => imp === classes[0].baseName);
     });
 
