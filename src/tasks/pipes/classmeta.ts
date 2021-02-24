@@ -26,11 +26,14 @@ import { unique } from '../pipes';
 const arrayType = '[]';
 const baseTypes = ['string', 'number', 'boolean', 'undefined', 'null', 'object'];
 
-export const createClassMeta = (name: string ) => {
+export const createClassMeta = (name: string, mapperPath?: string ) => {
     const classMeta = new ClassMetadata();
     classMeta.name = upFirstLetter(name);
     classMeta.fields = [];
     classMeta.generateView = true;
+    if (mapperPath) {
+        classMeta.needMapper = true;
+    }
     return classMeta;
 };
 

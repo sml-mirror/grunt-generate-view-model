@@ -44,7 +44,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
 
             const classesMeta = generateViewDecorators.map(dec => {
                 const genViewOpt = dec.arguments[0].valueOf() as GenerateViewOptions;
-                const classMeta = createClassMeta(genViewOpt.model);
+                const classMeta = createClassMeta(genViewOpt.model, genViewOpt.mapperPath);
                 FillFileMetadataArray(generationFiles, genViewOpt, file);
                 return classMeta;
             });
@@ -112,7 +112,7 @@ export function createFiles(filesMetadata: FileMetadata[]): void {
         mkdirp.sync(path.dirname(fileMetadata.filename));
         fs.writeFileSync(fileMetadata.filename, generatedClassFileContent, 'utf-8');
 
-        const needMapper = !fileMetadata.classes.some(cls => !cls.needMapper);
+        const needMapper = !fileMetadata.classes.find(cls => !cls.needMapper);
 
         console.log(ConsoleColor.Cyan, `GenerateView: file "${_fileMetadata.filename}" created`);
 
