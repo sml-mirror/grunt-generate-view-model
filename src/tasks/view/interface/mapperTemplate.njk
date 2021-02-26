@@ -8,9 +8,9 @@ import { {{class.baseName}} } from '{{class.baseModelFromMapper}}';
 {% for import in metafile.imports %}
 {%if import.forMapper ===true%}
 {% if import.dependencyMappers.indexOf(class.name) > -1 %}
-import {{import.type }} from '{{import.path}}';
+import { {{import.type }} } from '{{import.path}}';
 {% elif 'Mapper' not in import.type%}
-import {{import.type }} from '{{import.path}}';
+import { {{import.type }} } from '{{import.path}}';
 {%endif%}
 {%endif%}
 {% endfor %}

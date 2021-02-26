@@ -5,7 +5,7 @@
 
 {% for import in metafile.imports %}
 {%if import.forMapper ===false%}
-import {{import.type}} from '{{import.path}}';
+import { {{import.type}} } from '{{import.path}}';
 {%endif%}
 {% endfor %}
 
@@ -14,7 +14,7 @@ export interface {{class.name}} {
 
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
-  {{field.name}}{% if field.nullable === true %}?{%endif%}: {{field.type}}{% if field.isArray %} []{% endif %};
+  {{field.name}}{% if field.nullable === true %}?{%endif%}: {{field.type}}{% if field.isArray %}[]{% endif %};
 
 {% endif %}
 {% endfor %}

@@ -228,6 +228,7 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
     fldMetadata.type = fldMetadata.baseModelType;
 
     const fieldDecorators = field.decorators;
+    fldMetadata.decorators = field.decorators.filter(dec => dec)
 
     fldMetadata = updateFieldMetadataForIgnoreViewModelDecorator(
         fieldDecorators.filter(decorator => decorator.name === Decorators.IgnoreViewModel),
@@ -279,13 +280,19 @@ export const getDependencyImportsForImports = (_imports: Import[], fileMetadata:
     const mapperFileRegexp = /[a-zA-Z]+Mapper/;
     let imports = [...(_imports || [])];
 
-    imports = imports.map( imp => {
+    imports = imports.reduce((prev, cur) => {
+        const curType = cur.type;
+        if (prev.find(i => i.type === curType)) {
+            return [...prev];
+        }
+        return [...prev, cur];
+    }, []).map( imp => {
         let dependencyMappers: string[] = [];
         // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
         const mapperMatch = imp.type.match(mapperFileRegexp);
         if (!mapperMatch) {
             imp.dependencyMappers = [];
-            return imp;
+            return null;
         }
         const mapperName = mapperMatch[0];
         fileMetadata.classes.forEach(cls => {
@@ -300,7 +307,7 @@ export const getDependencyImportsForImports = (_imports: Import[], fileMetadata:
         dependencyMappers = unique(dependencyMappers);
         imp.dependencyMappers = dependencyMappers;
         return imp;
-    });
+    }).filter(i => !!i);
 
     return imports;
 };

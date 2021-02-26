@@ -1,6 +1,7 @@
 import {GenerateView, IgnoreViewModel, ViewModelName, ViewModelType} from "../../../../src/index";
 import {HeroDetail} from "./heroDetail";
 import { notAsyncTransformer, asyncTransformer } from "../../../../transformer/asyncTransformer";
+import { Length } from "class-validator";
 
 @GenerateView({
     model: "ContextHeroModel",
@@ -11,16 +12,17 @@ export class Hero {
     @IgnoreViewModel("ContextHeroModel")
     public id?: number;
 
-
+    @Length(10,20)
     public name: string;
 
     @ViewModelName("detailForView", "ContextHeroModel")
     @ViewModelType({
     modelName: "ContextHeroModel",
     nullable: false,
-    transformer: { toView: { function: asyncTransformer},
-                    fromView: { function: null }
-                },
+    transformer: { 
+        toView: { function: asyncTransformer},
+        fromView: { function: null }
+    },
     type: HeroDetail})
     public detail: HeroDetail;
 }
