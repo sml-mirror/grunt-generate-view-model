@@ -22,6 +22,7 @@ import { FieldMetadata } from '../model/fieldmetadata';
 import { FileMetadata } from '../model/filemetadata';
 
 import { unique } from '../pipes';
+import { ignoreDecorators } from '../../tasks/constants/ignoreDecorators';
 
 const arrayType = '[]';
 const baseTypes = ['string', 'number', 'boolean', 'undefined', 'null', 'object'];
@@ -67,6 +68,47 @@ export const getInfoFromImports = (imports: ImportNode[], typeName: string) => {
     };
 };
 
+export const updateFieldMetadataForIgnoreDecorators = (
+    ignoreDecorators: Decorator[],
+    classMeta: ClassMetadata,
+    fldMetadata: FieldMetadata,
+    decoratorsOnField: Decorator[],
+    fileStructure: any,
+    ) => {
+    const newFldMetadata = {...fldMetadata};
+    const  fieldIgnoreDecorators = [...(ignoreDecorators.map(dec => dec.arguments[0]) || []), ...ignoreDecorators] as string[];
+    const fieldIgnoreDecoratorsClasses = (ignoreDecorators.map(dec => dec.arguments[1]) || []) as string[];
+    if (!decoratorsOnField || !decoratorsOnField.length) {
+        newFldMetadata.decorators= [];
+        return {
+            fieldMetadata: newFldMetadata,
+            possibleImports: [],
+        };;   
+    }
+    const possibleImports: ImportNode[] = [];
+    newFldMetadata.decorators = decoratorsOnField.filter(dec => {
+        const isDecoratorAvailableForField = !fieldIgnoreDecorators.includes(dec.name);
+        const isDecoratorAvailableForClass = !fieldIgnoreDecoratorsClasses.includes(classMeta.name);
+        if (isDecoratorAvailableForClass && isDecoratorAvailableForField) {
+            return true;
+        }
+        return false;
+    });
+
+    newFldMetadata.decorators.forEach(dec => {
+        const importNode = fileStructure._imports.find(_import => _import.clauses.find(cl => cl === dec.name));
+        if (importNode) {
+            possibleImports.push(importNode);
+            return;
+        }
+    })
+
+    return {
+        fieldMetadata: newFldMetadata,
+        possibleImports,
+    };
+}
+
 
 export const updateFieldMetadataForIgnoreViewModelDecorator = (decorators: Decorator[], classMeta: any, fldMetadata: FieldMetadata) => {
     if (!decorators || !decorators.length) {
@@ -86,7 +128,10 @@ export const updateFieldMetadataForIgnoreViewModelDecorator = (decorators: Decor
     return updatedFldMetadata;
 };
 
-export const updateFieldMetadataForViewModelNameDecorator = (decorators: Decorator[], classMeta: any, fldMetadata: FieldMetadata) => {
+export const updateFieldMetadataForViewModelNameDecorator = (
+    decorators: Decorator[],
+    classMeta: any,
+    fldMetadata: FieldMetadata) => {
     if (!decorators || !decorators.length) {
         return fldMetadata;
     }
@@ -203,7 +248,6 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
     let fldMetadata = new FieldMetadata();
     fldMetadata.baseModelName = field.name;
     fldMetadata.nullable = true;
-
     if (field.type.typeKind === TypeKind.ARRAY) {
         fldMetadata.isArray = true;
     }
@@ -228,28 +272,38 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
     fldMetadata.type = fldMetadata.baseModelType;
 
     const fieldDecorators = field.decorators;
-    fldMetadata.decorators = field.decorators.filter(dec => dec)
-
     fldMetadata = updateFieldMetadataForIgnoreViewModelDecorator(
         fieldDecorators.filter(decorator => decorator.name === Decorators.IgnoreViewModel),
         cm,
-        fldMetadata);
+        fldMetadata
+    );
 
     fldMetadata = updateFieldMetadataForViewModelNameDecorator(
         fieldDecorators.filter(decorator => decorator.name === Decorators.ViewModelName),
         cm,
         fldMetadata);
-
-    const result = updateFieldMetadataForViewModelTypeDecorator(
+    
+    const {fieldMetadata, ...rest} = updateFieldMetadataForViewModelTypeDecorator(
         fieldDecorators.filter(decorator => decorator.name === Decorators.ViewModelType),
         cm,
         fldMetadata,
         json
     );
 
-    fldMetadata = result.fieldMetadata;
+    fldMetadata = fieldMetadata;
+    possibleImports.push(...rest.possibleImports);
 
-    possibleImports.push(...result.possibleImports);
+    const decUpdate = updateFieldMetadataForIgnoreDecorators(
+        fieldDecorators?.filter(decorator => decorator.name === Decorators.IgnoreDecorators),
+        cm,
+        fldMetadata,
+        fieldDecorators?.filter(decorator => !ignoreDecorators.includes(decorator.name)),
+        json,
+    );
+
+    fldMetadata = decUpdate.fieldMetadata;
+    possibleImports.push(...decUpdate.possibleImports);
+
 
     return fldMetadata;
 };

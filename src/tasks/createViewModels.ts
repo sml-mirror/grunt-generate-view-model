@@ -4,19 +4,18 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseStruct, ImportNode } from 'ts-file-parser';
-import { render, configure } from 'nunjucks';
+import { parseStruct } from 'ts-file-parser';
+import { configure, Environment } from 'nunjucks';
 import mkdirp from 'mkdirp';
 
 import { Config } from './model/config';
 import { FileMetadata } from './model/filemetadata';
-import { ClassMetadata } from './model/classmetadata';
 import { GenerateViewOptions } from './model/generateViewOptions';
-import { Transformer } from './model/transformer';
+
 
 import { downFirstLetter } from './pipes';
 import { Decorators } from './pipes/decorators';
-import { asyncDirection, FuncDirection, ConsoleColor } from './pipes/enums';
+import { FuncDirection, ConsoleColor } from './pipes/enums';
 import {
     createClassMeta,
     createFieldMetadata,
@@ -25,13 +24,14 @@ import {
 } from './pipes/classmeta';
 import { createMapperFile, getAllFiles } from './pipes/files';
 import { makeCorrectImports } from './pipes/import';
+import { saveInfoAboutTransformer } from './pipes/transformer';
 
-const primitiveTypes = ['string', 'number', 'object', 'any', 'null', 'undefined'];
 const configName = 'genconfig.json';
 const UTF8 = 'utf8';
 
 export function createMetadatas(files: string[]): FileMetadata[] {
     let generationFiles: FileMetadata[] = [];
+
     files.forEach(file => {
         const stringFile = fs.readFileSync(file, 'utf-8');
         const jsonStructure = parseStruct(stringFile, {}, file);
@@ -83,7 +83,13 @@ export function createMetadatas(files: string[]): FileMetadata[] {
 
             generationFiles.map(file => {
                 const mappedFile = {...file}
+                if (possibleImports.find(pI => pI.clauses.find(c => c === 'Length'))) {
+                    console.log('possibleImports', possibleImports);
+                }
                 const correctImports = makeCorrectImports(mappedFile, possibleImports)
+                if (possibleImports.find(pI => pI.clauses.find(c => c === 'Length'))) {
+                    console.log('returnedImports', correctImports);
+                }
                 mappedFile.imports.push(...correctImports);
                 return mappedFile;
             });
@@ -97,18 +103,28 @@ export function createMetadatas(files: string[]): FileMetadata[] {
 
 export function createFiles(filesMetadata: FileMetadata[]): void {
     filesMetadata.forEach(_fileMetadata => {
-        const templatePath= `./view/${_fileMetadata.type}`;
-        const viewsFolder = path.resolve(__dirname, templatePath);
-
-        configure(viewsFolder, { autoescape: true, trimBlocks: true });
         const fileMetadata = { ..._fileMetadata };
         fileMetadata.classes = fileMetadata.classes.filter(item => item.generateView);
         if (fileMetadata.mapperPath) {
             fileMetadata.classes = mapFileClasses(fileMetadata.classes, fileMetadata);
         }
         fileMetadata.imports = filterFileMetadata(fileMetadata.imports, fileMetadata.classes);
-        const generatedClassFileContent = render('viewTemplateCommon.njk', { metafile: fileMetadata });
-        const createdMapperFileContent = render('mapperTemplate.njk', { metafile: fileMetadata });
+        _fileMetadata.classes.forEach(c => {
+            c.fields.forEach(f => {
+                if (f.decorators?.length) {
+                console.log(c.name, f.name, f.decorators);
+                }
+            });
+        })
+
+        const templatePath= `./view/${_fileMetadata.type}`;
+        const viewsFolder = path.resolve(__dirname, templatePath);
+        const env = configure(viewsFolder, { autoescape: true, trimBlocks: true });
+        env.addFilter('is_string', (obj: any) => {
+            return typeof obj == 'string';
+        });
+        const generatedClassFileContent = env.render('viewTemplateCommon.njk', { metafile: fileMetadata,  });
+        const createdMapperFileContent = env.render('mapperTemplate.njk', { metafile: fileMetadata });
         const generatedFileExist: string = generatedClassFileContent && generatedClassFileContent.trim();
 
         if (!generatedFileExist) {
@@ -127,83 +143,6 @@ export function createFiles(filesMetadata: FileMetadata[]): void {
         createMapperFile(fileMetadata, createdMapperFileContent);
     });
 }
-
-function saveInfoAboutTransformer(direction: FuncDirection, func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) {
-    if (!direction) {
-        return;
-    }
-    const isTransformFunctionExist = !!func[direction]?.function;
-    if (!isTransformFunctionExist) {
-        return;
-    }
-    const importFunctionName = func[direction].function;
-    const moduleImport = possibleImports.find(possibleImport => possibleImport.clauses.indexOf(importFunctionName) > -1);
-    if (moduleImport) {
-        let fileContentInString = '';
-        let pathFromFile = moduleImport.absPathNode.join('/');
-        const getContentFrom = (from: string) => {
-            fileContentInString = fs.readFileSync(path.resolve(pathFromFile + from)).toString();
-            pathFromFile = `${pathFromFile}${from}`;
-        };
-
-        try {
-            getContentFrom('.ts');
-        } catch (e) {
-            getContentFrom('/index.ts');
-        }
-
-        const jsonStructure = parseStruct(fileContentInString, {}, pathFromFile);
-        const { functions } = jsonStructure;
-
-        const targetFuncs = functions.find(func => func.name === importFunctionName);
-        func[direction].isAsync = targetFuncs.isAsync;
-        const asyncDirect = asyncDirection[direction];
-        if (!cm[asyncDirect]) {
-            cm[asyncDirect] = targetFuncs.isAsync;
-        }
-        func[direction].isPrimitive = false;
-        const contextObject = targetFuncs.params[1]
-        const contextTypeOfTransformer = contextObject?.type || null;
-        const contextMandatoryOfType = contextObject?.mandatory || false;
-        const directionValueInfo = cm.contextType[direction];
-        if (!contextTypeOfTransformer) {
-            return;
-        }
-        if (!directionValueInfo.value || directionValueInfo.value === contextTypeOfTransformer || contextTypeOfTransformer === 'any') {
-            directionValueInfo.value = contextTypeOfTransformer;
-            directionValueInfo.mandatory = contextMandatoryOfType || directionValueInfo.mandatory;
-            const fieldsWithContext = cm.fields.filter(f => !!f.fieldConvertFunction?.[direction]);
-            fieldsWithContext.forEach(f => {
-                const funcToRecognize = functions.find(func => func.name === f.fieldConvertFunction[direction].function);
-                const isFuncsWithParams = !!funcToRecognize?.params[1];
-                if (!isFuncsWithParams) {
-                    return;
-                }
-                cm.contextTypeFields[direction].push(f.name);
-            });
-        } else {
-            throw new Error('Context for one-side mapper should be of one type or any');
-        }
-        const isPrimitiveType = !!primitiveTypes.find(type => type === directionValueInfo.value );
-        if (isPrimitiveType) {
-            return;
-        }
-        const contextTypeImport = jsonStructure._imports.find(imp => !!imp.clauses.find(clause => directionValueInfo.value === clause));
-        possibleImports.push({
-            clauses: [directionValueInfo.value],
-            absPathNode: contextTypeImport.absPathNode,
-            isNodeModule: false
-        });
-        return;
-    }
-    func[direction].isPrimitive = true;
-    if ( func[direction].function !== 'null' && func[direction].function !== 'undefined') {
-        func[direction].isPrimitiveString = isNaN(+func[direction].function);
-    } else {
-        func[direction].isPrimitiveString = false;
-    }
-}
-
 
 function FillFileMetadataArray(genViewOpt: GenerateViewOptions, file: string) {
     const { filePath, model } = genViewOpt;

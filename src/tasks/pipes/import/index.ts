@@ -4,7 +4,7 @@ import { ImportNode } from "ts-file-parser";
 import { FileMetadata } from "../../../tasks/model/filemetadata";
 
 import { getMapperImports } from "./mapper";
-import { getInterfaceImports } from "./simple";
+import { getDecoratorImports, getInterfaceImports } from "./simple";
 
 const deleteRepeatableImports = (imports: ImportNode[]) => {
     const filteredImports: ImportNode[] = [];
@@ -23,9 +23,10 @@ export const makeCorrectImports = (fileMetadata: FileMetadata, possibleImports: 
     const imports = deleteRepeatableImports(possibleImports);
 
     const resultMapperImports = getMapperImports(fileMetadata, imports);  
-    const resultImports = getInterfaceImports(fileMetadata, imports);  
+    const resultImports = getInterfaceImports(fileMetadata, imports); 
+    const resultDecorators = getDecoratorImports(fileMetadata, imports); 
 
-    const result: Import[] = [...resultMapperImports, ...resultImports]
+    const result: Import[] = [...resultMapperImports, ...resultImports, ...resultDecorators]
         .filter(imp => !fileMetadata.imports.find(i => i.type === imp.type))
         .reduce((prev, cur) => {
             const pathExistInPrev = prev.find(item => cur.path === item.path)
@@ -46,10 +47,10 @@ export const makeCorrectImports = (fileMetadata: FileMetadata, possibleImports: 
         const isAIsNodeModule = !a.path.startsWith('.')
         const isBIsNodeModule = !b.path.startsWith('.')
         if (isAIsNodeModule && !isBIsNodeModule) {
-            return 1;
+            return -1;
         }
         if (isBIsNodeModule && !isAIsNodeModule) {
-            return -1;
+            return 1;
         }
 
         const aImport = `import { ${a.type} } from '${a.path}'`;

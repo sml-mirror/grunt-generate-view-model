@@ -1,7 +1,9 @@
 import * as path from 'path';
+
 import { ImportNode } from "ts-file-parser";
 
 import { FileMetadata } from "../../../../tasks/model/filemetadata";
+import { ignoreDecorators } from '../../../../tasks/constants/ignoreDecorators';
 import { Import } from "../../../../tasks/model/import";
 
 const getSearchingImportsName = (fileMetadata: FileMetadata) => {
@@ -20,6 +22,26 @@ const getSearchingImportsName = (fileMetadata: FileMetadata) => {
     });
 
     return importsToSearch;
+}
+
+export const getDecoratorImports = (fileMetadata: FileMetadata, imports: ImportNode[]) => {
+    const result: Import[] = [];
+    const decorators: string[] = [];
+    fileMetadata.classes.forEach(cls => {
+        cls.fields.forEach(fld => {
+            decorators.push(...fld.decorators.filter(dec => !ignoreDecorators.includes(dec.name)).map(d => d.name))
+        });
+    });
+    imports.forEach(imprt => {
+        if (decorators.find(dec => imprt.clauses.find(c => c.includes(dec)))) {
+            const nodeImport = new Import();
+            nodeImport.path = imprt.absPathNode.join('/');
+            nodeImport.forMapper = false;
+            nodeImport.type = imprt.clauses.join(',');
+            result.push(nodeImport);
+        }
+    })
+    return result;
 }
 
 export const getInterfaceImports = (fileMetadata: FileMetadata, imports: ImportNode[]) => {

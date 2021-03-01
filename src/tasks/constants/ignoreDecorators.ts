@@ -1,3 +1,5 @@
+import { Decorators } from "../../tasks/pipes/decorators"
+
 const entityDecorators = [
     'Entity',
     'ViewEntity'
@@ -47,6 +49,13 @@ const otherDecorators = [
     'EntityRepository'
 ]
 
+export const libDecorators = [
+    Decorators.GenerateView,
+    Decorators.IgnoreDecorators,
+    Decorators.IgnoreViewModel,
+    Decorators.ViewModelName,
+    Decorators.ViewModelType
+];
 
 export const ignoreDecorators = [
     ...entityDecorators,
@@ -54,4 +63,5 @@ export const ignoreDecorators = [
     ...relationDecorators,
     ...listenerDecorators,
     ...otherDecorators,
+    ...libDecorators,
 ]
