@@ -25,6 +25,7 @@ import {
 import { createMapperFile, getAllFiles } from './pipes/files';
 import { makeCorrectImports } from './pipes/import';
 import { saveInfoAboutTransformer } from './pipes/transformer';
+import { NunjucksService } from './service/nunjuks';
 
 const configName = 'genconfig.json';
 const UTF8 = 'utf8';
@@ -34,67 +35,66 @@ export function createMetadatas(files: string[]): FileMetadata[] {
 
     files.forEach(file => {
         const stringFile = fs.readFileSync(file, 'utf-8');
-        const jsonStructure = parseStruct(stringFile, {}, file);
-        const possibleImports = jsonStructure._imports || [];
-        jsonStructure.classes.forEach(cls => {
-            const generateViewDecorators = (cls.decorators || []).filter(dec => dec.name === Decorators.GenerateView);
+        try {
+            const jsonStructure = parseStruct(stringFile, {}, file);
+            const possibleImports = jsonStructure._imports || [];
+            jsonStructure.classes.forEach(cls => {
+                const generateViewDecorators = (cls.decorators || []).filter(dec => dec.name === Decorators.GenerateView);
 
-            if (!generateViewDecorators.length) {
-                return;
-            }
-
-            const classesMeta = generateViewDecorators.map(dec => {
-                const genViewOpt = dec.arguments[0].valueOf() as GenerateViewOptions;
-                const classMeta = createClassMeta(genViewOpt.model, genViewOpt.mapperPath);
-                const newFileMetadata = FillFileMetadataArray( genViewOpt, file);
-                const metadataExist = generationFiles.find(file => file.filename === newFileMetadata.filename);
-                if (metadataExist) {
-                    return classMeta;
+                if (!generateViewDecorators.length) {
+                    return;
                 }
-                generationFiles.push(FillFileMetadataArray( genViewOpt, file));
-                return classMeta;
-            });
 
-            classesMeta.forEach(cm => {
-                cm.baseName = cls.name;
-                cm.baseNamePath = file;
-                cls.fields.forEach(fld => {
-                    const fieldMetadata = createFieldMetadata(fld, jsonStructure, cm, possibleImports);
-                    cm.fields.push(fieldMetadata);
-                });
-
-                const fieldsWithConvertFunctions = cm.fields.filter(f => f.fieldConvertFunction);
-                fieldsWithConvertFunctions.forEach(f => {
-                    const func = f.fieldConvertFunction;
-                    saveInfoAboutTransformer(FuncDirection.toView, func, possibleImports, cm);
-                    saveInfoAboutTransformer(FuncDirection.fromView, func, possibleImports, cm);
-                });
-            });
-
-            classesMeta.forEach( cm => {
-                const classMetaFileName = `${downFirstLetter(cm.name)}.ts`;
-                generationFiles = generationFiles.map(file => {
-                    if (file.filename.includes(classMetaFileName)) {
-                        file.classes.push(cm);
+                const classesMeta = generateViewDecorators.map(dec => {
+                    const genViewOpt = dec.arguments[0].valueOf() as GenerateViewOptions;
+                    const classMeta = createClassMeta(genViewOpt.model, genViewOpt.mapperPath);
+                    const newFileMetadata = FillFileMetadataArray( genViewOpt, file);
+                    const metadataExist = generationFiles.find(file => file.filename === newFileMetadata.filename);
+                    if (metadataExist) {
+                        return classMeta;
                     }
-                    return file;
-                })
-            });
+                    generationFiles.push(FillFileMetadataArray( genViewOpt, file));
+                    return classMeta;
+                });
 
-            generationFiles.map(file => {
-                const mappedFile = {...file}
-                if (possibleImports.find(pI => pI.clauses.find(c => c === 'Length'))) {
-                    console.log('possibleImports', possibleImports);
-                }
-                const correctImports = makeCorrectImports(mappedFile, possibleImports)
-                if (possibleImports.find(pI => pI.clauses.find(c => c === 'Length'))) {
-                    console.log('returnedImports', correctImports);
-                }
-                mappedFile.imports.push(...correctImports);
-                return mappedFile;
+                classesMeta.forEach(cm => {
+                    cm.baseName = cls.name;
+                    cm.baseNamePath = file;
+                    cls.fields.forEach(fld => {
+                        const fieldMetadata = createFieldMetadata(fld, jsonStructure, cm, possibleImports);
+                        cm.fields.push(fieldMetadata);
+                    });
+
+                    const fieldsWithConvertFunctions = cm.fields.filter(f => f.fieldConvertFunction);
+                    fieldsWithConvertFunctions.forEach(f => {
+                        const func = f.fieldConvertFunction;
+                        saveInfoAboutTransformer(FuncDirection.toView, func, possibleImports, cm);
+                        saveInfoAboutTransformer(FuncDirection.fromView, func, possibleImports, cm);
+                    });
+                });
+
+                classesMeta.forEach( cm => {
+                    const classMetaFileName = `${downFirstLetter(cm.name)}.ts`;
+                    generationFiles = generationFiles.map(file => {
+                        if (file.filename.includes(classMetaFileName)) {
+                            file.classes.push(cm);
+                        }
+                        return file;
+                    })
+                });
+
+                generationFiles.map(file => {
+                    const mappedFile = {...file}
+                    const correctImports = makeCorrectImports(mappedFile, possibleImports)
+                    mappedFile.imports.push(...correctImports);
+                    return mappedFile;
+                });
+                
             });
-            
-        });
+        } catch (e) {
+            console.log(ConsoleColor.Red, `file ${file} has error: ${e.message}`);
+            console.log(ConsoleColor.Default);
+        }
     });
 
     const result = generationFiles.filter(file => file.filename);
@@ -109,22 +109,11 @@ export function createFiles(filesMetadata: FileMetadata[]): void {
             fileMetadata.classes = mapFileClasses(fileMetadata.classes, fileMetadata);
         }
         fileMetadata.imports = filterFileMetadata(fileMetadata.imports, fileMetadata.classes);
-        _fileMetadata.classes.forEach(c => {
-            c.fields.forEach(f => {
-                if (f.decorators?.length) {
-                console.log(c.name, f.name, f.decorators);
-                }
-            });
-        })
 
-        const templatePath= `./view/${_fileMetadata.type}`;
-        const viewsFolder = path.resolve(__dirname, templatePath);
-        const env = configure(viewsFolder, { autoescape: true, trimBlocks: true });
-        env.addFilter('is_string', (obj: any) => {
-            return typeof obj == 'string';
-        });
-        const generatedClassFileContent = env.render('viewTemplateCommon.njk', { metafile: fileMetadata,  });
-        const createdMapperFileContent = env.render('mapperTemplate.njk', { metafile: fileMetadata });
+        const nunjucks = new NunjucksService(_fileMetadata.type)
+        const generatedClassFileContent = nunjucks.createViewTemplate(fileMetadata);
+        const createdMapperFileContent = nunjucks.createMapperTemplate(fileMetadata);
+
         const generatedFileExist: string = generatedClassFileContent && generatedClassFileContent.trim();
 
         if (!generatedFileExist) {
