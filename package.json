@@ -14,8 +14,7 @@
     "build": "npm run clean && tsc -p src && npm run copy-files",
     "build-test": "tsc -p test/src",
     "test": "echo NOT READY",
-    "start": "grunt build && grunt test",
-    "test-start": "npm run build && node ./dist/bin.js"
+    "start": "npm run build && node ./dist/bin.js"
   },
   "dependencies": {
     "mkdirp": "1.0.4",

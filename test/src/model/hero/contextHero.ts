@@ -30,5 +30,6 @@ export class Hero {
     },
     type: HeroDetail})
     @IgnoreDecorators()
+    @ValidateIf(o => o.toty !== "value")
     public detail: HeroDetail;
 }

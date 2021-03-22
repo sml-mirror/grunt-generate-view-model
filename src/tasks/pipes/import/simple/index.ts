@@ -73,34 +73,26 @@ export const getInterfaceImports = (fileMetadata: FileMetadata, imports: ImportN
     // find same class as import in view model
     const cls = fileMetadata.classes;
     const modelName = cls.baseName;
-    const fieldWithBaseType = cls.fields.find(fld => fld.type === modelName);
-    /*if (!fieldWithBaseType) {
-        result = result.filter(item => item.type !== modelName);
-    }*/
-    /*
-    if (result.find(item => item.type === modelName)) {
-        return [];
+    const fieldWithTypeLikeBaseName = cls.fields.find(fld => fld.type === modelName);
+
+    if (fieldWithTypeLikeBaseName) {
+        const sameImport = new Import();
+        sameImport.type = modelName;
+        const to = cls.baseNamePath.replace('.ts', '');
+        const from = fileMetadata.filename.replace('.ts', '')
+            .split('/')
+            .map((p,i, self) => {
+                if (i === self.length -1) {
+                    return null;
+                }
+                return p;
+            })
+            .filter(o => o).join('/');
+
+        sameImport.path = path.relative(from, to).replace(/\\/g, '/')
+        
+        result.push(sameImport);
     }
-
-    if (imports.find(imp => imp.clauses.includes(modelName))) {
-        return [];
-    }*/
-
-    const sameImport = new Import();
-    sameImport.type = modelName;
-    const to = cls.baseNamePath.replace('.ts', '');
-    const from = fileMetadata.filename.replace('.ts', '')
-        .split('/')
-        .map((p,i, self) => {
-            if (i === self.length -1) {
-                return null;
-            }
-            return p;
-        })
-        .filter(o => o).join('/');
-
-    sameImport.path = path.relative(from, to).replace(/\\/g, '/')
-    result.push(sameImport);
     return result;
 }
 
