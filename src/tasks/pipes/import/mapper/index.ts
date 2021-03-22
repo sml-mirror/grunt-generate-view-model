@@ -81,16 +81,14 @@ const getContextTypeImports = (meta: FileMetadata, possibleImports: ImportNode[]
 
     let { classes } = meta;
     const imports: Import[] = [];
-    classes.forEach(_class => {
-        const fromViewImport = createImport(_class.contextType.fromView.value);
-        if (fromViewImport) {
-            imports.push(fromViewImport);
-        }
-        const toViewImport = createImport(_class.contextType.toView.value);
-        if (toViewImport) {
-            imports.push(toViewImport);
-        }
-    })
+    const fromViewImport = createImport(classes.contextType.fromView.value);
+    if (fromViewImport) {
+        imports.push(fromViewImport);
+    }
+    const toViewImport = createImport(classes.contextType.toView.value);
+    if (toViewImport) {
+        imports.push(toViewImport);
+    }
     return imports;
 }
 
@@ -99,13 +97,11 @@ export const getMapperImports = (fileMetadata: FileMetadata, imports: ImportNode
     let mapperImports: string[] = [];
     let resultMapperImports: Import[] = [];
 
-    fileMetadata.classes.forEach(cls => {
-        const fieldMapperImport = getMapperImportsForFields(cls.fields);
-        mapperImports.push(...fieldMapperImport);
-    })
-
+    mapperImports = getMapperImportsForFields(fileMetadata.classes.fields);
     mapperImports.forEach(mapperImport => {
-        const importNode = imports.find(nodeImport => nodeImport.clauses.includes(mapperImport));
+        const importNode = imports.find(nodeImport => {
+            return nodeImport.clauses.includes(mapperImport)
+        });
 
         if (!importNode) {
             return;
@@ -129,7 +125,7 @@ export const getMapperImports = (fileMetadata: FileMetadata, imports: ImportNode
 
         получение импортов для сгенерированных мапперов
     */
-    const generatedImports = getGeneratedMapperImports(fileMetadata);
+    const generatedImports = getDependencyImportsForImports(resultMapperImports, fileMetadata)
     generatedImports.forEach(generatedImport => {
         const isMapperImportExistInImports = fileMetadata.imports.find(_import => _import.type.includes(generatedImport.type));
         if (isMapperImportExistInImports) {

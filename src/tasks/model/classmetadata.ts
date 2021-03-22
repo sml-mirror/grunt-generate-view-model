@@ -1,4 +1,5 @@
 
+import { Decorator } from "ts-file-parser";
 import {FieldMetadata} from "./fieldmetadata";
 
 export interface ContextInfo {
@@ -8,6 +9,8 @@ export interface ContextInfo {
 
 export class ClassMetadata {
     public name: string;
+    public type: 'interface' | 'class' = 'interface';
+    public decorators: Decorator[];
     public fields: FieldMetadata[];
     public generateView: boolean = false;
     public needMapper: boolean = false;

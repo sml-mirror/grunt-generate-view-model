@@ -83,24 +83,22 @@ export const updateFieldMetadataForIgnoreDecorators = (
         return {
             fieldMetadata: newFldMetadata,
             possibleImports: [],
-        };;   
+        };
     }
     const possibleImports: ImportNode[] = [];
+
     newFldMetadata.decorators = decoratorsOnField.filter(dec => {
         const isDecoratorAvailableForField = !fieldIgnoreDecorators.includes(dec.name);
         const isDecoratorAvailableForClass = !fieldIgnoreDecoratorsClasses.includes(classMeta.name);
-        if (isDecoratorAvailableForClass && isDecoratorAvailableForField) {
-            return true;
-        }
-        return false;
+        return isDecoratorAvailableForClass && isDecoratorAvailableForField;
     });
 
     newFldMetadata.decorators.forEach(dec => {
         const importNode = fileStructure._imports.find(_import => _import.clauses.find(cl => cl === dec.name));
-        if (importNode) {
-            possibleImports.push(importNode);
+        if (!importNode) {
             return;
         }
+        possibleImports.push(importNode);
     })
 
     return {
@@ -120,9 +118,7 @@ export const updateFieldMetadataForIgnoreViewModelDecorator = (decorators: Decor
     decorators.forEach(decorator => {
         const ignoreViewModelName = decorator.arguments[0];
         const setIgnoreNameToClass = ignoreViewModelName && ignoreViewModelName.toString() === classMeta.name;
-        if (setIgnoreNameToClass || !ignoreViewModelName) {
-            updatedFldMetadata.ignoredInView = true;
-        }
+        updatedFldMetadata.ignoredInView = setIgnoreNameToClass || !ignoreViewModelName;
     });
 
     return updatedFldMetadata;
@@ -212,13 +208,13 @@ export const updateFieldMetadataForViewModelTypeDecorator = (
                                 if (generateOptions.model.toLowerCase() !== viewModelType.toLowerCase()) {
                                     return;
                                 }
-                                const impNode: ImportNode = { isNodeModule: false, clauses: [], absPathNode: [] };
+                                const mapperImport: ImportNode = { isNodeModule: false, clauses: [], absPathNode: [] };
                                 const { model } = generateOptions;
                                 const fileName = `${upFirstLetter(model)}Mapper`;
-                                impNode.clauses.push(fileName);
-                                impNode.absPathNode.push(`${generateOptions.mapperPath}/${fileName}`);
+                                mapperImport.clauses.push(fileName);
+                                mapperImport.absPathNode.push(`${generateOptions.mapperPath}/${fileName}`);
                                 updatedFieldMetadata.needGeneratedMapper = true;
-                                possibleImports.push(impNode);
+                                possibleImports.push(mapperImport);
                             });
                         });
                     });
@@ -308,26 +304,22 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
     return fldMetadata;
 };
 
-export const filterFileMetadata = (imports: Import[], classes: ClassMetadata[]): Import[] => {
+export const filterFileMetadata = (imports: Import[], classes: ClassMetadata): Import[] => {
     const newImports = imports.filter(imp => {
         const importArray = imp.type.slice(1, imp.type.length - 1).trim().split(',');
-        return !importArray.find(_imp => _imp === classes[0].baseName);
+        return !importArray.find(_imp => _imp === classes.baseName);
     });
 
     return newImports;
 };
 
-export const mapFileClasses = (classes: ClassMetadata[], fileMetadata: FileMetadata): ClassMetadata[] => {
-    const mappedClasses = classes.map(cl => {
-        const newClass = { ...cl };
+export const mapFileClasses = (classes: ClassMetadata, fileMetadata: FileMetadata): ClassMetadata => {
+    const newClass = { ...classes };
 
-        newClass.viewModelFromMapper = getModelNameFromPath(fileMetadata.mapperPath, fileMetadata.filename);
-        newClass.baseModelFromMapper = getModelNameFromPath(fileMetadata.mapperPath, fileMetadata.basePath);
+    newClass.viewModelFromMapper = getModelNameFromPath(fileMetadata.mapperPath, fileMetadata.filename);
+    newClass.baseModelFromMapper = getModelNameFromPath(fileMetadata.mapperPath, fileMetadata.basePath);
 
-        return newClass;
-    });
-
-    return mappedClasses;
+    return newClass;
 };
 
 export const getDependencyImportsForImports = (_imports: Import[], fileMetadata: FileMetadata) => {
@@ -349,14 +341,12 @@ export const getDependencyImportsForImports = (_imports: Import[], fileMetadata:
             return null;
         }
         const mapperName = mapperMatch[0];
-        fileMetadata.classes.forEach(cls => {
-            cls.fields.forEach(field => {
-                const condition = mapperName.includes(field.type) && field.needGeneratedMapper && !field.ignoredInView;
-                if (!condition) {
-                    return;
-                }
-                dependencyMappers.push(cls.name);
-            });
+        fileMetadata.classes.fields.forEach(field => {
+            const condition = mapperName.includes(field.type) && field.needGeneratedMapper && !field.ignoredInView;
+            if (!condition) {
+                return;
+            }
+            dependencyMappers.push(field.type);
         });
         dependencyMappers = unique(dependencyMappers);
         imp.dependencyMappers = dependencyMappers;

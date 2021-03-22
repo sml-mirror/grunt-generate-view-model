@@ -10,15 +10,14 @@
   },
   "scripts": {
     "clean": "rimraf dist/",
-    "copy-files": "copyfiles --flat src/tasks/view/class/*.njk dist/tasks/view/class/ && copyfiles --flat src/tasks/view/interface/*.njk dist/tasks/view/interface/ ",
+    "copy-files": "copyfiles --flat src/tasks/view/*.njk dist/tasks/view/ ",
     "build": "npm run clean && tsc -p src && npm run copy-files",
     "build-test": "tsc -p test/src",
     "test": "echo NOT READY",
     "start": "grunt build && grunt test",
-    "test-start": "node ./dist/bin.js"
+    "test-start": "npm run build && node ./dist/bin.js"
   },
   "dependencies": {
-    "class-validator": "^0.13.1",
     "mkdirp": "1.0.4",
     "nunjucks": "3.2.3",
     "path": "0.12.7",
@@ -34,6 +33,7 @@
     "@types/node": "14.14.30",
     "chai": "4.3.0",
     "copyfiles": "2.4.1",
+    "class-validator": "0.13.1",
     "mocha": "8.3.0",
     "rimraf": "3.0.2",
     "ts-node": "9.1.1",

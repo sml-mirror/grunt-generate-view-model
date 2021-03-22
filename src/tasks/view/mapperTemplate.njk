@@ -2,30 +2,34 @@
 // tslint:disable
 /* eslint-disable */
 
-{% for class in metafile.classes %}
+{% if class|is_not_empty %}
 import { {{class.name}} } from '{{class.viewModelFromMapper}}';
 import { {{class.baseName}} } from '{{class.baseModelFromMapper}}';
-{% for import in metafile.imports %}
+{% for import in imports %}
 {%if import.forMapper ===true%}
-{% if import.dependencyMappers.indexOf(class.name) > -1 %}
+{% if import.type.includes('Mapper') %}
 import { {{import.type }} } from '{{import.path}}';
 {% elif 'Mapper' not in import.type%}
 import { {{import.type }} } from '{{import.path}}';
 {%endif%}
 {%endif%}
 {% endfor %}
-{% endfor%}
+{% endif%}
 
-{% for class in metafile.classes %}
+{% if class|is_not_empty %}
 export class {{class.name}}Mapper {
       public static {% if class.isToViewAsync %}async {% endif %}to{{class.name}}(model: {{class.baseName}}{% if class.contextType.toView.value %}, context{% if class.contextType.toView.mandatory === false %}?{% endif %}: {{class.contextType.toView.value}}{% endif %}): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
-            let result = new {{class.name}}();
+      {% if class.type==='interface' %}
+      let result: {{class.name}} = {};
+      {% else %}
+      let result = new {{class.name}}();
+      {% endif %}
 {% for field in class.fields %}
 {% if field.ignoredInView===false %}
 {%if field.fieldConvertFunction%}
 {% if field.fieldConvertFunction.toView %}
 {% if field.fieldConvertFunction.toView.isPrimitive === false%}
-            result.{{field.name}}  = {% if field.fieldConvertFunction.toView.isAsync %}await{% endif %} {{field.fieldConvertFunction.toView.function}}(model{% if field.name in class.contextTypeFields.toView %}, context{% endif %});
+      result.{{field.name}}  = {% if field.fieldConvertFunction.toView.isAsync %}await{% endif %} {{field.fieldConvertFunction.toView.function}}(model{% if field.name in class.contextTypeFields.toView %}, context{% endif %});
 {% else %}
 {% if field.fieldConvertFunction.toView.isPrimitiveString === true%}
             result.{{field.name}} = "{{field.fieldConvertFunction.toView.function}}";
@@ -39,7 +43,7 @@ export class {{class.name}}Mapper {
 {% elif field.isArray %}
 {% if field.needGeneratedMapper%}
             if (model.{{field.baseModelName}}) {
-                  let tmp =  {% if class.isToViewAsync %}await{% endif %} model.{{field.baseModelName}}.map({% if class.isToViewAsync %}async{% endif %} function(item: any ) {return {% if class.isToViewAsync %}await{% endif %} {{field.type}}Mapper.to{{field.type}}(item); });
+                  let tmp = {% if class.isToViewAsync %}await{% endif %} model.{{field.baseModelName}}.map({% if class.isToViewAsync %}async{% endif %} function(item: any ) {return {% if class.isToViewAsync %}await{% endif %} {{field.type}}Mapper.to{{field.type}}(item); });
                   tmp.forEach({% if class.isToViewAsync %}async{% endif %} mp => {
                        let p = {% if class.isToViewAsync %}await{% endif %} mp;
                        result.{{field.name}}.push(p); });
@@ -121,4 +125,4 @@ export class {{class.name}}Mapper {
             return result;
       }
 }
-{%endfor%}
+{%endif%}

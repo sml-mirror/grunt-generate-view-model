@@ -21,15 +21,17 @@ const deleteRepeatableImports = (imports: ImportNode[]) => {
 
 export const makeCorrectImports = (fileMetadata: FileMetadata, possibleImports: ImportNode[]) => {
     const imports = deleteRepeatableImports(possibleImports);
+    const mapperImports = getMapperImports(fileMetadata, imports);
+    const interfaceImports = getInterfaceImports(fileMetadata, imports);
+    let decoratorImports: Import[] = [];
+    if (fileMetadata.classes.type === 'class' ) {
+        decoratorImports = getDecoratorImports(fileMetadata, imports);
+    }
 
-    const resultMapperImports = getMapperImports(fileMetadata, imports);  
-    const resultImports = getInterfaceImports(fileMetadata, imports); 
-    const resultDecorators = getDecoratorImports(fileMetadata, imports); 
-
-    const result: Import[] = [...resultMapperImports, ...resultImports, ...resultDecorators]
+    const result: Import[] = [...mapperImports, ...interfaceImports, ...decoratorImports]
         .filter(imp => !fileMetadata.imports.find(i => i.type === imp.type))
         .reduce((prev, cur) => {
-            const pathExistInPrev = prev.find(item => cur.path === item.path)
+            const pathExistInPrev = !!prev.find(item => cur.path === item.path)
             if (!pathExistInPrev) {
                 return [...prev, cur];
             }
@@ -40,9 +42,8 @@ export const makeCorrectImports = (fileMetadata: FileMetadata, possibleImports: 
                 item.type = `${item.type}, ${cur.type}`
                 return item;
             })
-            return newArray
+            return newArray;
         }, []);
-    
     result.sort((a, b) => {
         const isAIsNodeModule = !a.path.startsWith('.')
         const isBIsNodeModule = !b.path.startsWith('.')

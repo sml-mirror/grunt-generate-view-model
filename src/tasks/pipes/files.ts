@@ -12,7 +12,7 @@ export const getAllFiles = (checkingFolders: string[] = []) => {
         files.forEach(file => {
             const endPath = `${folderPath}/${file}`;
             let matches = tsRegExp.exec(endPath);
-            const isAnyMatches = matches && matches.length > 0;
+            const isAnyMatches = matches && matches.length;
             const isPathIdDirectory = fs.statSync(endPath).isDirectory();
             if (isPathIdDirectory) {
                 const subFiles = getAllFiles([endPath]);
