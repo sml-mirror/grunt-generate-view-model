@@ -28,6 +28,8 @@ export const getDecoratorImports = (fileMetadata: FileMetadata, imports: ImportN
     let decorators: string[] = [];
     const cls = fileMetadata.classes
     
+    decorators.push(...cls.decorators.map(d => d.name))
+
     cls.fields.forEach(fld => {
         const filteredDecorators = fld.decorators.filter(dec => !ignoreDecorators.includes(dec.name));
         decorators.push(...filteredDecorators.map(d => d.name))

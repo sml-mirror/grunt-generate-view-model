@@ -28,6 +28,7 @@ import {
 } from './pipes';
 
 import { NunjucksService } from './service/nunjuks';
+import { ignoreDecorators } from './constants/ignoreDecorators';
 
 const configName = 'genconfig.json';
 const UTF8 = 'utf8';
@@ -41,13 +42,16 @@ export function createMetadatas(files: string[]): FileMetadata[] {
             const jsonStructure = parseStruct(stringFile, {}, file);
             const possibleImports = jsonStructure._imports || [];
             jsonStructure.classes.forEach(cls => {
-                const generateViewDecorators = (cls.decorators || []).filter(dec => dec.name === Decorators.GenerateView);
+                const decorators = cls.decorators || [];
+                const generateViewDecorators = decorators.filter(dec => dec.name === Decorators.GenerateView);
+                let otherClassDecorators_ = decorators.filter(dec => !ignoreDecorators.includes(dec.name) );
 
                 if (!generateViewDecorators.length) {
                     return;
                 }
 
                 generateViewDecorators.forEach(dec => {
+                    let otherClassDecorators= [...otherClassDecorators_];
                     const options = dec.arguments[0].valueOf() as GenerateViewOptions;
                     const {filePath, model, mapperPath} = options;
                     let fileMetadata = new FileMetadata();
@@ -60,6 +64,22 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     classMeta.baseName = cls.name;
                     classMeta.baseNamePath = file;
                     classMeta.fields = cls.fields.map(fld => createFieldMetadata(fld, jsonStructure, classMeta, possibleImports));   
+    
+                    classMeta.decorators = [];
+                    const ignoreClassDecorators = decorators.filter(dec_ => dec_.name === Decorators.IgnoreDecorators)
+                    if (ignoreClassDecorators.length) {
+                        ignoreClassDecorators.forEach(ignoreClassDecorator => {
+                            const decoratorsToIgnore = (ignoreClassDecorator.arguments[0] as string[] || []);
+                            const modelsWhereDecoratorWillIgnore = (ignoreClassDecorator.arguments[1] as string[] || []);
+                            const modelInBlackList = modelsWhereDecoratorWillIgnore.includes(model);
+                            const classDecorators = otherClassDecorators.filter(d => {
+                                const decoratorInBlackList = decoratorsToIgnore.includes(d.name)
+                                return !(decoratorInBlackList && modelInBlackList);
+                            });
+                            otherClassDecorators = classDecorators;
+                        })
+                    }
+                    classMeta.decorators = otherClassDecorators;
 
                     const fieldsWithConvertFunctions = classMeta.fields.filter(f => f.fieldConvertFunction);
                     fieldsWithConvertFunctions.forEach(f => {
@@ -75,7 +95,7 @@ export function createMetadatas(files: string[]): FileMetadata[] {
                     fileMetadata.imports = correctImports;
 
                     generationFiles.push(fileMetadata);
-                });        
+                });   
             });
         } catch (e) {
             console.log(ConsoleColor.Red, `file ${file} has error: ${e.message}`);

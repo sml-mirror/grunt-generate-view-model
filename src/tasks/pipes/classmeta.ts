@@ -76,6 +76,7 @@ export const updateFieldMetadataForIgnoreDecorators = (
     fileStructure: any,
     ) => {
     const newFldMetadata = {...fldMetadata};
+    const noIgnoreDecorators = !ignoreDecorators.length;
     const  fieldIgnoreDecorators = [...(ignoreDecorators.map(dec => dec.arguments[0]) || []), ...ignoreDecorators] as string[];
     const fieldIgnoreDecoratorsClasses = (ignoreDecorators.map(dec => dec.arguments[1]) || []) as string[];
     if (!decoratorsOnField || !decoratorsOnField.length) {
@@ -88,8 +89,8 @@ export const updateFieldMetadataForIgnoreDecorators = (
     const possibleImports: ImportNode[] = [];
 
     newFldMetadata.decorators = decoratorsOnField.filter(dec => {
-        const isDecoratorAvailableForField = !fieldIgnoreDecorators.includes(dec.name);
-        const isDecoratorAvailableForClass = !fieldIgnoreDecoratorsClasses.includes(classMeta.name);
+        const isDecoratorAvailableForField = noIgnoreDecorators && !fieldIgnoreDecorators.includes(dec.name);
+        const isDecoratorAvailableForClass = noIgnoreDecorators && !fieldIgnoreDecoratorsClasses.includes(classMeta.name);
         return isDecoratorAvailableForClass && isDecoratorAvailableForField;
     });
 
