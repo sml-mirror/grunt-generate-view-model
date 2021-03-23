@@ -2,28 +2,30 @@
 // tslint:disable
 /* eslint-disable */
 
-import { HeroDetail } from '../../../src/model/hero/heroDetail';
+import { NotExistiningDecoratorForClass } from 'node-modules-library';
 import { HeroDetailViewModel } from './heroDetailViewModel';
+import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { States } from '../../../../src/tasks/model/stateModel';
 
-export interface HeroViewModel {
+@NotExistiningDecoratorForClass()
+export class HeroViewModel {
 
-  id?: string;
+      public id?: string;
 
-  name?: string;
+      public name?: string;
 
-  information?: string;
+      public information?: string;
 
-  detail?: HeroDetail;
+      public detail?: HeroDetail;
 
-  detailVM?: HeroDetailViewModel;
+      public detailVM?: HeroDetailViewModel;
 
-  details?: HeroDetailViewModel [];
+      public details?: HeroDetailViewModel[];
 
-  detailsVM?: HeroDetailViewModel [];
+      public detailsVM?: HeroDetailViewModel[];
 
-  simpleArray?: number [];
+      public simpleArray?: number[];
 
-  state?: States;
+      public state?: States;
 
 }

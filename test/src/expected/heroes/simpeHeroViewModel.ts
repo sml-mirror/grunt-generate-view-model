@@ -2,7 +2,8 @@
 // tslint:disable
 /* eslint-disable */
 
-export class SimpeHeroViewModel {
+
+export interface SimpeHeroViewModel {
 
   login?: string;
 
@@ -12,5 +13,6 @@ export class SimpeHeroViewModel {
 
   level?: number;
 
-  siblings?: string [];
+  siblings?: string[];
+
 }

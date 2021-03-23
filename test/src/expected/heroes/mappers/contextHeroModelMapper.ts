@@ -4,19 +4,22 @@
 
 import { ContextHeroModel } from '../contextHeroModel';
 import { Hero } from '../../../../src/model/hero/contextHero';
-import { asyncTransformer,notAsyncTransformer} from '../../../../../transformer/asyncTransformer';
 
 export class ContextHeroModelMapper {
-      public static async toContextHeroModel(model: Hero, context?: any): Promise<ContextHeroModel> {
-            let result : ContextHeroModel = {};
-            result.name = model.name;
-            result.detail  = await (asyncTransformer as any)(model, context);
+      public static toContextHeroModel(model: Hero): ContextHeroModel {
+            let result = new ContextHeroModel();
+                  result.name = model.name;
+            if (model.detail) {
+                  result.detailForView = JSON.parse(JSON.stringify(model.detail));
+            }
             return result;
       }
-      public static fromContextHeroModel(viewModel: ContextHeroModel, context?: any): Hero {
+      public static fromContextHeroModel(viewModel: ContextHeroModel): Hero {
             let result = new Hero();
             result.name = viewModel.name;
-            result.detail = null;
+            if (viewModel.detailForView) {
+                  result.detail = JSON.parse(JSON.stringify(viewModel.detailForView));
+            }
             return result;
       }
 }

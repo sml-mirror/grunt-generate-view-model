@@ -13,7 +13,7 @@
     "copy-files": "copyfiles --flat src/tasks/view/*.njk dist/tasks/view/ ",
     "build": "npm run clean && tsc -p src && npm run copy-files",
     "build-test": "tsc -p test/src",
-    "test": "echo NOT READY",
+    "test": "mocha -r ts-node/register test/**/*.test.ts",
     "start": "npm run build && node ./dist/bin.js"
   },
   "dependencies": {
@@ -21,26 +21,26 @@
     "nunjucks": "3.2.3",
     "path": "0.12.7",
     "ts-file-parser": "0.0.18",
-    "typescript": "4.1.5"
+    "typescript": "4.2.3"
   },
   "devDependencies": {
     "@types/nunjucks": "3.1.4",
-    "@typescript-eslint/eslint-plugin": "4.15.1",
-    "@typescript-eslint/parser": "4.15.1",
-    "@types/chai": "4.1.2",
-    "@types/mocha": "2.2.48",
-    "@types/node": "14.14.30",
-    "chai": "4.3.0",
+    "@typescript-eslint/eslint-plugin": "4.19.0",
+    "@typescript-eslint/parser": "4.19.0",
+    "@types/chai": "4.2.15",
+    "@types/mocha": "8.2.2",
+    "@types/node": "14.14.35",
+    "chai": "4.3.4",
     "copyfiles": "2.4.1",
     "class-validator": "0.13.1",
-    "mocha": "8.3.0",
+    "mocha": "8.3.2",
     "rimraf": "3.0.2",
     "ts-node": "9.1.1",
-    "eslint": "7.20.0"
+    "eslint": "7.22.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AbatapCompany/grunt-generate-view-model.git"
+    "url": "https://github.com/SoftMediaLab/grunt-generate-view-model.git"
   },
   "keywords": [
     "typescript",
@@ -49,9 +49,9 @@
     "model",
     "codegeneration"
   ],
-  "homepage": "https://github.com/AbatapCompany/grunt-generate-view-model",
+  "homepage": "https://github.com/SoftMediaLab/grunt-generate-view-model",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/AbatapCompany/grunt-generate-view-model/issues"
+    "url": "https://github.com/SoftMediaLab/grunt-generate-view-model/issues"
   }
 }

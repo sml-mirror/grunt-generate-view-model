@@ -2,7 +2,7 @@
 // tslint:disable
 /* eslint-disable */
 
-import { HeroDetail } from "../../model/hero/heroDetail";
+import { HeroDetail } from '../../../src/model/hero/heroDetail';
 
 export interface HeroDetailViewModel {
 

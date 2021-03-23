@@ -2,24 +2,25 @@
 // tslint:disable
 /* eslint-disable */
 
-import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { HeroDetailViewModel } from './heroDetailViewModel';
+import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { States } from '../../../../src/tasks/model/stateModel';
 
-export interface HeroViewModel1 {
+@NotExistiningDecoratorForClas2()
+export class HeroViewModel1 {
 
-  name?: string;
+      public name?: string;
 
-  data?: string;
+      public data?: string;
 
-  detail?: HeroDetail;
+      public detail?: HeroDetail;
 
-  details?: HeroDetailViewModel [];
+      public details?: HeroDetailViewModel[];
 
-  detailsVM?: HeroDetailViewModel [];
+      public detailsVM?: HeroDetailViewModel[];
 
-  simpleArray?: number [];
+      public simpleArray?: number[];
 
-  state?: States;
+      public state?: States;
 
 }
