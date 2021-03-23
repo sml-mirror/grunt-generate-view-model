@@ -1,6 +1,6 @@
 
-import { Decorator } from "ts-file-parser";
-import {FieldMetadata} from "./fieldmetadata";
+import { Decorator } from 'ts-file-parser';
+import { FieldMetadata } from './fieldmetadata';
 
 export interface ContextInfo {
     value: string;
@@ -12,10 +12,10 @@ export class ClassMetadata {
     public type: 'interface' | 'class' = 'interface';
     public decorators: Decorator[];
     public fields: FieldMetadata[];
-    public generateView: boolean = false;
-    public needMapper: boolean = false;
-    public isToViewAsync: boolean = false;
-    public isFromViewAsync: boolean = false;
+    public generateView = false;
+    public needMapper = false;
+    public isToViewAsync = false;
+    public isFromViewAsync = false;
     public viewModelFromMapper : string = null;
     public baseName: string = null;
     public baseNamePath: string = null;
@@ -24,8 +24,8 @@ export class ClassMetadata {
         toView: ContextInfo;
         fromView: ContextInfo;
     } = {
-        toView: {value: "", mandatory: false},
-        fromView: {value: "", mandatory: false},
+        toView: { value: '', mandatory: false },
+        fromView: { value: '', mandatory: false },
     };
     contextTypeFields: {
         toView: string[];

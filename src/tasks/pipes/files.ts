@@ -1,17 +1,17 @@
-import * as fs from "fs";
-import { FileMetadata } from "../model/filemetadata";
+import * as fs from 'fs';
+import { FileMetadata } from '../model/filemetadata';
 
-const mkdirp = require("mkdirp");
+const mkdirp = require('mkdirp');
 
 export const getAllFiles = (checkingFolders: string[] = []) => {
-    let tsRegExp = /.+\.ts$/;
+    const tsRegExp = /.+\.ts$/;
     const returnFiles: string[] = [];
 
     checkingFolders.forEach(folderPath => {
         const files = fs.readdirSync(folderPath);
         files.forEach(file => {
             const endPath = `${folderPath}/${file}`;
-            let matches = tsRegExp.exec(endPath);
+            const matches = tsRegExp.exec(endPath);
             const isAnyMatches = matches && matches.length;
             const isPathIdDirectory = fs.statSync(endPath).isDirectory();
             if (isPathIdDirectory) {
@@ -27,9 +27,9 @@ export const getAllFiles = (checkingFolders: string[] = []) => {
 
 
 export const createMapperFile = (fileMetadata: FileMetadata, mapperContent: string) => {
-    let pathArray = fileMetadata.filename.split(".ts").join("").split("/");
+    const pathArray = fileMetadata.filename.split('.ts').join('').split('/');
     const mapperModelName = pathArray[pathArray.length - 1];
     const mapperFilename = `${fileMetadata.mapperPath}/${mapperModelName}Mapper.ts`;
     mkdirp.sync(fileMetadata.mapperPath);
-    fs.writeFileSync( mapperFilename, mapperContent, "utf-8");
+    fs.writeFileSync( mapperFilename, mapperContent, 'utf-8');
 };

@@ -1,9 +1,9 @@
-import { Decorators } from "../../tasks/pipes/decorators"
+import { Decorators } from '../../tasks/pipes/decorators';
 
 const entityDecorators = [
     'Entity',
     'ViewEntity'
-]
+];
 
 const columnDecorators = [
     'Column',
@@ -15,7 +15,7 @@ const columnDecorators = [
     'DeleteDateColumn',
     'VersionColumn',
     'Generated',
-]
+];
 
 const relationDecorators = [
     'OneToOne',
@@ -25,7 +25,7 @@ const relationDecorators = [
     'JoinColumn',
     'JoinTable',
     'RelationId'
-]
+];
 
 const listenerDecorators = [
     'AfterLoad',
@@ -36,18 +36,18 @@ const listenerDecorators = [
     'BeforeRemove',
     'AfterRemove',
     'EventSubscriber'
-]
+];
 
 const otherDecorators = [
     'Index',
     'Unique',
     'Check',
     'Exclusion',
-    'Transaction',,
+    'Transaction',
     'TransactionManager',
     'TransactionRepository',
     'EntityRepository'
-]
+];
 
 export const libDecorators = [
     Decorators.GenerateView,
@@ -64,4 +64,4 @@ export const ignoreDecorators = [
     ...listenerDecorators,
     ...otherDecorators,
     ...libDecorators,
-]
+];

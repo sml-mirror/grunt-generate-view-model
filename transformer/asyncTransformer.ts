@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { ComplexInterface, ComplexInterface1 } from "./complexContextParam";
 
 export const asyncTransformer = async(modelParam2: any, contextParam?: ComplexInterface) => {

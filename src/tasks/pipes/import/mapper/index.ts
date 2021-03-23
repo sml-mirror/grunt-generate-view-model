@@ -1,12 +1,12 @@
 import * as path from 'path';
-import { ImportNode } from "ts-file-parser";
+import { ImportNode } from 'ts-file-parser';
 
-import { Import } from "../../../../tasks/model/import";
-import { FieldMetadata } from "../../../../tasks/model/fieldmetadata";
-import { FileMetadata } from "../../../../tasks/model/filemetadata";
-import { FuncDirection } from "../../../../tasks/pipes/enums";
-import { downFirstLetter } from "../../../../tasks/pipes";
-import { getDependencyImportsForImports } from "../../../../tasks/pipes/classmeta";
+import { Import } from '../../../../tasks/model/import';
+import { FieldMetadata } from '../../../../tasks/model/fieldmetadata';
+import { FileMetadata } from '../../../../tasks/model/filemetadata';
+import { FuncDirection } from '../../../../tasks/pipes/enums';
+import { downFirstLetter } from '../../../../tasks/pipes';
+import { getDependencyImportsForImports } from '../../../../tasks/pipes/classmeta';
 
 
 
@@ -24,7 +24,7 @@ const getTransformerImportsForField = (fieldMetadata: FieldMetadata) => {
         if (isDirectionTypeIsPrimitive) {
             return;
         }
-        const mainClass = directionInfo.function.split('.')[0];
+        const mainClass = (directionInfo.function as string).split('.')[0];
         imports.push(mainClass);
     });
 
@@ -32,27 +32,27 @@ const getTransformerImportsForField = (fieldMetadata: FieldMetadata) => {
 };
 
 const getMapperFieldImportForField = (fieldMetadata: FieldMetadata) => {
-    const imports: string[] = []; 
+    const imports: string[] = [];
     if (fieldMetadata.needGeneratedMapper) {
         imports.push(`${fieldMetadata.type}Mapper`);
     }
     return imports;
-}
+};
 
 const getMapperImportsForFields = (fields: FieldMetadata[]) => {
     const imports: string[] = [];
     fields.forEach(field => {
         imports.push(...getTransformerImportsForField(field));
         imports.push(...getMapperFieldImportForField(field));
-    })
+    });
     return imports;
-}
+};
 
 const getGeneratedMapperImports = (meta: FileMetadata) => {
     let { imports } = meta;
     imports = getDependencyImportsForImports(imports, meta);
     return imports;
-}
+};
 
 const getContextTypeImports = (meta: FileMetadata, possibleImports: ImportNode[]) => {
     const createImport = (type: string) => {
@@ -77,9 +77,9 @@ const getContextTypeImports = (meta: FileMetadata, possibleImports: ImportNode[]
         }
 
         return contextImport;
-    }
+    };
 
-    let { classes } = meta;
+    const { classes } = meta;
     const imports: Import[] = [];
     const fromViewImport = createImport(classes.contextType.fromView.value);
     if (fromViewImport) {
@@ -90,17 +90,17 @@ const getContextTypeImports = (meta: FileMetadata, possibleImports: ImportNode[]
         imports.push(toViewImport);
     }
     return imports;
-}
+};
 
 
 export const getMapperImports = (fileMetadata: FileMetadata, imports: ImportNode[]) => {
     let mapperImports: string[] = [];
-    let resultMapperImports: Import[] = [];
+    const resultMapperImports: Import[] = [];
 
     mapperImports = getMapperImportsForFields(fileMetadata.classes.fields);
     mapperImports.forEach(mapperImport => {
         const importNode = imports.find(nodeImport => {
-            return nodeImport.clauses.includes(mapperImport)
+            return nodeImport.clauses.includes(mapperImport);
         });
 
         if (!importNode) {
@@ -110,7 +110,7 @@ export const getMapperImports = (fileMetadata: FileMetadata, imports: ImportNode
         imp.forMapper = true;
         imp.type = mapperImport;
         const toPath = importNode.absPathNode.join('/');
-        let fromPath = fileMetadata.mapperPath;// fileMetadata.filename.split('.ts').join('');
+        const fromPath = fileMetadata.mapperPath;// fileMetadata.filename.split('.ts').join('');
         const arrayPath = path.relative(fromPath, toPath).split('\\');
         const arrayPathLength = arrayPath.length - 1;
         arrayPath[arrayPathLength] = downFirstLetter(arrayPath[arrayPathLength]);
@@ -121,11 +121,11 @@ export const getMapperImports = (fileMetadata: FileMetadata, imports: ImportNode
         resultMapperImports.push(imp);
     });
 
-    /* @@
-
-        получение импортов для сгенерированных мапперов
-    */
-    const generatedImports = getDependencyImportsForImports(resultMapperImports, fileMetadata)
+    // @@
+    //
+    //  получение импортов для сгенерированных мапперов
+    //
+    const generatedImports = getDependencyImportsForImports(resultMapperImports, fileMetadata);
     generatedImports.forEach(generatedImport => {
         const isMapperImportExistInImports = fileMetadata.imports.find(_import => _import.type.includes(generatedImport.type));
         if (isMapperImportExistInImports) {
@@ -134,10 +134,10 @@ export const getMapperImports = (fileMetadata: FileMetadata, imports: ImportNode
         resultMapperImports.push(generatedImport);
     });
 
-    /* @@
-
-    Получение путей для типов контекста в трансформерах
-    */
+    // @@
+    //
+    // Получение путей для типов контекста в трансформерах
+    //
 
     const contextTypeImports = getContextTypeImports(fileMetadata, imports);
     contextTypeImports.forEach(generatedImport => {
@@ -149,5 +149,4 @@ export const getMapperImports = (fileMetadata: FileMetadata, imports: ImportNode
     });
 
     return resultMapperImports;
-}
-
+};

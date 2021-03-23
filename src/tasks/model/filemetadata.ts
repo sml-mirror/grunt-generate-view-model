@@ -1,5 +1,5 @@
-import {ClassMetadata} from "./classmetadata";
-import {Import} from "./import";
+import { ClassMetadata } from './classmetadata';
+import { Import } from './import';
 
 export class FileMetadata {
 
