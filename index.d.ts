@@ -6,6 +6,7 @@ export declare function ViewModelName( name: string, modelName?: string ): Funct
 
 export declare function ViewModelType(viewModelTypeOptions: ViewModelTypeOptions): Function;
 
+export function IgnoreDecorators(decoratorsList?: string[], viewModelNames?: string[]):Function;
 export interface FieldDescription {
 
 }

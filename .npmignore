@@ -6,4 +6,6 @@
 
 /.tscache
 
-/dist/tasks
+/src
+
+/transformer

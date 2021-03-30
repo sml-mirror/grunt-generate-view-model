@@ -41,7 +41,7 @@ export const saveInfoAboutTransformer = (direction: FuncDirection, func: Transfo
             cm[asyncDirect] = targetFuncs.isAsync;
         }
         func[direction].isPrimitive = false;
-        const contextObject = targetFuncs.params[1]
+        const contextObject = targetFuncs.params[1];
         const contextTypeOfTransformer = contextObject?.type || null;
         const contextMandatoryOfType = contextObject?.mandatory || false;
         const directionValueInfo = cm.contextType[direction];
