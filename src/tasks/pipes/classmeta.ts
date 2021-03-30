@@ -308,7 +308,6 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
         fldMetadata.isEnum = fldInfo.isEnum;
     }
 
-    console.log(fldMetadata);
     possibleImports.push(...decUpdate.possibleImports);
 
 

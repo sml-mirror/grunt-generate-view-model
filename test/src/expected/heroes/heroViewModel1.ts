@@ -1,10 +1,10 @@
-/*Codegen*/
+/*This file was automatically generated */
 // tslint:disable
 /* eslint-disable */
 
-import { HeroDetailViewModel } from './heroDetailViewModel';
 import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { States } from '../../../../src/tasks/model/stateModel';
+import { HeroDetailViewModel } from '../../../src/expected/heroes/heroDetailViewModel';
 
 @NotExistiningDecoratorForClas2()
 export class HeroViewModel1 {

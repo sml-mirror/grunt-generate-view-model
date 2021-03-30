@@ -1,4 +1,4 @@
-/*Codegen*/
+/*This file was automatically generated */
 // tslint:disable
 /* eslint-disable */
 
@@ -8,7 +8,7 @@ import { HeroDetail } from '../../../../src/model/hero/heroDetail';
 export class HeroDetailViewModelMapper {
       public static toHeroDetailViewModel(model: HeroDetail): HeroDetailViewModel {
             let result: HeroDetailViewModel = {};
-                  result.detail = model.data;
+            result.detail = model.data;
             if (model.temp) {
                   result.temp = JSON.parse(JSON.stringify(model.temp));
             }

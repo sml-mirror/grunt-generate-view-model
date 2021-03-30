@@ -1,4 +1,4 @@
-/*Codegen*/
+/*This file was automatically generated */
 // tslint:disable
 /* eslint-disable */
 

@@ -1,49 +1,45 @@
-/*Codegen*/
+/*This file was automatically generated */
 // tslint:disable
 /* eslint-disable */
 
 import { HeroViewModel } from '../heroViewModel';
 import { Hero } from '../../../../src/model/hero/hero';
 import { HeroDetailViewModelMapper } from './heroDetailViewModelMapper';
+import { ComplexInterface } from '../../../../../transformer/complexContextParam';
+import { asyncTransformer, notAsyncTransformer, asyncTransformer3 } from '../../../../../transformer/asyncTransformer';
 
 export class HeroViewModelMapper {
-      public static toHeroViewModel(model: Hero): HeroViewModel {
+      public static async toHeroViewModel(model: Hero, context?: ComplexInterface): Promise<HeroViewModel> {
             let result = new HeroViewModel();
-                  result.id = model.id.toString();
-            result.name = model.name;
-            result.information = model.data;
-            if (model.detail) {
-                  result.detail = JSON.parse(JSON.stringify(model.detail));
-            }
+            result.id = model.id.toString();
+      result.name = model.name;
+      result.information = model.data;
+           result.detail = await asyncTransformer(model, context);
             if (model.detailVM) {
-                  result.detailVM =  HeroDetailViewModelMapper.toHeroDetailViewModel(model.detailVM);
+                  result.detailVM = await HeroDetailViewModelMapper.toHeroDetailViewModel(model.detailVM);
             }
-            if (model.details) {
-                  let tmp =  model.details.map( function(item: any ) {return  HeroDetailViewModelMapper.toHeroDetailViewModel(item); });
-                  tmp.forEach( mp => {
-                       let p =  mp;
-                       result.details.push(p); });
-            }
-            if (model.detailsVM) {
-                  let tmp =  model.detailsVM.map( function(item: any ) {return  HeroDetailViewModelMapper.toHeroDetailViewModel(item); });
-                  tmp.forEach( mp => {
-                       let p =  mp;
-                       result.detailsVM.push(p); });
-            }
-            if (model.simpleArray) {
-                  result.simpleArray =  model.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
-            }
-            result.state = model.state;
+      if (model.details) {
+            let tmp = await model.details.map(async function(item: any ) {return await HeroDetailViewModelMapper.toHeroDetailViewModel(item); });
+            tmp.forEach(async mp => {
+                  let p = await mp;
+                  result.details.push(p); });
+      }
+      if (model.detailsVM) {
+            let tmp = await model.detailsVM.map(async function(item: any ) {return await HeroDetailViewModelMapper.toHeroDetailViewModel(item); });
+            tmp.forEach(async mp => {
+                  let p = await mp;
+                  result.detailsVM.push(p); });
+      }
+           result.simpleArray = await asyncTransformer3(model, context);
+      result.state = model.state;
             return result;
       }
-      public static fromHeroViewModel(viewModel: HeroViewModel): Hero {
+      public static fromHeroViewModel(viewModel: HeroViewModel, context?: string): Hero {
             let result = new Hero();
             result.id = viewModel.id ? +viewModel.id : viewModel.id as any;
             result.name = viewModel.name;
             result.data = viewModel.information;
-            if (viewModel.detail) {
-                  result.detail = JSON.parse(JSON.stringify(viewModel.detail));
-            }
+            result.detail =  notAsyncTransformer(viewModel, context);
             if (viewModel.detailVM) {
                   result.detailVM =  HeroDetailViewModelMapper.fromHeroDetailViewModel(viewModel.detailVM);
             }
@@ -60,7 +56,7 @@ export class HeroViewModelMapper {
                        result.detailsVM.push(p); });
             }
             if (viewModel.simpleArray) {
-                  result.simpleArray =  viewModel.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
+                  result.simpleArray = viewModel.simpleArray.map(function(item: any ) { return JSON.parse(JSON.stringify( item )); });
             }
             result.state = viewModel.state;
             return result;
