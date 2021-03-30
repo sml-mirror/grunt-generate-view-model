@@ -1,23 +1,42 @@
-{% if metafile.classes.length > 0  %}
-/*Codegen*/
+/*This file was automatically generated */
+{% if class|is_not_empty %}
 // tslint:disable
 /* eslint-disable */
 
-{% for import in metafile.imports %}
+{% for import in imports %}
 {%if import.forMapper ===false%}
-import {{import.type}} from '{{import.path}}';
+import { {{import.type}} } from '{{import.path}}';
 {%endif%}
 {% endfor %}
 
-{% for class in metafile.classes %}
+{% if class|is_not_empty %}
+{% if class.type === 'interface'%}
 export interface {{class.name}} {
 
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
-  {{field.name}}{% if field.nullable === true %}?{%endif%}: {{field.type}}{% if field.isArray %} []{% endif %};
+  {{field.name}}{% if field.nullable === true %}?{%endif%}: {{field.type}}{% if field.isArray %}[]{% endif %};
 
 {% endif %}
 {% endfor %}
 }
+{% endif %}
+{% if class.type === 'class' %}
+{% for decorator in class.decorators %}
+@{{decorator.name}}({% for item in decorator.arguments %}{% if item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %})
 {% endfor %}
+export class {{class.name}} {
+
+{% for field in class.fields %}
+{% if  field.ignoredInView===false %}
+{% for decorator in field.decorators%}
+      @{{decorator.name}}({% for item in decorator.arguments %}{% if item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %})
+{% endfor %}
+      public {{field.name}}{% if field.nullable === true %}?{%endif%}: {{field.type}}{% if field.isArray %}[]{% endif %};
+
+{% endif %}
+{% endfor %}
+}
+{% endif %}
+{% endif %}
 {% endif %}

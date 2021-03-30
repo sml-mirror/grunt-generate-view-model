@@ -1,4 +1,5 @@
-import { Transformer } from "./transformer";
+import { Decorator } from 'ts-file-parser';
+import { Transformer } from './transformer';
 
 export class FieldMetadata {
     public name: string;
@@ -6,11 +7,12 @@ export class FieldMetadata {
     public nullable: boolean;
     public baseModelName: string;
     public baseModelType: string;
-    public ignoredInView: boolean = false;
-    public isArray: boolean = false;
-    public isComplexType: boolean = false;
-    public isEnum: boolean = false;
+    public decorators: Decorator[]
+    public ignoredInView = false;
+    public isArray = false;
+    public isComplexType = false;
+    public isEnum = false;
     public fieldConvertFunction: Transformer = null;
-    public toStringWanted: boolean = false;
-    public needGeneratedMapper: boolean = false;
+    public toStringWanted = false;
+    public needGeneratedMapper = false;
 }

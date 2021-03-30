@@ -1,8 +1,8 @@
 {
-    "check":
-        {
-            "folders":[
-                "./test/src/model"
-            ]
-        }
+    "check": {
+        "folders":[
+            "./test/src/model"
+        ]
+    },
+    "thirdPartyDecorators": ["Liliput"]
 }

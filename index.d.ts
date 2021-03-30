@@ -6,10 +6,21 @@ export declare function ViewModelName( name: string, modelName?: string ): Funct
 
 export declare function ViewModelType(viewModelTypeOptions: ViewModelTypeOptions): Function;
 
+export function IgnoreDecorators(decoratorsList?: string[], viewModelNames?: string[]):Function;
+export interface FieldDescription {
+
+}
+export interface ClassFieldDescription {
+    [field: string]: FieldDescription;
+}
 export declare class GenerateViewOptions {
     model: string;
     filePath: string;
     mapperPath?: string;
+    type?: 'class' | 'interface'
+    decorators: {
+        ignoreDecorators?: string[];
+    }
 }
 
 export declare class ViewModelTypeOptions {

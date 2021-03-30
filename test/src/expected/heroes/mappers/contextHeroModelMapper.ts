@@ -1,22 +1,23 @@
-/*Codegen*/
+/*This file was automatically generated */
 // tslint:disable
 /* eslint-disable */
 
 import { ContextHeroModel } from '../contextHeroModel';
-import { Hero } from '../../../../src/model/hero/contextHero';
-import { asyncTransformer,notAsyncTransformer} from '../../../../../transformer/asyncTransformer';
+import { Hero } from '../../../model/hero/contextHero';
+import { asyncTransformer } from '../../../../../transformer/asyncTransformer';
+import { ComplexInterface } from '../../../../../transformer/complexContextParam';
 
 export class ContextHeroModelMapper {
-      public static async toContextHeroModel(model: Hero, context?: any): Promise<ContextHeroModel> {
-            let result : ContextHeroModel = {};
+      public static async toContextHeroModel(model: Hero, context?: ComplexInterface): Promise<ContextHeroModel> {
+            let result = new ContextHeroModel();
             result.name = model.name;
-            result.detail  = await (asyncTransformer as any)(model, context);
+           result.detailForView = await asyncTransformer(model, context);
             return result;
       }
-      public static fromContextHeroModel(viewModel: ContextHeroModel, context?: any): Hero {
+      public static fromContextHeroModel(viewModel: ContextHeroModel): Hero {
             let result = new Hero();
             result.name = viewModel.name;
             result.detail = null;
-            return result;
+                  return result;
       }
 }
