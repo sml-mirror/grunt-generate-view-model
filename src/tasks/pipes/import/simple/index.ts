@@ -8,13 +8,16 @@ import { Import } from "../../../../tasks/model/import";
 
 const getSearchingImportsName = (fileMetadata: FileMetadata) => {
     const importsToSearch: string[] = [];
-    const cls = fileMetadata.classes
 
-    cls.fields.forEach(fld => {
+    fileMetadata.classes.fields.forEach(fld => {
         const isFieldIsPrimitive = !fld.isComplexType && !fld.isEnum;
         const isImportInclude = importsToSearch.includes(fld.type)
         const isGlobalImportInclude = fileMetadata.imports.find(i => i.type === fld.type);
         if (isFieldIsPrimitive || isImportInclude || isGlobalImportInclude) {
+            return;
+        }
+
+        if (fld.ignoredInView) {
             return;
         }
         importsToSearch.push(fld.type)

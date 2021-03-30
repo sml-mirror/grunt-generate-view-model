@@ -48,12 +48,6 @@ const getMapperImportsForFields = (fields: FieldMetadata[]) => {
     return imports;
 };
 
-const getGeneratedMapperImports = (meta: FileMetadata) => {
-    let { imports } = meta;
-    imports = getDependencyImportsForImports(imports, meta);
-    return imports;
-};
-
 const getContextTypeImports = (meta: FileMetadata, possibleImports: ImportNode[]) => {
     const createImport = (type: string) => {
         if (!type || primitiveTypes.includes(type)) {

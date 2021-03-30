@@ -119,7 +119,10 @@ export const updateFieldMetadataForIgnoreViewModelDecorator = (decorators: Decor
     decorators.forEach(decorator => {
         const ignoreViewModelName = decorator.arguments[0];
         const setIgnoreNameToClass = ignoreViewModelName && ignoreViewModelName.toString() === classMeta.name;
-        updatedFldMetadata.ignoredInView = setIgnoreNameToClass || !ignoreViewModelName;
+        const ignoredInView = setIgnoreNameToClass || !ignoreViewModelName;
+        if (ignoredInView && !updatedFldMetadata.ignoredInView ) {
+            updatedFldMetadata.ignoredInView = true;
+        }
     });
 
     return updatedFldMetadata;
@@ -173,53 +176,52 @@ export const updateFieldMetadataForViewModelTypeDecorator = (
                     updatedFieldMetadata.type = 'string';
                     updatedFieldMetadata.toStringWanted = true;
                 }
-                if (fieldTypeOptions.transformer) {
-                    return;
-                }
-                fileStructure._imports.forEach(i => {
-                    i.clauses.forEach(clause => {
-                        if (clause !== updatedFieldMetadata.baseModelType) {
-                            return;
-                        }
-                        let path = '';
-                        if (i.isNodeModule) {
-                            const impNode: ImportNode = { isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode };
-                            possibleImports.push(impNode);
-                            return;
-                        }
-                        i.absPathNode.forEach(node => {
-                            path += `${node}/`;
-                        });
-                        path = `${path.substring(0, path.length - 1)}.ts`;
-                        const content = fs.readFileSync(path, 'utf-8');
-                        const innerJsonStructure = parseStruct(content, {}, '');
-                        innerJsonStructure.classes.forEach(c => {
-                            if (c.name !== updatedFieldMetadata.baseModelType) {
+                if (!fieldTypeOptions.transformer) {
+                    fileStructure._imports.forEach(i => {
+                        i.clauses.forEach(clause => {
+                            if (clause !== updatedFieldMetadata.baseModelType) {
                                 return;
                             }
-                            c.decorators.forEach(d => {
-                                if (d.name !== Decorators.GenerateView) {
+                            let path = '';
+                            if (i.isNodeModule) {
+                                const impNode: ImportNode = { isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode };
+                                possibleImports.push(impNode);
+                                return;
+                            }
+                            i.absPathNode.forEach(node => {
+                                path += `${node}/`;
+                            });
+                            path = `${path.substring(0, path.length - 1)}.ts`;
+                            const content = fs.readFileSync(path, 'utf-8');
+                            const innerJsonStructure = parseStruct(content, {}, '');
+                            innerJsonStructure.classes.forEach(c => {
+                                if (c.name !== updatedFieldMetadata.baseModelType) {
                                     return;
                                 }
-                                const generateOptions = d.arguments[0].valueOf() as GenerateViewOptions;
-                                let viewModelType = fieldTypeOptions.type.toString();
-                                if (fieldTypeOptions.type.toString().indexOf(arrayType) > -1 ) {
-                                    viewModelType = viewModelType.substring(0, fieldTypeOptions.type.toString().indexOf(arrayType));
-                                }
-                                if (generateOptions.model.toLowerCase() !== viewModelType.toLowerCase()) {
-                                    return;
-                                }
-                                const mapperImport: ImportNode = { isNodeModule: false, clauses: [], absPathNode: [] };
-                                const { model } = generateOptions;
-                                const fileName = `${upFirstLetter(model)}Mapper`;
-                                mapperImport.clauses.push(fileName);
-                                mapperImport.absPathNode.push(`${generateOptions.mapperPath}/${fileName}`);
-                                updatedFieldMetadata.needGeneratedMapper = true;
-                                possibleImports.push(mapperImport);
+                                c.decorators.forEach(d => {
+                                    if (d.name !== Decorators.GenerateView) {
+                                        return;
+                                    }
+                                    const generateOptions = d.arguments[0].valueOf() as GenerateViewOptions;
+                                    let viewModelType = fieldTypeOptions.type.toString();
+                                    if (fieldTypeOptions.type.toString().indexOf(arrayType) > -1 ) {
+                                        viewModelType = viewModelType.substring(0, fieldTypeOptions.type.toString().indexOf(arrayType));
+                                    }
+                                    if (generateOptions.model.toLowerCase() !== viewModelType.toLowerCase()) {
+                                        return;
+                                    }
+                                    const mapperImport: ImportNode = { isNodeModule: false, clauses: [], absPathNode: [] };
+                                    const { model } = generateOptions;
+                                    const fileName = `${upFirstLetter(model)}Mapper`;
+                                    mapperImport.clauses.push(fileName);
+                                    mapperImport.absPathNode.push(`${generateOptions.mapperPath}/${fileName}`);
+                                    updatedFieldMetadata.needGeneratedMapper = true;
+                                    possibleImports.push(mapperImport);
+                                });
                             });
                         });
                     });
-                });
+                }
             }
             const transformerExistAndNoNeedMapper = fieldTypeOptions.transformer && !updatedFieldMetadata.needGeneratedMapper;
             if (!transformerExistAndNoNeedMapper) {
@@ -299,6 +301,14 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
     );
 
     fldMetadata = decUpdate.fieldMetadata;
+
+    if (fldMetadata.type !== fldMetadata.baseModelType &&  !baseTypes.includes(fldMetadata.type)) {
+        const fldInfo = getInfoFromImports(possibleImports, fldMetadata.type);
+        fldMetadata.isComplexType = fldInfo.isComplexType;
+        fldMetadata.isEnum = fldInfo.isEnum;
+    }
+
+    console.log(fldMetadata);
     possibleImports.push(...decUpdate.possibleImports);
 
 
