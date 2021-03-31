@@ -9,12 +9,12 @@ export class SimpeHeroViewModelMapper {
       public static toSimpeHeroViewModel(model: SimpleHero): SimpeHeroViewModel {
             let result: SimpeHeroViewModel = {};
             result.login = model.name;
-      result.age = model.age;
-      result.proffesion = model.proffesion;
-      result.level = model.level ? +model.level : model.level;
-      if (model.siblings) {
-            result.siblings =  model.siblings.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
-      }
+            result.age = model.age;
+            result.proffesion = model.proffesion;
+            result.level = model.level ? +model.level : model.level;
+            if (model.siblings) {
+                  result.siblings = model.siblings.map(function(item: any ) { return JSON.parse(JSON.stringify(item)); });
+            }
             return result;
       }
       public static fromSimpeHeroViewModel(viewModel: SimpeHeroViewModel): SimpleHero {
