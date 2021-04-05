@@ -1,5 +1,5 @@
 {
-  "name": "@sml/generate-view-model",
+  "name": "grunt-generate-view-model",
   "version": "0.1.01",
   "description": "Global task for generation view model",
   "private": false,
