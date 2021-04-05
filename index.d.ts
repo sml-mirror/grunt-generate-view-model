@@ -18,9 +18,6 @@ export declare class GenerateViewOptions {
     filePath: string;
     mapperPath?: string;
     type?: 'class' | 'interface'
-    decorators: {
-        ignoreDecorators?: string[];
-    }
 }
 
 export declare class ViewModelTypeOptions {
