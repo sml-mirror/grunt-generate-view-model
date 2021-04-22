@@ -23,7 +23,7 @@ export interface {{class.name}} {
 {% endif %}
 {% if class.type === 'class' %}
 {% for decorator in class.decorators %}
-@{{decorator.name}}({% for item in decorator.arguments %}{% if item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %})
+@{{decorator.name}}{% if decorator.arguments %}({% for item in decorator.arguments %}{% if item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %}){% endif %} 
 {% endfor %}
 export class {{class.name}} {
 

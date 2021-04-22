@@ -6,7 +6,7 @@ import { Length,ValidateIf,MaxLength,Max } from 'class-validator';
 import { NotExistiningDecoratorForClass } from 'node-modules-library';
 import { HeroDetail } from '../../../src/model/hero/heroDetail';
 
-@NotExistiningDecoratorForClass()
+@NotExistiningDecoratorForClass() 
 export class ContextHeroModel {
 
       @Max(1000,)

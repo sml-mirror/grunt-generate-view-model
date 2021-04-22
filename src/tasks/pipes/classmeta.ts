@@ -185,7 +185,7 @@ export const updateFieldMetadataForViewModelTypeDecorator = (
                 const filteredClauses = i.clauses.filter(clause => clause === updatedFieldMetadata.baseModelType);
                 filteredClauses.forEach(clause => {
                     if (i.isNodeModule) {
-                        const impNode: ImportNode = { isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode };
+                        const impNode: ImportNode = { isNodeModule: true, clauses: i.clauses, absPathNode: i.absPathNode, absPathString: i.absPathNode.join('/') };
                         possibleImports.push(impNode);
                         return;
                     }
@@ -210,7 +210,8 @@ export const updateFieldMetadataForViewModelTypeDecorator = (
                             const mapperImport: ImportNode = {
                                 isNodeModule: false,
                                 clauses: [fileName],
-                                absPathNode: [`${generateOptions.mapperPath}/${fileName}`]
+                                absPathNode: [`${generateOptions.mapperPath}/${fileName}`],
+                                absPathString: `${generateOptions.mapperPath}/${fileName}`
                             };
                             updatedFieldMetadata.needGeneratedMapper = true;
                             possibleImports.push(mapperImport);

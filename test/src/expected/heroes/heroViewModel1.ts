@@ -6,7 +6,7 @@ import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { States } from '../../../../src/tasks/model/stateModel';
 import { HeroDetailViewModel } from '../../../src/expected/heroes/heroDetailViewModel';
 
-@NotExistiningDecoratorForClas2()
+@NotExistiningDecoratorForClas2() 
 export class HeroViewModel1 {
 
       public name?: string;

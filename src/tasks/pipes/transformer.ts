@@ -71,6 +71,7 @@ export const saveInfoAboutTransformer = (direction: FuncDirection, func: Transfo
         possibleImports.push({
             clauses: [directionValueInfo.value],
             absPathNode: contextTypeImport.absPathNode,
+            absPathString: contextTypeImport.absPathNode.join('/'),
             isNodeModule: false
         });
         return;

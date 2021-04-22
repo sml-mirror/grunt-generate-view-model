@@ -2,12 +2,13 @@
 // tslint:disable
 /* eslint-disable */
 
-import { NotExistiningDecoratorForClass } from 'node-modules-library';
+import { NotExistiningDecoratorForClass,ValidatorWithoutBraces } from 'node-modules-library';
 import { HeroDetail } from '../../../src/model/hero/heroDetail';
 import { States } from '../../../../src/tasks/model/stateModel';
 import { HeroDetailViewModel } from '../../../src/expected/heroes/heroDetailViewModel';
 
-@NotExistiningDecoratorForClass()
+@NotExistiningDecoratorForClass() 
+@ValidatorWithoutBraces 
 export class HeroViewModel {
 
       public id?: string;
