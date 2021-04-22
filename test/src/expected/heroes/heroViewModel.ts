@@ -11,6 +11,7 @@ import { HeroDetailViewModel } from '../../../src/expected/heroes/heroDetailView
 @ValidatorWithoutBraces 
 export class HeroViewModel {
 
+      @ValidatorWithoutBraces
       public id?: string;
 
       public name?: string;

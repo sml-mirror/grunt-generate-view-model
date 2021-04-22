@@ -30,7 +30,7 @@ export class {{class.name}} {
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
 {% for decorator in field.decorators%}
-      @{{decorator.name}}({% for item in decorator.arguments %}{% if item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %})
+      @{{decorator.name}}{% if decorator.arguments %}({% for item in decorator.arguments %}{% if item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %}){% endif %}{{\n}}
 {% endfor %}
       public {{field.name}}{% if field.nullable === true %}?{%endif%}: {{field.type}}{% if field.isArray %}[]{% endif %};
 

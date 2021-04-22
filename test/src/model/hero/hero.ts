@@ -25,6 +25,7 @@ export class Hero {
     @ViewModelType({type: "string"})
     @IgnoreViewModel("HeroViewModel1")
     @Length(0,20)
+    @ValidatorWithoutBraces
     @IgnoreDecorators(['Length'])
     public id?: number;
 

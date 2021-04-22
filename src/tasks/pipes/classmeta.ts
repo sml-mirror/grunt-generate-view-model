@@ -69,16 +69,19 @@ export const getInfoFromImports = (imports: ImportNode[], typeName: string) => {
 };
 
 export const updateFieldMetadataForIgnoreDecorators = (
-    ignoreDecorators: Decorator[],
+    ignoreDecorators_: Decorator[],
     classMeta: ClassMetadata,
     fldMetadata: FieldMetadata,
     decoratorsOnField: Decorator[],
     fileStructure: any,
     ) => {
     const newFldMetadata = {...fldMetadata};
-    const noIgnoreDecorators = !ignoreDecorators.length;
-    const  fieldIgnoreDecorators = [...(ignoreDecorators.map(dec => dec.arguments[0]) || []), ...ignoreDecorators] as string[];
-    const fieldIgnoreDecoratorsClasses = (ignoreDecorators.map(dec => dec.arguments[1]) || []) as string[];
+    const ignoreAllDecoratorsExist = ignoreDecorators_.find(d => d.arguments?.length === 0);
+    const ignoreDecoratorsForFieldArray = ignoreDecorators_.map(dec => dec.arguments[0]) || [];
+    const allIgnoreCustomFields = [];
+    ignoreDecoratorsForFieldArray.forEach((d: any) =>  allIgnoreCustomFields.push(...(d || [])));
+    const fieldIgnoreDecorators = [...allIgnoreCustomFields, ...ignoreDecorators] as string[];
+    const fieldIgnoreDecoratorsClasses = (ignoreDecorators_.map(dec => dec.arguments[1]) || []) as string[];
     if (!decoratorsOnField || !decoratorsOnField.length) {
         newFldMetadata.decorators= [];
         return {
@@ -87,10 +90,12 @@ export const updateFieldMetadataForIgnoreDecorators = (
         };
     }
     const possibleImports: ImportNode[] = [];
-
     newFldMetadata.decorators = decoratorsOnField.filter(dec => {
-        const isDecoratorAvailableForField = noIgnoreDecorators && !fieldIgnoreDecorators.includes(dec.name);
-        const isDecoratorAvailableForClass = noIgnoreDecorators && !fieldIgnoreDecoratorsClasses.includes(classMeta.name);
+        if (ignoreAllDecoratorsExist) {
+            return false;
+        }
+        const isDecoratorAvailableForField = !fieldIgnoreDecorators.includes(dec.name);
+        const isDecoratorAvailableForClass = !fieldIgnoreDecoratorsClasses.includes(classMeta.name);
         return isDecoratorAvailableForClass && isDecoratorAvailableForField;
     });
 
