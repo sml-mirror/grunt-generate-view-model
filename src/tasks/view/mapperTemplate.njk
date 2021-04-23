@@ -20,7 +20,7 @@ import { {{import.type }} } from '{{import.path}}';
 export class {{class.name}}Mapper {
       public static {% if class.isToViewAsync %}async {% endif %}to{{class.name}}(model: {{class.baseName}}{% if class.contextType.toView.value %}, context{% if class.contextType.toView.mandatory === false %}?{% endif %}: {{class.contextType.toView.value}}{% endif %}): {% if class.isToViewAsync %}Promise<{% endif %}{{class.name}}{% if class.isToViewAsync %}>{% endif %} {
 {% if class.type==='interface' %}
-            let result: {{class.name}} = {};
+            let result:any = {};
 {% else %}
       let result = new {{class.name}}();
 {% endif %}
