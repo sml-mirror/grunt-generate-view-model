@@ -2,7 +2,7 @@
 // tslint:disable
 /* eslint-disable */
 
-import { Length,ValidateIf,MaxLength,Max } from 'class-validator';
+import { Length,ValidateIf,Max } from 'class-validator';
 import { NotExistiningDecoratorForClass } from 'node-modules-library';
 import { HeroDetail } from '../../../src/model/hero/heroDetail';
 

@@ -48,7 +48,7 @@ export const getDecoratorImports = (fileMetadata: FileMetadata, imports: ImportN
         const nodeImport = new Import();
         nodeImport.path = imprt.absPathNode.join('/');
         nodeImport.forMapper = false;
-        nodeImport.type = imprt.clauses.join(',');
+        nodeImport.type = imprt.clauses.filter(clause => decorators.includes(clause)).join(',');
         result.push(nodeImport);
     })
     return result;
