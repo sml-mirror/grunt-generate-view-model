@@ -1,5 +1,6 @@
 /*This file was automatically generated */
 // tslint:disable
+// @ts-nocheck
 /* eslint-disable */
 
 import { Length,ValidateIf,Max } from 'class-validator';

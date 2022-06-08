@@ -3,11 +3,11 @@ import { FileMetadata } from '../model/filemetadata';
 
 const mkdirp = require('mkdirp');
 
-export const getAllFiles = (checkingFolders: string[] = []) => {
+export const getAllFiles = (folders: string[] = []) => {
     const tsRegExp = /.+\.ts$/;
     const returnFiles: string[] = [];
 
-    checkingFolders.forEach(folderPath => {
+    folders.forEach(folderPath => {
         const files = fs.readdirSync(folderPath);
         files.forEach(file => {
             const endPath = `${folderPath}/${file}`;
