@@ -1,4 +1,4 @@
-import { Decorators } from '../../tasks/pipes/decorators';
+import { Decorators } from '../model/decorators';
 
 const entityDecorators = [
     'Entity',

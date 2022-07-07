@@ -35,7 +35,7 @@ export class NunjucksService {
         if (!this.env) {
             throw Error('Не настроен env');
         }
-        const generated = this.env.render('viewTemplateCommon.njk', { class: metafile.classes, imports: metafile.imports });
+        const generated = this.env.render('viewTemplateCommon.njk', { class: metafile.classMetadata, imports: metafile.imports });
         return generated;
     }
 
@@ -43,7 +43,7 @@ export class NunjucksService {
         if (!this.env) {
             throw Error('Не настроен env');
         }
-        const generated = this.env.render('mapperTemplate.njk', { class: metafile.classes, imports: metafile.imports });
+        const generated = this.env.render('mapperTemplate.njk', { class: metafile.classMetadata, imports: metafile.imports });
         return generated;
     }
 

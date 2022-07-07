@@ -7,14 +7,15 @@ import {
     Decorator,
     FieldModel,
     ImportNode,
-    TypeKind
+    TypeKind,
+    ClassModel
 } from 'ts-file-parser';
 
 import { getModelNameFromPath, upFirstLetter } from '.';
 import { GenerateViewOptions, ViewModelTypeOptions } from '../../..';
 
-import { Decorators } from './decorators';
-import { ConsoleColor } from './enums';
+import { Decorators } from '../model/decorators';
+import { ConsoleColor, FuncDirection } from './enums';
 
 import { Import } from '../model/import';
 import { ClassMetadata } from '../model/classmetadata';
@@ -23,18 +24,107 @@ import { FileMetadata } from '../model/filemetadata';
 
 import { unique } from '../pipes';
 import { ignoreDecorators } from '../../tasks/constants/ignoreDecorators';
+import { saveInfoAboutTransformer } from './transformer';
 
 const arrayType = '[]';
 const baseTypes = ['string', 'number', 'boolean', 'undefined', 'null', 'object'];
 
-export const createClassMeta = (name: string, mapperPath?: string ) => {
+const filterOnlyIgnoreDecorators = (dec: Decorator) => dec.name === Decorators.IgnoreDecorators;
+const whiteListClassDecorators = (dec: Decorator) => !ignoreDecorators.includes(dec.name);
+
+interface Extend {
+    typeName: string;
+    namespace: string;
+    basicName: string;
+    typeKind: number;
+    typeArguments: any[];
+    modulePath: string;
+}
+
+const addExtendClassFieldsToClass = (classExtends: Extend[], baseClass: ClassModel, imports: ImportNode[], {
+    currentExtendLevel, maxExtendedLevel
+}) => {
+    const fields: FieldModel[] = [];
+    classExtends.forEach((extend: Extend) => {
+        const importBaseClass = imports.find(importNode => importNode.clauses.find(clause => clause === extend.basicName));
+        const extendFileString = fs.readFileSync(`${importBaseClass.absPathString}.ts`, {encoding: 'utf-8'});
+        const extendFileStructure = parseStruct(extendFileString, {}, importBaseClass.absPathString);
+        const extendBaseClass = extendFileStructure.classes.find(possibleClass => possibleClass.name === extend.basicName);
+        if (!extendBaseClass) {
+            return;
+        }
+        extendBaseClass.fields.forEach(f => {
+            const fieldExistInCreatedClass = baseClass.fields.find(ff => ff.name === f.name);
+            if (fieldExistInCreatedClass) {
+                return;
+            }
+            // side effect - update base imports to correct import view file;
+            imports.push(...(extendFileStructure._imports|| []));
+
+            fields.push(f);
+        });
+
+        if (currentExtendLevel < maxExtendedLevel && extendBaseClass.extends) {
+            fields.push(...addExtendClassFieldsToClass(extendBaseClass.extends as Extend[], baseClass, imports,{
+                currentExtendLevel: currentExtendLevel + 1,
+                maxExtendedLevel
+            }))
+        }
+    })
+
+    return fields;
+}
+
+export const createClassMeta = (
+    baseClass_: ClassModel,
+    {type, mapperPath, model}: GenerateViewOptions,
+    imports: ImportNode[],
+    path: string,
+    maxExtendedLevel: number
+) => {
+    const baseClass = {...baseClass_};
     const classMeta = new ClassMetadata();
-    classMeta.name = upFirstLetter(name);
+    classMeta.name = upFirstLetter(model);
     classMeta.fields = [];
     classMeta.generateView = true;
     if (mapperPath) {
         classMeta.needMapper = true;
     }
+
+    classMeta.type = type || 'interface';
+    classMeta.baseName = baseClass.name;
+    classMeta.baseNamePath = path;
+    const options = {
+        currentExtendLevel: 1,
+        maxExtendedLevel
+    }
+    baseClass.fields.push(...addExtendClassFieldsToClass(baseClass.extends as Extend[], baseClass_, imports, options));
+    classMeta.fields = baseClass.fields.map(fld => createFieldMetadata(fld, classMeta, imports));
+
+    classMeta.decorators = [];
+    const ignoreClassDecorators = baseClass.decorators.filter(filterOnlyIgnoreDecorators)
+    let otherClassDecorators = baseClass.decorators.filter(whiteListClassDecorators);
+
+    if (ignoreClassDecorators.length) {
+        ignoreClassDecorators.forEach(ignoreClassDecorator => {
+            const [decoratorsToIgnore, modelsWhereDecoratorWillIgnore] = ignoreClassDecorator.arguments as string[][];
+            const modelInBlackList = (modelsWhereDecoratorWillIgnore || []).includes(model);
+            const classDecorators = otherClassDecorators.filter(d => {
+                const decoratorInBlackList = (decoratorsToIgnore || []).includes(d.name)
+                return !(decoratorInBlackList && modelInBlackList);
+            });
+            otherClassDecorators = classDecorators;
+        })
+    }
+    classMeta.decorators = otherClassDecorators;
+
+    const fieldsWithConvertFunctions = classMeta.fields.filter(f => f.fieldConvertFunction);
+    fieldsWithConvertFunctions.forEach(f => {
+        const func = f.fieldConvertFunction;
+        saveInfoAboutTransformer(FuncDirection.toView, func, imports, classMeta);
+        saveInfoAboutTransformer(FuncDirection.fromView, func, imports, classMeta);
+    });
+
     return classMeta;
 };
 
@@ -73,7 +163,7 @@ export const updateFieldMetadataForIgnoreDecorators = (
     classMeta: ClassMetadata,
     fldMetadata: FieldMetadata,
     decoratorsOnField: Decorator[],
-    fileStructure: any,
+    imports: ImportNode[],
     ) => {
     const newFldMetadata = {...fldMetadata};
     const ignoreAllDecoratorsExist = ignoreDecorators_.find(d => d.arguments?.length === 0);
@@ -100,7 +190,7 @@ export const updateFieldMetadataForIgnoreDecorators = (
     });
 
     newFldMetadata.decorators.forEach(dec => {
-        const importNode = fileStructure._imports.find(_import => _import.clauses.find(cl => cl === dec.name));
+        const importNode = imports.find(_import => _import.clauses.find(cl => cl === dec.name));
         if (!importNode) {
             return;
         }
@@ -156,7 +246,7 @@ export const updateFieldMetadataForViewModelNameDecorator = (
 };
 
 export const updateFieldMetadataForViewModelTypeDecorator = (
-    decorators: Decorator[], classMeta: ClassMetadata, flMetadata: FieldMetadata, fileStructure: any) => {
+    decorators: Decorator[], classMeta: ClassMetadata, flMetadata: FieldMetadata, imports: any) => {
     try {
         if (!decorators || !decorators.length) {
             return { fieldMetadata: flMetadata, possibleImports: [] };
@@ -186,7 +276,7 @@ export const updateFieldMetadataForViewModelTypeDecorator = (
         }
 
         if (!fieldTypeOptions.transformer) {
-            fileStructure._imports.forEach(i => {
+            imports.forEach(i => {
                 const filteredClauses = i.clauses.filter(clause => clause === updatedFieldMetadata.baseModelType);
                 filteredClauses.forEach(clause => {
                     if (i.isNodeModule) {
@@ -244,7 +334,7 @@ export const updateFieldMetadataForViewModelTypeDecorator = (
 
 
 // dirty function - update possible imports;
-export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetadata, possibleImports: any[]) => {
+export const createFieldMetadata = (field: FieldModel, cm: ClassMetadata, imports: ImportNode[]) => {
     let fldMetadata = new FieldMetadata();
     fldMetadata.baseModelName = field.name;
     fldMetadata.nullable = true;
@@ -263,7 +353,7 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
     const isBaseTypesIncludeTypeName = baseTypes.find(type => type === typeName);
 
     if ( !isBaseTypesIncludeTypeName ) {
-        const fldInfo = getInfoFromImports(possibleImports, typeName);
+        const fldInfo = getInfoFromImports(imports, typeName);
         fldMetadata.isComplexType = fldInfo.isComplexType;
         fldMetadata.isEnum = fldInfo.isEnum;
     }
@@ -287,30 +377,29 @@ export const createFieldMetadata = (field: FieldModel, json: any, cm: ClassMetad
         fieldDecorators.filter(decorator => decorator.name === Decorators.ViewModelType),
         cm,
         fldMetadata,
-        json
+        imports
     );
 
     fldMetadata = fieldMetadata;
-    possibleImports.push(...rest.possibleImports);
+    imports.push(...rest.possibleImports);
 
     const decUpdate = updateFieldMetadataForIgnoreDecorators(
         fieldDecorators?.filter(decorator => decorator.name === Decorators.IgnoreDecorators),
         cm,
         fldMetadata,
         fieldDecorators?.filter(decorator => !ignoreDecorators.includes(decorator.name)),
-        json,
+        imports,
     );
 
     fldMetadata = decUpdate.fieldMetadata;
 
     if (fldMetadata.type !== fldMetadata.baseModelType &&  !baseTypes.includes(fldMetadata.type)) {
-        const fldInfo = getInfoFromImports(possibleImports, fldMetadata.type);
+        const fldInfo = getInfoFromImports(imports, fldMetadata.type);
         fldMetadata.isComplexType = fldInfo.isComplexType;
         fldMetadata.isEnum = fldInfo.isEnum;
     }
 
-    possibleImports.push(...decUpdate.possibleImports);
-
+    imports.push(...decUpdate.possibleImports);
 
     return fldMetadata;
 };
@@ -352,7 +441,7 @@ export const getDependencyImportsForImports = (_imports: Import[], fileMetadata:
             return null;
         }
         const mapperName = mapperMatch[0];
-        fileMetadata.classes.fields.forEach(field => {
+        fileMetadata.classMetadata.fields.forEach(field => {
             const condition = mapperName.includes(field.type) && field.needGeneratedMapper && !field.ignoredInView;
             if (!condition) {
                 return;

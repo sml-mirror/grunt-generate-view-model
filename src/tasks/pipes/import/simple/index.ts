@@ -6,13 +6,13 @@ import { FileMetadata } from "../../../../tasks/model/filemetadata";
 import { ignoreDecorators } from '../../../../tasks/constants/ignoreDecorators';
 import { Import } from "../../../../tasks/model/import";
 
-const getSearchingImportsName = (fileMetadata: FileMetadata) => {
+const getSearchingImportsName = ({classMetadata, imports}: FileMetadata) => {
     const importsToSearch: string[] = [];
 
-    fileMetadata.classes.fields.forEach(fld => {
+    classMetadata.fields.forEach(fld => {
         const isFieldIsPrimitive = !fld.isComplexType && !fld.isEnum;
         const isImportInclude = importsToSearch.includes(fld.type)
-        const isGlobalImportInclude = fileMetadata.imports.find(i => i.type === fld.type);
+        const isGlobalImportInclude = imports.find(i => i.type === fld.type);
         if (isFieldIsPrimitive || isImportInclude || isGlobalImportInclude) {
             return;
         }
@@ -29,7 +29,7 @@ const getSearchingImportsName = (fileMetadata: FileMetadata) => {
 export const getDecoratorImports = (fileMetadata: FileMetadata, imports: ImportNode[]) => {
     const result: Import[] = [];
     let decorators: string[] = [];
-    const cls = fileMetadata.classes
+    const cls = fileMetadata.classMetadata;
     
     decorators.push(...cls.decorators.map(d => d.name))
 
@@ -76,14 +76,14 @@ export const getInterfaceImports = (fileMetadata: FileMetadata, imports: ImportN
         return importToReturn;
     }).filter(r => !!r);
     // find same class as import in view model
-    const cls = fileMetadata.classes;
-    const modelName = cls.baseName;
-    const fieldWithTypeLikeBaseName = cls.fields.find(fld => fld.type === modelName);
+    const { classMetadata } = fileMetadata;
+    const modelName = classMetadata.baseName;
+    const fieldWithTypeLikeBaseName = classMetadata.fields.find(fld => fld.type === modelName);
 
     if (fieldWithTypeLikeBaseName) {
         const sameImport = new Import();
         sameImport.type = modelName;
-        const to = cls.baseNamePath.replace('.ts', '');
+        const to = classMetadata.baseNamePath.replace('.ts', '');
         const from = fileMetadata.filename.replace('.ts', '')
             .split('/')
             .map((p,i, self) => {
