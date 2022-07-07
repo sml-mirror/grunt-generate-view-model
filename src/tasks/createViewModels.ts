@@ -3,7 +3,6 @@
 /* eslint-disable no-use-before-define */
 
 import * as fs from 'fs';
-import * as fsPromise from 'fs/promises';
 import * as path from 'path';
 import mkdirp from 'mkdirp';
 
@@ -34,8 +33,8 @@ export async function createMetadatas(filePathes: string[], configOptions?: {ext
     const generatedFiles: FileMetadata[] = [];
     const uniqueFilePathes = Array.from(new Set(filePathes));
 
-    await Promise.all(uniqueFilePathes.map(async path => {
-        const stringFile = await fsPromise.readFile(path, {encoding: 'utf-8'});
+    uniqueFilePathes.map(path => {
+        const stringFile = fs.readFileSync(path, {encoding: 'utf-8'});
         try {
             const fileStructure = parseStruct(stringFile, {}, path);
             const fileImports = fileStructure._imports || [];
@@ -70,13 +69,13 @@ export async function createMetadatas(filePathes: string[], configOptions?: {ext
             console.log(ConsoleColor.Red, `file ${path} has error: ${e.message}`);
             console.log(ConsoleColor.Default);
         }
-    }));
+    });
     const result = generatedFiles.filter(file => file.filename);
     return result;
 }
 
 export async function createFiles(filesMetadata: FileMetadata[]): Promise<void> {
-    await Promise.all(filesMetadata.map(async _fileMetadata => {
+    filesMetadata.map(_fileMetadata => {
         const fileMetadata = { ..._fileMetadata };
         if (!fileMetadata.classMetadata.generateView) {
             return;
@@ -93,7 +92,7 @@ export async function createFiles(filesMetadata: FileMetadata[]): Promise<void> 
         }
 
         mkdirp.sync(path.dirname(fileMetadata.filename));
-        await fsPromise.writeFile(fileMetadata.filename, generatedClassFileContent, {encoding: 'utf-8'});
+        fs.writeFileSync(fileMetadata.filename, generatedClassFileContent, {encoding: 'utf-8'});
 
         const needMapper = !!fileMetadata.classMetadata.needMapper;
 
@@ -102,13 +101,13 @@ export async function createFiles(filesMetadata: FileMetadata[]): Promise<void> 
         }
 
         createMapperFile(fileMetadata, createdMapperFileContent);
-    }));
+    });
 }
 
 export const createViewModelsInternal = async () => {
     try {
         const dateStart = Date.now();
-        const file = await fsPromise.readFile(configName, {encoding: UTF8});
+        const file = fs.readFileSync(configName, {encoding: UTF8});
         const config: Config = JSON.parse(file);
         const possibleFilePathes = getAllFiles(config.check.folders);
         console.log(ConsoleColor.Green, `Generate View: Count of files: ${possibleFilePathes.length}`);
