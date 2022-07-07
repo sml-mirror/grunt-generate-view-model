@@ -7,7 +7,7 @@ import { primitiveTypes } from "../../tasks/constants/primitiveTypes";
 import { ClassMetadata } from "../../tasks/model/classmetadata";
 import { Transformer } from '../../tasks/model/transformer';
 
-export const saveInfoAboutTransformer = (direction: FuncDirection, func: Transformer, possibleImports: ImportNode[], cm: ClassMetadata) => {
+export const saveInfoAboutTransformer = (direction: FuncDirection, func: Transformer, imports: ImportNode[], cm: ClassMetadata) => {
     if (!direction) {
         return;
     }
@@ -16,7 +16,7 @@ export const saveInfoAboutTransformer = (direction: FuncDirection, func: Transfo
         return;
     }
     const importFunctionName = func[direction].function;
-    const moduleImport = possibleImports.find(possibleImport => possibleImport.clauses.indexOf(importFunctionName) > -1);
+    const moduleImport = imports.find(possibleImport => possibleImport.clauses.indexOf(importFunctionName) > -1);
     if (moduleImport) {
         let fileContentInString = '';
         let pathFromFile = moduleImport.absPathNode.join('/');
@@ -68,7 +68,7 @@ export const saveInfoAboutTransformer = (direction: FuncDirection, func: Transfo
             return;
         }
         const contextTypeImport = jsonStructure._imports.find(imp => !!imp.clauses.find(clause => directionValueInfo.value === clause));
-        possibleImports.push({
+        imports.push({
             clauses: [directionValueInfo.value],
             absPathNode: contextTypeImport.absPathNode,
             absPathString: contextTypeImport.absPathNode.join('/'),

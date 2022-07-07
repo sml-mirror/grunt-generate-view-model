@@ -6,7 +6,7 @@ export class FileMetadata {
     constructor (
         public filename: string = null,
         public basePath: string = null,
-        public classes: ClassMetadata = null,
+        public classMetadata: ClassMetadata = null,
         public mapperPath: string = null,
         public imports: Import[] = []) {
     }

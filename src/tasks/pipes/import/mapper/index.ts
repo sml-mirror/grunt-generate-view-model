@@ -73,13 +73,13 @@ const getContextTypeImports = (meta: FileMetadata, possibleImports: ImportNode[]
         return contextImport;
     };
 
-    const { classes } = meta;
+    const { classMetadata } = meta;
     const imports: Import[] = [];
-    const fromViewImport = createImport(classes.contextType.fromView.value);
+    const fromViewImport = createImport(classMetadata.contextType.fromView.value);
     if (fromViewImport) {
         imports.push(fromViewImport);
     }
-    const toViewImport = createImport(classes.contextType.toView.value);
+    const toViewImport = createImport(classMetadata.contextType.toView.value);
     if (toViewImport) {
         imports.push(toViewImport);
     }
@@ -91,7 +91,7 @@ export const getMapperImports = (fileMetadata: FileMetadata, imports: ImportNode
     let mapperImports: string[] = [];
     const resultMapperImports: Import[] = [];
 
-    mapperImports = getMapperImportsForFields(fileMetadata.classes.fields);
+    mapperImports = getMapperImportsForFields(fileMetadata.classMetadata.fields);
     mapperImports.forEach(mapperImport => {
         const importNode = imports.find(nodeImport => {
             return nodeImport.clauses.includes(mapperImport);

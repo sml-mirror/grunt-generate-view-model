@@ -4,4 +4,7 @@ export class Check {
 
 export class Config {
     public check: Check;
+    public options: {
+        extendLevel?: number;
+    }
 }

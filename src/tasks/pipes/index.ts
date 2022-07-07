@@ -1,7 +1,7 @@
 import * as path from "path";
 
 export * from './classmeta';
-export * from './decorators';
+export * from '../model/decorators';
 export * from './enums';
 export * from './files';
 export * from './transformer';

@@ -1,5 +1,6 @@
+import Module from "module";
 import { Import } from "tasks/model/import";
-import { ImportNode } from "ts-file-parser";
+import { ClassModel, ImportNode } from "ts-file-parser";
 
 import { FileMetadata } from "../../../tasks/model/filemetadata";
 
@@ -24,7 +25,7 @@ export const makeCorrectImports = (fileMetadata: FileMetadata, possibleImports: 
     const mapperImports = getMapperImports(fileMetadata, imports);
     const interfaceImports = getInterfaceImports(fileMetadata, imports);
     let decoratorImports: Import[] = [];
-    if (fileMetadata.classes.type === 'class' ) {
+    if (fileMetadata.classMetadata.type === 'class' ) {
         decoratorImports = getDecoratorImports(fileMetadata, imports);
     }
 
