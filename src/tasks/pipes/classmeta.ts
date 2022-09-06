@@ -404,7 +404,6 @@ export const createFieldMetadata = (field: FieldModel, cm: ClassMetadata, import
         imports,
     );
 
-
     fldMetadata = decUpdate.fieldMetadata;
 
     if (fldMetadata.type !== fldMetadata.baseModelType &&  !baseTypes.includes(fldMetadata.type)) {
