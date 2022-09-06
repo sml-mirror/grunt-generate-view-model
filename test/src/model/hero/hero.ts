@@ -27,6 +27,9 @@ export class Hero {
     @Length(0,20)
     @ValidatorWithoutBraces
     @IgnoreDecorators(['Length'])
+    @ApiProperty({required: true})
+    @ApiProperty({required: true}, {fu: 12})
+    @ApiProperty({required: true}, {fu: 12}, '12')
     public id?: number;
 
     @Length(10,20)

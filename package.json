@@ -1,6 +1,6 @@
 {
   "name": "grunt-generate-view-model",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Global task for generation view model",
   "private": false,
   "main": "dist/index.js",

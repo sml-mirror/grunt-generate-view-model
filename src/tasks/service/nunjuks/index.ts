@@ -22,6 +22,16 @@ export class NunjucksService {
             const arrowFunctionCheck = (obj as string).match(/\({0,1}.+\){0,1}\s{0,1}=>/);
             return !arrowFunctionCheck;
         });
+        this.env.addFilter('is_string_for_object', (obj: any) => {
+            if (!obj) {
+                return false;
+            }
+            if (typeof obj !== 'string') {
+                return false;
+            }
+            const isStringIsObject = obj.trim().startsWith('{') && obj.endsWith('}');
+            return isStringIsObject;
+        });
         this.env.addFilter('is_not_empty', (obj: any) => {
             return !!obj;
         });

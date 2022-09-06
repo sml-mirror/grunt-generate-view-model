@@ -13,6 +13,9 @@ import { HeroDetailViewModel } from '../../../src/expected/heroes/heroDetailView
 export class HeroViewModel {
 
       @ValidatorWithoutBraces
+      @ApiProperty({"required":true},)
+      @ApiProperty({"required":true},{"fu":12},)
+      @ApiProperty({"required":true},{"fu":12}, '12',)
       public id?: string;
 
       public name?: string;

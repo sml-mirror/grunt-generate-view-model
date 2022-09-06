@@ -197,6 +197,18 @@ export const updateFieldMetadataForIgnoreDecorators = (
         possibleImports.push(importNode);
     })
 
+    newFldMetadata.decorators = newFldMetadata.decorators.map(d => {
+        const updatedDecorator = {...d};
+        if (updatedDecorator.arguments && updatedDecorator.arguments.length) {
+            updatedDecorator.arguments = updatedDecorator.arguments.map(a => {
+                if (typeof a === 'object') {
+                    return JSON.stringify(a);
+                }
+                return a;
+            })
+        }
+        return updatedDecorator;
+    })
     return {
         fieldMetadata: newFldMetadata,
         possibleImports,
@@ -362,6 +374,7 @@ export const createFieldMetadata = (field: FieldModel, cm: ClassMetadata, import
     fldMetadata.type = fldMetadata.baseModelType;
 
     const fieldDecorators = field.decorators;
+
     fldMetadata = updateFieldMetadataForIgnoreViewModelDecorator(
         fieldDecorators.filter(decorator => decorator.name === Decorators.IgnoreViewModel),
         cm,
