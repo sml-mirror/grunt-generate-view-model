@@ -24,14 +24,14 @@ export interface {{class.name}} {
 {% endif %}
 {% if class.type === 'class' %}
 {% for decorator in class.decorators %}
-@{{decorator.name}}{% if decorator.arguments %}({% for item in decorator.arguments %}{% if item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %}){% endif %} 
+@{{decorator.name}}{% if decorator.arguments %}({% for item in decorator.arguments %}{% if item|is_string_for_object %}{{item}}{% elif item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %}){% endif %} 
 {% endfor %}
 export class {{class.name}} {
 
 {% for field in class.fields %}
 {% if  field.ignoredInView===false %}
 {% for decorator in field.decorators%}
-      @{{decorator.name}}{% if decorator.arguments %}({% for item in decorator.arguments %}{% if item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %}){% endif %}{{\n}}
+      @{{decorator.name}}{% if decorator.arguments %}({% for item in decorator.arguments %}{% if item|is_string_for_object %}{{item}}{% elif item|is_string %} '{{item}}'{% else %}{{item}}{% endif %},{% endfor %}){% endif %}{{\n}}
 {% endfor %}
       public {{field.name}}{% if field.nullable === true %}?{%endif%}: {{field.type}}{% if field.isArray %}[]{% endif %};
 
